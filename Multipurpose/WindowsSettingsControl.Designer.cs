@@ -29,9 +29,6 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.txtOdbcServer = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.txtOdbcDsnName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnCreateOdbc = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -41,11 +38,10 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btnInstallFonts = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.txtShortcutTarget = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtShortcutName = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.btnCreateShortcut = new System.Windows.Forms.Button();
+            this.btnCreateAllShortcuts = new System.Windows.Forms.Button();
+            this.listViewShortcuts = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listBoxStatus = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
@@ -62,64 +58,32 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.txtOdbcServer);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.txtOdbcDsnName);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.btnCreateOdbc);
             this.groupBox1.Location = new System.Drawing.Point(4, 4);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(500, 150);
+            this.groupBox1.Size = new System.Drawing.Size(500, 100);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "1. ตั้งค่า ODBC (System DSN for SQL Server)";
-            // 
-            // txtOdbcServer
-            // 
-            this.txtOdbcServer.Location = new System.Drawing.Point(120, 60);
-            this.txtOdbcServer.Margin = new System.Windows.Forms.Padding(4);
-            this.txtOdbcServer.Name = "txtOdbcServer";
-            this.txtOdbcServer.Size = new System.Drawing.Size(360, 22);
-            this.txtOdbcServer.TabIndex = 3;
-            this.txtOdbcServer.Text = ".\\SQLEXPRESS";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 64);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(51, 16);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Server:";
-            // 
-            // txtOdbcDsnName
-            // 
-            this.txtOdbcDsnName.Location = new System.Drawing.Point(120, 28);
-            this.txtOdbcDsnName.Margin = new System.Windows.Forms.Padding(4);
-            this.txtOdbcDsnName.Name = "txtOdbcDsnName";
-            this.txtOdbcDsnName.Size = new System.Drawing.Size(360, 22);
-            this.txtOdbcDsnName.TabIndex = 1;
-            this.txtOdbcDsnName.Text = "MyWebAppDSN";
+            this.groupBox1.Text = "1. ตั้งค่า ODBC (จาก App.config)";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(8, 32);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(12, 32);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(78, 16);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "DSN Name:";
+            this.label1.Size = new System.Drawing.Size(262, 16);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "โปรแกรมจะอ่านค่า ODBC จากไฟล์ App.config";
             // 
             // btnCreateOdbc
             // 
-            this.btnCreateOdbc.Location = new System.Drawing.Point(350, 95);
+            this.btnCreateOdbc.Location = new System.Drawing.Point(322, 49);
             this.btnCreateOdbc.Margin = new System.Windows.Forms.Padding(4);
             this.btnCreateOdbc.Name = "btnCreateOdbc";
-            this.btnCreateOdbc.Size = new System.Drawing.Size(130, 40);
+            this.btnCreateOdbc.Size = new System.Drawing.Size(170, 40);
             this.btnCreateOdbc.TabIndex = 4;
             this.btnCreateOdbc.Text = "สร้าง DSN";
             this.btnCreateOdbc.UseVisualStyleBackColor = true;
@@ -133,19 +97,19 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox2.Size = new System.Drawing.Size(500, 150);
+            this.groupBox2.Size = new System.Drawing.Size(500, 100);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "2. ตั้งค่าประเทศและภาษา";
             // 
             // btnSetLocalization
             // 
-            this.btnSetLocalization.Location = new System.Drawing.Point(220, 95);
+            this.btnSetLocalization.Location = new System.Drawing.Point(220, 49);
             this.btnSetLocalization.Margin = new System.Windows.Forms.Padding(4);
             this.btnSetLocalization.Name = "btnSetLocalization";
-            this.btnSetLocalization.Size = new System.Drawing.Size(260, 40);
+            this.btnSetLocalization.Size = new System.Drawing.Size(272, 40);
             this.btnSetLocalization.TabIndex = 1;
-            this.btnSetLocalization.Text = "ตั้งค่าเป็นไทยทั้งหมด (ต้อง Restart)";
+            this.btnSetLocalization.Text = "ตั้งค่าเป็นไทยทั้งหมด (อาจต้อง Restart)";
             this.btnSetLocalization.UseVisualStyleBackColor = true;
             this.btnSetLocalization.Click += new System.EventHandler(this.btnSetLocalization_Click);
             // 
@@ -163,11 +127,11 @@
             // 
             this.groupBox3.Controls.Add(this.label4);
             this.groupBox3.Controls.Add(this.btnInstallFonts);
-            this.groupBox3.Location = new System.Drawing.Point(4, 162);
+            this.groupBox3.Location = new System.Drawing.Point(4, 112);
             this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox3.Size = new System.Drawing.Size(500, 150);
+            this.groupBox3.Size = new System.Drawing.Size(500, 100);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "3. ติดตั้งฟอนต์";
@@ -180,83 +144,67 @@
             this.label4.Size = new System.Drawing.Size(480, 50);
             this.label4.TabIndex = 2;
             this.label4.Text = "โปรแกรมจะค้นหาไฟล์ .ttf และ .otf จากโฟลเดอร์ชื่อ \'Fonts\' ที่อยู่ในระดับเดียวกับไฟ" +
-    "ล์ exe ของโปรแกรมนี้";
+    "ล์ exe";
             // 
             // btnInstallFonts
             // 
-            this.btnInstallFonts.Location = new System.Drawing.Point(350, 95);
+            this.btnInstallFonts.Location = new System.Drawing.Point(322, 49);
             this.btnInstallFonts.Margin = new System.Windows.Forms.Padding(4);
             this.btnInstallFonts.Name = "btnInstallFonts";
-            this.btnInstallFonts.Size = new System.Drawing.Size(130, 40);
+            this.btnInstallFonts.Size = new System.Drawing.Size(170, 40);
             this.btnInstallFonts.TabIndex = 1;
-            this.btnInstallFonts.Text = "ติดตั้งฟอนต์";
+            this.btnInstallFonts.Text = "ติดตั้งฟอนต์ทั้งหมด";
             this.btnInstallFonts.UseVisualStyleBackColor = true;
             this.btnInstallFonts.Click += new System.EventHandler(this.btnInstallFonts_Click);
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.txtShortcutTarget);
-            this.groupBox4.Controls.Add(this.label5);
-            this.groupBox4.Controls.Add(this.txtShortcutName);
-            this.groupBox4.Controls.Add(this.label6);
-            this.groupBox4.Controls.Add(this.btnCreateShortcut);
-            this.groupBox4.Location = new System.Drawing.Point(512, 162);
+            this.groupBox4.Controls.Add(this.btnCreateAllShortcuts);
+            this.groupBox4.Controls.Add(this.listViewShortcuts);
+            this.groupBox4.Location = new System.Drawing.Point(512, 112);
             this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Size = new System.Drawing.Size(500, 150);
+            this.groupBox4.Size = new System.Drawing.Size(500, 209);
             this.groupBox4.TabIndex = 3;
             this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "4. สร้าง Shortcut บน Desktop";
+            this.groupBox4.Text = "4. สร้าง Shortcut (จาก shortcuts.json)";
             // 
-            // txtShortcutTarget
+            // btnCreateAllShortcuts
             // 
-            this.txtShortcutTarget.Location = new System.Drawing.Point(120, 60);
-            this.txtShortcutTarget.Margin = new System.Windows.Forms.Padding(4);
-            this.txtShortcutTarget.Name = "txtShortcutTarget";
-            this.txtShortcutTarget.Size = new System.Drawing.Size(360, 22);
-            this.txtShortcutTarget.TabIndex = 8;
-            this.txtShortcutTarget.Text = "https://www.google.com";
+            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(283, 161);
+            this.btnCreateAllShortcuts.Margin = new System.Windows.Forms.Padding(4);
+            this.btnCreateAllShortcuts.Name = "btnCreateAllShortcuts";
+            this.btnCreateAllShortcuts.Size = new System.Drawing.Size(209, 40);
+            this.btnCreateAllShortcuts.TabIndex = 9;
+            this.btnCreateAllShortcuts.Text = "สร้าง Shortcut ทั้งหมด";
+            this.btnCreateAllShortcuts.UseVisualStyleBackColor = true;
+            this.btnCreateAllShortcuts.Click += new System.EventHandler(this.btnCreateAllShortcuts_Click);
             // 
-            // label5
+            // listViewShortcuts
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 64);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(83, 16);
-            this.label5.TabIndex = 7;
-            this.label5.Text = "Target Path:";
+            this.listViewShortcuts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2});
+            this.listViewShortcuts.FullRowSelect = true;
+            this.listViewShortcuts.GridLines = true;
+            this.listViewShortcuts.HideSelection = false;
+            this.listViewShortcuts.Location = new System.Drawing.Point(15, 28);
+            this.listViewShortcuts.Name = "listViewShortcuts";
+            this.listViewShortcuts.Size = new System.Drawing.Size(477, 126);
+            this.listViewShortcuts.TabIndex = 0;
+            this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
+            this.listViewShortcuts.View = System.Windows.Forms.View.Details;
             // 
-            // txtShortcutName
+            // columnHeader1
             // 
-            this.txtShortcutName.Location = new System.Drawing.Point(120, 28);
-            this.txtShortcutName.Margin = new System.Windows.Forms.Padding(4);
-            this.txtShortcutName.Name = "txtShortcutName";
-            this.txtShortcutName.Size = new System.Drawing.Size(360, 22);
-            this.txtShortcutName.TabIndex = 6;
-            this.txtShortcutName.Text = "Google";
+            this.columnHeader1.Text = "Shortcut Name";
+            this.columnHeader1.Width = 150;
             // 
-            // label6
+            // columnHeader2
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(8, 32);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(99, 16);
-            this.label6.TabIndex = 5;
-            this.label6.Text = "Shortcut Name:";
-            // 
-            // btnCreateShortcut
-            // 
-            this.btnCreateShortcut.Location = new System.Drawing.Point(350, 95);
-            this.btnCreateShortcut.Margin = new System.Windows.Forms.Padding(4);
-            this.btnCreateShortcut.Name = "btnCreateShortcut";
-            this.btnCreateShortcut.Size = new System.Drawing.Size(130, 40);
-            this.btnCreateShortcut.TabIndex = 9;
-            this.btnCreateShortcut.Text = "สร้าง Shortcut";
-            this.btnCreateShortcut.UseVisualStyleBackColor = true;
-            this.btnCreateShortcut.Click += new System.EventHandler(this.btnCreateShortcut_Click);
+            this.columnHeader2.Text = "Target Path";
+            this.columnHeader2.Width = 300;
             // 
             // listBoxStatus
             // 
@@ -266,7 +214,7 @@
             this.listBoxStatus.Location = new System.Drawing.Point(0, 0);
             this.listBoxStatus.Margin = new System.Windows.Forms.Padding(4);
             this.listBoxStatus.Name = "listBoxStatus";
-            this.listBoxStatus.Size = new System.Drawing.Size(1021, 322);
+            this.listBoxStatus.Size = new System.Drawing.Size(1021, 319);
             this.listBoxStatus.TabIndex = 0;
             // 
             // splitContainer1
@@ -285,7 +233,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.listBoxStatus);
             this.splitContainer1.Size = new System.Drawing.Size(1021, 650);
-            this.splitContainer1.SplitterDistance = 323;
+            this.splitContainer1.SplitterDistance = 326;
             this.splitContainer1.SplitterWidth = 5;
             this.splitContainer1.TabIndex = 1;
             // 
@@ -299,7 +247,7 @@
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(1021, 323);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(1021, 326);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
             // WindowsSettingsControl
@@ -315,7 +263,6 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -329,10 +276,6 @@
 
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button btnCreateOdbc;
-        private System.Windows.Forms.TextBox txtOdbcDsnName;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox txtOdbcServer;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button btnSetLocalization;
         private System.Windows.Forms.Label label3;
@@ -340,13 +283,13 @@
         private System.Windows.Forms.Button btnInstallFonts;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.Button btnCreateShortcut;
-        private System.Windows.Forms.TextBox txtShortcutTarget;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox txtShortcutName;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button btnCreateAllShortcuts;
         private System.Windows.Forms.ListBox listBoxStatus;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ListView listViewShortcuts;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
     }
 }

@@ -23,13 +23,16 @@ namespace Multipurpose
 
         private void WindowsUpgradeControl_Load(object sender, EventArgs e)
         {
-            // Load license key from App.config on start
+            // --- START FIX ---
+            // This check is CRUCIAL. It prevents the code below from running in the Visual Studio Designer.
+            // The Designer cannot execute processes or access the registry, which causes it to crash.
+            if (this.DesignMode)
+                return;
+            // --- END FIX ---
+
+            // The rest of the code will now only run when the application is actually running, not in the designer.
             LoadLicenseKeyFromConfig();
-
-            // Check current status when the control is loaded
             btnRefreshStatus_Click(sender, e);
-
-            // Check if we are in the middle of an upgrade process
             CheckForPendingActivation();
         }
 
@@ -50,43 +53,46 @@ namespace Multipurpose
 
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                await Task.Run(() =>
                 {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    Verb = "runas", // Ensure admin privileges
-                    StandardOutputEncoding = Encoding.UTF8, // Handle Thai characters
-                    StandardErrorEncoding = Encoding.UTF8
-                };
-
-                using (Process process = new Process { StartInfo = startInfo })
-                {
-                    var errorBuilder = new StringBuilder();
-                    process.OutputDataReceived += (s, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); };
-                    process.ErrorDataReceived += (s, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); };
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                    await Task.Run(() => process.WaitForExit()); // Ensure asynchronous waiting
-
-                    string error = errorBuilder.ToString();
-                    Invoke((MethodInvoker)delegate
+                    ProcessStartInfo startInfo = new ProcessStartInfo
                     {
-                        if (!string.IsNullOrWhiteSpace(error))
+                        FileName = fileName,
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        Verb = "runas", // Ensure admin privileges
+                        StandardOutputEncoding = Encoding.UTF8, // Handle Thai characters
+                        StandardErrorEncoding = Encoding.UTF8
+                    };
+
+                    using (Process process = new Process { StartInfo = startInfo })
+                    {
+                        var errorBuilder = new StringBuilder();
+                        process.OutputDataReceived += (s, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); };
+                        process.ErrorDataReceived += (s, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); };
+
+                        process.Start();
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+                        process.WaitForExit(); // Use async wait
+
+                        string error = errorBuilder.ToString();
+                        Invoke((MethodInvoker)delegate
                         {
-                            listBoxStatus.Items.Add("[Error]");
-                            foreach (var line in error.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                            if (!string.IsNullOrWhiteSpace(error))
                             {
-                                listBoxStatus.Items.Add($"  {line}");
+                                listBoxStatus.Items.Add("[Error]");
+                                foreach (var line in error.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    listBoxStatus.Items.Add($"  {line}");
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
+                });
             }
             catch (Exception ex)
             {
