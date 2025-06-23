@@ -1,14 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
 using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Multipurpose
@@ -18,192 +9,48 @@ namespace Multipurpose
         public Form1()
         {
             InitializeComponent();
-            LoadLicenseKeyFromConfig();
+            // Assign the Load event handler
+            this.Load += new System.EventHandler(this.Form1_Load);
         }
 
-        // ฟังก์ชันสำหรับรันคำสั่ง CMD และแสดงผลลัพธ์ใน ListBox แบบ Asynchronous
-        private async Task RunCmdCommand(string command, string arguments = "")
+        /// <summary>
+        /// This event fires when the form is first loaded.
+        /// It's the perfect place to check for administrator privileges.
+        /// </summary>
+        private void Form1_Load(object sender, EventArgs e)
         {
-            try
+            // The entire application requires administrator rights, so we check it here once.
+            if (!IsAdministrator())
             {
-                // ตรวจสอบว่าโปรแกรมถูกรันในฐานะ Administrator หรือไม่
-                if (!IsAdministrator())
-                {
-                    MessageBox.Show("โปรดรันโปรแกรมในฐานะ Administrator", "ข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit(); // ปิดโปรแกรมหากไม่ใช่ Administrator
-                    return;
-                }
+                MessageBox.Show(
+                    "This application requires administrator privileges to function correctly. Please restart the application as an Administrator.",
+                    "Administrator Rights Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
 
-                // การอัปเดต UI จาก Background Thread ต้องใช้ Invoke
-                Invoke((MethodInvoker)delegate
-                {
-                    listBoxStatus.Items.Add($"รันคำสั่ง: {command} {arguments}");
-                    listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1; // เลื่อนไปบรรทัดสุดท้าย
-                });
-
-                // ย้ายการรัน Process ไปยัง Background Thread
-                await Task.Run(async () => // async delegate for Task.Run
-                {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = $"/C {command} {arguments}",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true // ไม่แสดงหน้าต่าง CMD
-                    };
-
-                    using (Process process = new Process { StartInfo = startInfo })
-                    {
-                        process.Start();
-
-                        // อ่าน Output จาก CMD แบบ Asynchronous
-                        string output = await process.StandardOutput.ReadToEndAsync();
-                        string error = await process.StandardError.ReadToEndAsync();
-
-                        process.WaitForExit();
-
-                        // แสดงผลลัพธ์ใน ListBox (ต้อง Invoke กลับไปที่ UI Thread)
-                        Invoke((MethodInvoker)delegate
-                        {
-                            if (!string.IsNullOrEmpty(output))
-                            {
-                                // เพิ่ม prefix "ผลลัพธ์:" หรือใช้สี
-                                foreach (string line in output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    listBoxStatus.Items.Add($"  [Output] {line}");
-                                }
-                            }
-                            if (!string.IsNullOrEmpty(error))
-                            {
-                                // เพิ่ม prefix "ข้อผิดพลาด:" หรือใช้สี
-                                foreach (string line in error.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    listBoxStatus.Items.Add($"  [Error] {line}");
-                                }
-                            }
-                            listBoxStatus.Items.Add("------------------------------------");
-                            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1; // เลื่อนไปบรรทัดสุดท้าย
-                        });
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Invoke((MethodInvoker)delegate
-                {
-                    listBoxStatus.Items.Add($"เกิดข้อผิดพลาด: {ex.Message}");
-                    listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-                });
+                // Close the application if not run as admin
+                Application.Exit();
             }
         }
 
-        // ฟังก์ชันตรวจสอบว่าโปรแกรมรันในฐานะ Administrator หรือไม่
+        /// <summary>
+        /// Checks if the current process is running with administrative privileges.
+        /// </summary>
+        /// <returns>True if running as an administrator, otherwise false.</returns>
         private bool IsAdministrator()
         {
+            // Use WindowsIdentity to check the current user's role.
             using (var identity = WindowsIdentity.GetCurrent())
             {
                 var principal = new WindowsPrincipal(identity);
+                // Check if the user is in the built-in Administrator role.
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
 
-        // ฟังก์ชันสำหรับเรียกใช้งานเมื่อคลิกปุ่ม "ก่อน Restart" (เปลี่ยนเป็น async void)
-        private async void buttonBeforeRestart_Click(object sender, EventArgs e)
-        {
-            buttonAfterRestart.Enabled = false;
-            buttonBeforeRestart.Enabled = false;
-
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- เริ่มต้นการเตรียมการและเปลี่ยน Edition ---");
-            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-
-            // 1. ถอนคีย์เก่าออก
-            await RunCmdCommand("slmgr", "/upk");
-            await RunCmdCommand("slmgr", "/cpky");
-
-            // 2. เตรียมการเปลี่ยน Editions
-            // ใช้แค่ sc config ก็เพียงพอ เพราะ net start จะ error ถ้า service รันอยู่แล้ว
-            await RunCmdCommand("sc config LicenseManager start=auto");
-            await RunCmdCommand("sc config wuauserv start=auto");
-            // หากต้องการให้แน่ใจว่า Service เริ่มทำงานจริงๆ และไม่สนใจ Error ที่ Service รันอยู่แล้ว
-            // await RunCmdCommand("net start LicenseManager || true");
-            // await RunCmdCommand("net start wuauserv || true");
-
-            // 3. เปลี่ยน Editions ด้วย Windows 10/11 Generic key
-            // ใช้ Path เต็มสำหรับ changepk.exe
-            listBoxStatus.Items.Add("กำลังเปลี่ยน Editions ด้วย Generic Key... เครื่องอาจจะ Restart.");
-            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-            string genericKey = ConfigurationManager.AppSettings["GenericWinProKey"];
-            if (string.IsNullOrEmpty(genericKey))
-            {
-                MessageBox.Show("ไม่พบ Generic Key ในไฟล์ Config", "ข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            listBoxStatus.Items.Add("กำลังเปลี่ยน Editions ด้วย Generic Key... เครื่องอาจจะ Restart.");
-            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-            await RunCmdCommand("changepk.exe", $"/productkey {genericKey}");
-
-            listBoxStatus.Items.Add("--- กระบวนการก่อน Restart เสร็จสิ้น (เครื่องอาจจะ Restart ไปแล้ว) ---");
-            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-
-            buttonAfterRestart.Enabled = true;
-            buttonBeforeRestart.Enabled = true;
-        }
-
-        // ฟังก์ชันสำหรับเรียกใช้งานเมื่อคลิกปุ่ม "หลัง Restart" (เปลี่ยนเป็น async void)
-        private async void buttonAfterRestart_Click(object sender, EventArgs e)
-        {
-            buttonAfterRestart.Enabled = false;
-            buttonBeforeRestart.Enabled = false;
-
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- เริ่มต้นการลงทะเบียน Windows ด้วย License ใหม่ ---");
-            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-
-            string licenseKey = textBoxLicenseKey.Text.Trim();
-
-            if (string.IsNullOrEmpty(licenseKey) || licenseKey.Length != 29 || licenseKey.Split('-').Length != 5)
-            {
-                MessageBox.Show("กรุณากรอก License Key ให้ถูกต้อง (เช่น XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)", "ข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // 4. ลงทะเบียน Windows ด้วย License ใหม่
-            await RunCmdCommand("slmgr", $"/ipk {licenseKey}");
-            await RunCmdCommand("slmgr", "/ato");
-            await RunCmdCommand("slmgr", "/xpr");
-            await RunCmdCommand("slmgr", "/dli");
-
-            listBoxStatus.Items.Add("--- กระบวนการหลัง Restart และลงทะเบียนเสร็จสิ้น ---");
-            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-
-            buttonAfterRestart.Enabled = true;
-            buttonBeforeRestart.Enabled = true;
-        }
-
-        private void LoadLicenseKeyFromConfig()
-        {
-            try
-            {
-                // อ่านค่าจาก App.config โดยใช้ key ที่ตั้งไว้
-                string licenseKey = ConfigurationManager.AppSettings["LicenseKey"];
-                if (!string.IsNullOrEmpty(licenseKey))
-                {
-                    textBoxLicenseKey.Text = licenseKey;
-                    listBoxStatus.Items.Add("โหลด License Key จากไฟล์ Config สำเร็จ");
-                }
-                else
-                {
-                    listBoxStatus.Items.Add("ไม่พบ License Key ในไฟล์ Config");
-                }
-            }
-            catch (Exception ex)
-            {
-                listBoxStatus.Items.Add($"เกิดข้อผิดพลาดในการโหลด License Key: {ex.Message}");
-            }
-        }
+        // All other methods like RunCmdCommand, buttonBeforeRestart_Click, buttonAfterRestart_Click, etc.,
+        // have been removed as their logic is now encapsulated within their respective UserControls
+        // (WindowsUpgradeControl.cs and WindowsSettingsControl.cs).
+        // This makes Form1.cs much cleaner and easier to maintain.
     }
 }
