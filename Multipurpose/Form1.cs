@@ -18,6 +18,7 @@ namespace Multipurpose
         public Form1()
         {
             InitializeComponent();
+            LoadLicenseKeyFromConfig();
         }
 
         // ฟังก์ชันสำหรับรันคำสั่ง CMD และแสดงผลลัพธ์ใน ListBox แบบ Asynchronous
@@ -68,16 +69,18 @@ namespace Multipurpose
                         {
                             if (!string.IsNullOrEmpty(output))
                             {
+                                // เพิ่ม prefix "ผลลัพธ์:" หรือใช้สี
                                 foreach (string line in output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                                 {
-                                    listBoxStatus.Items.Add($"> {line}");
+                                    listBoxStatus.Items.Add($"  [Output] {line}");
                                 }
                             }
                             if (!string.IsNullOrEmpty(error))
                             {
+                                // เพิ่ม prefix "ข้อผิดพลาด:" หรือใช้สี
                                 foreach (string line in error.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                                 {
-                                    listBoxStatus.Items.Add($"ข้อผิดพลาด: {line}");
+                                    listBoxStatus.Items.Add($"  [Error] {line}");
                                 }
                             }
                             listBoxStatus.Items.Add("------------------------------------");
@@ -109,6 +112,9 @@ namespace Multipurpose
         // ฟังก์ชันสำหรับเรียกใช้งานเมื่อคลิกปุ่ม "ก่อน Restart" (เปลี่ยนเป็น async void)
         private async void buttonBeforeRestart_Click(object sender, EventArgs e)
         {
+            buttonAfterRestart.Enabled = false;
+            buttonBeforeRestart.Enabled = false;
+
             listBoxStatus.Items.Clear();
             listBoxStatus.Items.Add("--- เริ่มต้นการเตรียมการและเปลี่ยน Edition ---");
             listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
@@ -129,15 +135,30 @@ namespace Multipurpose
             // ใช้ Path เต็มสำหรับ changepk.exe
             listBoxStatus.Items.Add("กำลังเปลี่ยน Editions ด้วย Generic Key... เครื่องอาจจะ Restart.");
             listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-            await RunCmdCommand("changepk.exe", "/productkey VK7JG-NPHTM-C97JM-9MPGT-3V66T");
+            string genericKey = ConfigurationManager.AppSettings["GenericWinProKey"];
+            if (string.IsNullOrEmpty(genericKey))
+            {
+                MessageBox.Show("ไม่พบ Generic Key ในไฟล์ Config", "ข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            listBoxStatus.Items.Add("กำลังเปลี่ยน Editions ด้วย Generic Key... เครื่องอาจจะ Restart.");
+            listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
+            await RunCmdCommand("changepk.exe", $"/productkey {genericKey}");
 
             listBoxStatus.Items.Add("--- กระบวนการก่อน Restart เสร็จสิ้น (เครื่องอาจจะ Restart ไปแล้ว) ---");
             listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
+
+            buttonAfterRestart.Enabled = true;
+            buttonBeforeRestart.Enabled = true;
         }
 
         // ฟังก์ชันสำหรับเรียกใช้งานเมื่อคลิกปุ่ม "หลัง Restart" (เปลี่ยนเป็น async void)
         private async void buttonAfterRestart_Click(object sender, EventArgs e)
         {
+            buttonAfterRestart.Enabled = false;
+            buttonBeforeRestart.Enabled = false;
+
             listBoxStatus.Items.Clear();
             listBoxStatus.Items.Add("--- เริ่มต้นการลงทะเบียน Windows ด้วย License ใหม่ ---");
             listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
@@ -158,6 +179,31 @@ namespace Multipurpose
 
             listBoxStatus.Items.Add("--- กระบวนการหลัง Restart และลงทะเบียนเสร็จสิ้น ---");
             listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
+
+            buttonAfterRestart.Enabled = true;
+            buttonBeforeRestart.Enabled = true;
+        }
+
+        private void LoadLicenseKeyFromConfig()
+        {
+            try
+            {
+                // อ่านค่าจาก App.config โดยใช้ key ที่ตั้งไว้
+                string licenseKey = ConfigurationManager.AppSettings["LicenseKey"];
+                if (!string.IsNullOrEmpty(licenseKey))
+                {
+                    textBoxLicenseKey.Text = licenseKey;
+                    listBoxStatus.Items.Add("โหลด License Key จากไฟล์ Config สำเร็จ");
+                }
+                else
+                {
+                    listBoxStatus.Items.Add("ไม่พบ License Key ในไฟล์ Config");
+                }
+            }
+            catch (Exception ex)
+            {
+                listBoxStatus.Items.Add($"เกิดข้อผิดพลาดในการโหลด License Key: {ex.Message}");
+            }
         }
     }
 }
