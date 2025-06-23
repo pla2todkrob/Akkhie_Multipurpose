@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.windowsSettingsControl1 = new Multipurpose.WindowsSettingsControl();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -38,7 +39,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxLicenseKey = new System.Windows.Forms.TextBox();
             this.listBoxStatus = new System.Windows.Forms.ListBox();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage(); // แท็บที่สาม
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -47,6 +48,7 @@
             this.splitContainer1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -81,6 +83,26 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Upgrade windows 11 pro";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.windowsSettingsControl1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 25);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(4);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(4);
+            this.tabPage3.Size = new System.Drawing.Size(1037, 661);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "ตั้งค่า Windows"; // เปลี่ยนชื่อแท็บ
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // windowsSettingsControl1
+            // 
+            this.windowsSettingsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.windowsSettingsControl1.Location = new System.Drawing.Point(3, 3);
+            this.windowsSettingsControl1.Name = "windowsSettingsControl1";
+            this.windowsSettingsControl1.Size = new System.Drawing.Size(1031, 655);
+            this.windowsSettingsControl1.TabIndex = 0;
             // 
             // splitContainer1
             // 
@@ -196,6 +218,7 @@
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -213,6 +236,7 @@
         private System.Windows.Forms.ListBox listBoxStatus;
         private System.Windows.Forms.Button buttonAfterRestart;
         private System.Windows.Forms.Button buttonBeforeRestart;
+        private WindowsSettingsControl windowsSettingsControl1;
     }
 }
 
