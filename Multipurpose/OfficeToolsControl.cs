@@ -1,0 +1,259 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Multipurpose
+{
+    public partial class OfficeToolsControl : UserControl
+    {
+        private const string LicenseCsvFileName = "LicenseOffice.csv";
+        private Dictionary<string, List<string>> _officeProductKeys = new Dictionary<string, List<string>>();
+        private string _osppPath = "";
+
+        public OfficeToolsControl()
+        {
+            InitializeComponent();
+        }
+
+        private async void OfficeToolsControl_Load(object sender, EventArgs e)
+        {
+            if (this.DesignMode) return;
+
+            ToggleAllButtons(false);
+            _osppPath = FindOsppScriptPath();
+            if (string.IsNullOrEmpty(_osppPath))
+            {
+                MessageBox.Show("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            LoadLicenseKeysFromCsv();
+            await RefreshCurrentStatusAsync();
+            ToggleAllButtons(true);
+        }
+
+        #region Core Logic
+
+        private async Task ActivateOfficeProductAsync(string productName)
+        {
+            if (!_officeProductKeys.ContainsKey(productName) || !_officeProductKeys[productName].Any())
+            {
+                MessageBox.Show($"ไม่พบ License Key สำหรับ '{productName}' ในไฟล์ CSV", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            listBoxStatus.Items.Clear();
+            listBoxStatus.Items.Add($"--- เริ่มการ Activate: '{productName}' ---");
+            ToggleAllButtons(false);
+
+            // First, uninstall any existing retail keys to avoid conflicts
+            await UninstallAllRetailKeys();
+
+            List<string> keysToTry = _officeProductKeys[productName];
+            bool activationSuccess = false;
+
+            foreach (var key in keysToTry)
+            {
+                listBoxStatus.Items.Add($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
+
+                await RunOsppCommand($"/inpkey:{key}");
+                await RunOsppCommand("/act");
+
+                if (await IsOfficeActivatedAsync())
+                {
+                    listBoxStatus.Items.Add($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
+                    activationSuccess = true;
+                    break;
+                }
+                else
+                {
+                    listBoxStatus.Items.Add($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
+                }
+            }
+
+            if (!activationSuccess)
+            {
+                listBoxStatus.Items.Add("\n--- การ ACTIVATE ล้มเหลว ---");
+                listBoxStatus.Items.Add($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
+            }
+
+            await RefreshCurrentStatusAsync();
+            ToggleAllButtons(true);
+        }
+
+        private async Task UninstallAllRetailKeys()
+        {
+            listBoxStatus.Items.Add("--- กำลังถอนการติดตั้ง Retail keys ที่มีอยู่ ---");
+            string statusResult = await RunOsppCommand("/dstatus");
+            var matches = Regex.Matches(statusResult, @"Last 5 characters of installed product key: ([\w\d]{5})");
+            if (matches.Count == 0)
+            {
+                listBoxStatus.Items.Add("ไม่พบ Retail key ที่ติดตั้งไว้");
+                return;
+            }
+
+            foreach (Match match in matches)
+            {
+                string last5 = match.Groups[1].Value;
+                listBoxStatus.Items.Add($"กำลังถอนการติดตั้งคีย์ที่ลงท้ายด้วย: {last5}");
+                await RunOsppCommand($"/unpkey:{last5}");
+            }
+        }
+
+        #endregion
+
+        #region UI Event Handlers
+        private async void btnActivateOffice_Click(object sender, EventArgs e)
+        {
+            if (cboOfficeProducts.SelectedItem == null)
+            {
+                MessageBox.Show("กรุณาเลือกผลิตภัณฑ์ Office ที่ต้องการ", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            await ActivateOfficeProductAsync(cboOfficeProducts.SelectedItem.ToString());
+        }
+
+        private async void btnRefreshStatus_Click(object sender, EventArgs e)
+        {
+            await RefreshCurrentStatusAsync();
+        }
+        #endregion
+
+        #region Helper Methods
+        private async Task RefreshCurrentStatusAsync()
+        {
+            listBoxStatus.Items.Clear();
+            listBoxStatus.Items.Add("--- กำลังตรวจสอบสถานะ Office ---");
+            lblCurrentProductName.Text = "Loading...";
+            lblCurrentStatus.Text = "Loading...";
+            ToggleAllButtons(false);
+
+            string statusResult = await RunOsppCommand("/dstatus");
+
+            Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME: (.*)");
+            lblCurrentProductName.Text = nameMatch.Success ? nameMatch.Groups[1].Value.Trim() : "No License Found";
+
+            Match statusMatch = Regex.Match(statusResult, @"LICENSE STATUS: --- (.*) ---");
+            lblCurrentStatus.Text = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
+
+            ToggleAllButtons(true);
+        }
+
+        private string FindOsppScriptPath()
+        {
+            string[] officePaths = {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "Office16"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Office", "Office16"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "Office15"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Office", "Office15"),
+            };
+
+            foreach (var path in officePaths)
+            {
+                if (File.Exists(Path.Combine(path, "OSPP.VBS")))
+                {
+                    return Path.Combine(path, "OSPP.VBS");
+                }
+            }
+            return null;
+        }
+
+        private async Task<string> RunOsppCommand(string arguments)
+        {
+            return await RunProcessAsync("cscript.exe", $"\"{_osppPath}\" {arguments}");
+        }
+
+        private async Task<bool> IsOfficeActivatedAsync()
+        {
+            string result = await RunOsppCommand("/dstatus");
+            return result.Contains("---LICENSED---");
+        }
+
+        private async Task<string> RunProcessAsync(string fileName, string arguments)
+        {
+            var outputBuilder = new StringBuilder();
+            try
+            {
+                await Task.Run(() =>
+                {
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = fileName,
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        Verb = "runas",
+                        StandardOutputEncoding = Encoding.UTF8
+                    };
+
+                    using (Process process = new Process { StartInfo = startInfo })
+                    {
+                        process.Start();
+                        outputBuilder.Append(process.StandardOutput.ReadToEnd());
+                        outputBuilder.Append(process.StandardError.ReadToEnd());
+                        process.WaitForExit();
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                outputBuilder.AppendLine($"An error occurred: {ex.Message}");
+            }
+            return outputBuilder.ToString();
+        }
+
+        private void ToggleAllButtons(bool isEnabled)
+        {
+            btnRefreshStatus.Enabled = isEnabled;
+            btnActivateOffice.Enabled = isEnabled;
+            cboOfficeProducts.Enabled = isEnabled;
+        }
+
+        private void LoadLicenseKeysFromCsv()
+        {
+            string csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LicenseCsvFileName);
+            if (!File.Exists(csvPath))
+            {
+                MessageBox.Show($"ไม่พบไฟล์ License: '{csvPath}'", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            _officeProductKeys.Clear();
+            try
+            {
+                var lines = File.ReadAllLines(csvPath).Skip(1);
+                foreach (var line in lines)
+                {
+                    var columns = line.Split(',');
+                    if (columns.Length >= 2)
+                    {
+                        string product = columns[0].Trim().Replace("\"", "");
+                        string key = columns[1].Trim().Replace("\"", "");
+                        if (string.IsNullOrEmpty(product) || string.IsNullOrEmpty(key)) continue;
+
+                        if (!_officeProductKeys.ContainsKey(product))
+                        {
+                            _officeProductKeys[product] = new List<string>();
+                        }
+                        _officeProductKeys[product].Add(key);
+                    }
+                }
+                cboOfficeProducts.DataSource = _officeProductKeys.Keys.ToList();
+                cboOfficeProducts.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error reading or parsing '{LicenseCsvFileName}':\n{ex.Message}", "CSV Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+    }
+}

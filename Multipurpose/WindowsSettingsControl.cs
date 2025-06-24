@@ -1,18 +1,17 @@
-﻿using IWshRuntimeLibrary;
-using Microsoft.Win32;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using IWshRuntimeLibrary;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace Multipurpose
 {
@@ -45,20 +44,74 @@ namespace Multipurpose
 
         #region Helper and Core Logic Methods
 
-        private async Task RunPowerShellScript(string script)
+        private async Task RunProcessAsync(string fileName, string arguments)
         {
-            // Simplified process runner
             Invoke((MethodInvoker)delegate
             {
-                listBoxStatus.Items.Add($"Executing PowerShell...");
+                listBoxStatus.Items.Add($"Executing: {fileName} {arguments}");
                 listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
                 ToggleAllButtons(false);
             });
+
             try
             {
-                await Task.Run(() =>
+                await Task.Run(() => // Removed async from Task.Run as it's not needed
                 {
-                    // Implementation details...
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = fileName,
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        Verb = "runas",
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8
+                    };
+
+                    using (Process process = new Process { StartInfo = startInfo })
+                    {
+                        var outputBuilder = new StringBuilder();
+                        var errorBuilder = new StringBuilder();
+
+                        process.OutputDataReceived += (s, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); };
+                        process.ErrorDataReceived += (s, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); };
+
+                        process.Start();
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+
+                        // --- FIX ---
+                        // Replaced WaitForExitAsync() with the synchronous WaitForExit()
+                        // This method is compatible with .NET Framework 4.8
+                        // It runs on a background thread via Task.Run, so it won't freeze the UI.
+                        process.WaitForExit();
+                        // --- END FIX ---
+
+                        string output = outputBuilder.ToString();
+                        string error = errorBuilder.ToString();
+
+                        Invoke((MethodInvoker)delegate
+                        {
+                            if (!string.IsNullOrWhiteSpace(output))
+                            {
+                                listBoxStatus.Items.Add("[Output]");
+                                foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    listBoxStatus.Items.Add($"  {line}");
+                                }
+                            }
+                            if (!string.IsNullOrWhiteSpace(error))
+                            {
+                                listBoxStatus.Items.Add("[Error]");
+                                foreach (var line in error.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    listBoxStatus.Items.Add($"  {line}");
+                                }
+                            }
+                        });
+                    }
                 });
             }
             catch (Exception ex)
@@ -69,11 +122,16 @@ namespace Multipurpose
             {
                 Invoke((MethodInvoker)delegate
                 {
-                    listBoxStatus.Items.Add("--- PowerShell script finished ---");
+                    listBoxStatus.Items.Add("--- Done ---");
                     listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
                     ToggleAllButtons(true);
                 });
             }
+        }
+
+        private async Task RunPowerShellScript(string script)
+        {
+            await RunProcessAsync("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
         }
 
         private void ToggleAllButtons(bool isEnabled)
@@ -118,8 +176,30 @@ namespace Multipurpose
         private void LoadShortcutsToListView()
         {
             string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcuts.json");
-            if (!System.IO.File.Exists(jsonPath)) return;
-            // Implementation details...
+            if (!System.IO.File.Exists(jsonPath))
+            {
+                MessageBox.Show("File 'shortcuts.json' not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            try
+            {
+                string jsonContent = System.IO.File.ReadAllText(jsonPath);
+                shortcutsToCreate = JsonConvert.DeserializeObject<List<ShortcutConfig>>(jsonContent);
+
+                listViewShortcuts.Items.Clear();
+                foreach (var shortcut in shortcutsToCreate)
+                {
+                    var listViewItem = new ListViewItem(shortcut.Name);
+                    listViewItem.SubItems.Add(shortcut.TargetPath);
+                    listViewItem.Tag = shortcut; // Store the full object
+                    listViewShortcuts.Items.Add(listViewItem);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error reading or parsing shortcuts.json:\n{ex.Message}", "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private async Task<bool> TestDbConnectionAsync(string connectionString)
@@ -188,15 +268,26 @@ namespace Multipurpose
             string pass = txtOdbcPwd.Text.Trim();
             string dsnName = txtOdbcDsnName.Text.Trim();
 
-            // Step 1: Test Connection
             var csBuilder = new SqlConnectionStringBuilder
             {
                 DataSource = server,
-                InitialCatalog = db,
-                UserID = user,
-                Password = pass,
-                ConnectTimeout = 5 // 5 seconds timeout
+                ConnectTimeout = 5
             };
+
+            if (!string.IsNullOrEmpty(user))
+            {
+                csBuilder.UserID = user;
+                csBuilder.Password = pass;
+                csBuilder.IntegratedSecurity = false;
+            }
+            else
+            {
+                csBuilder.IntegratedSecurity = true;
+            }
+            if (!string.IsNullOrEmpty(db))
+            {
+                csBuilder.InitialCatalog = db;
+            }
 
             bool canConnect = await TestDbConnectionAsync(csBuilder.ConnectionString);
 
@@ -207,27 +298,28 @@ namespace Multipurpose
                 return;
             }
 
-            // Step 2: Update App.config if needed
             UpdateAppConfig();
 
-            // Step 3: Create the DSN
             listBoxStatus.Items.Add("Connection test passed. Creating DSN...");
             string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
-            var properties = new List<string>
+            var properties = new List<string> { $"\"Server={server}\"" };
+            if (!string.IsNullOrEmpty(db)) properties.Add($"\"Database={db}\"");
+            if (!string.IsNullOrEmpty(user))
             {
-                $"\"Server={server}\"",
-                $"\"Database={db}\"",
-                $"\"UID={user}\"",
-                $"\"PWD={pass}\""
-            };
+                properties.Add($"\"UID={user}\"");
+                properties.Add($"\"PWD={pass}\"");
+            }
+            else
+            {
+                properties.Add("\"Trusted_Connection=Yes\"");
+            }
             string propertyString = string.Join(",", properties);
             string script = $"Add-Dsn -Name '{dsnName}' -DsnType 'System' -Platform '64-bit' -DriverName '{driver}' -SetPropertyValue @({propertyString})";
             await RunPowerShellScript(script);
 
-            ToggleAllButtons(true);
+            // The ToggleAllButtons(true) is called in the finally block of RunProcessAsync
         }
 
-        // 2, 3, 4. Localization Settings (Unchanged)
         private async void btnSetLocalization_Click(object sender, EventArgs e)
         {
             listBoxStatus.Items.Clear();
@@ -247,7 +339,6 @@ namespace Multipurpose
             }
         }
 
-        // 5. Install Fonts (Unchanged)
         private void btnInstallFonts_Click(object sender, EventArgs e)
         {
             listBoxStatus.Items.Clear();
@@ -274,7 +365,6 @@ namespace Multipurpose
             ToggleAllButtons(true);
         }
 
-        // 6. Create ALL shortcuts from JSON
         private void btnCreateAllShortcuts_Click(object sender, EventArgs e)
         {
             if (shortcutsToCreate == null || !shortcutsToCreate.Any())
@@ -315,7 +405,7 @@ namespace Multipurpose
         #endregion
     }
 
-    // Helper class to deserialize JSON
+    // Helper class to deserialize JSON (Unchanged)
     public class ShortcutConfig
     {
         public string Name { get; set; }

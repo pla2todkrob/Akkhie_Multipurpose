@@ -30,13 +30,16 @@
         {
             this.windowsSettingsControl1 = new Multipurpose.WindowsSettingsControl();
             this.windowsUpgradeControl1 = new Multipurpose.WindowsUpgradeControl();
+            this.officeToolsControl1 = new Multipurpose.OfficeToolsControl();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -44,6 +47,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
@@ -72,7 +76,7 @@
             this.tabPage2.Padding = new System.Windows.Forms.Padding(4);
             this.tabPage2.Size = new System.Drawing.Size(1037, 661);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Upgrade Windows Pro";
+            this.tabPage2.Text = "Upgrade Windows";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // windowsUpgradeControl1
@@ -104,6 +108,25 @@
             this.windowsSettingsControl1.Size = new System.Drawing.Size(1037, 661);
             this.windowsSettingsControl1.TabIndex = 0;
             // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.officeToolsControl1);
+            this.tabPage4.Location = new System.Drawing.Point(4, 25);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(1037, 661);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Activate Office";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // officeToolsControl1
+            // 
+            this.officeToolsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.officeToolsControl1.Location = new System.Drawing.Point(3, 3);
+            this.officeToolsControl1.Name = "officeToolsControl1";
+            this.officeToolsControl1.Size = new System.Drawing.Size(1031, 655);
+            this.officeToolsControl1.TabIndex = 0;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -117,6 +140,7 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -129,5 +153,7 @@
         private System.Windows.Forms.TabPage tabPage3;
         private WindowsSettingsControl windowsSettingsControl1;
         private WindowsUpgradeControl windowsUpgradeControl1;
+        private System.Windows.Forms.TabPage tabPage4;
+        private OfficeToolsControl officeToolsControl1;
     }
 }

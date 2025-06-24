@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -15,6 +18,10 @@ namespace Multipurpose
         private const string RegistryStatePath = @"Software\AkkhieMultipurpose";
         private const string RegistryStateValue = "UpgradeState";
         private const string StatePendingActivation = "PendingActivation";
+        private const string LicenseCsvFileName = "License\\MSLicense.csv";
+
+        // NEW: Dictionary to hold all keys, grouped by product name.
+        private readonly Dictionary<string, List<string>> _productKeys = new Dictionary<string, List<string>>();
 
         public WindowsUpgradeControl()
         {
@@ -23,24 +30,14 @@ namespace Multipurpose
 
         private void WindowsUpgradeControl_Load(object sender, EventArgs e)
         {
-            // --- START FIX ---
-            // This check is CRUCIAL. It prevents the code below from running in the Visual Studio Designer.
-            // The Designer cannot execute processes or access the registry, which causes it to crash.
-            if (this.DesignMode)
-                return;
-            // --- END FIX ---
-
-            // The rest of the code will now only run when the application is actually running, not in the designer.
-            LoadLicenseKeyFromConfig();
+            if (this.DesignMode) return;
+            LoadLicenseKeysFromCsv();
             btnRefreshStatus_Click(sender, e);
             CheckForPendingActivation();
         }
 
         #region Helper and Core Logic Methods
 
-        /// <summary>
-        /// The core process runner. Can run cmd or powershell commands.
-        /// </summary>
         private async Task<string> RunProcessAsync(string fileName, string arguments)
         {
             var outputBuilder = new StringBuilder();
@@ -48,7 +45,7 @@ namespace Multipurpose
             {
                 listBoxStatus.Items.Add($"Executing: {fileName} {arguments}");
                 listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-                ToggleAllButtons(false);
+                // Buttons are toggled in the specific handler now for better control
             });
 
             try
@@ -63,53 +60,31 @@ namespace Multipurpose
                         RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
-                        Verb = "runas", // Ensure admin privileges
-                        StandardOutputEncoding = Encoding.UTF8, // Handle Thai characters
+                        Verb = "runas",
+                        StandardOutputEncoding = Encoding.UTF8,
                         StandardErrorEncoding = Encoding.UTF8
                     };
 
                     using (Process process = new Process { StartInfo = startInfo })
                     {
-                        var errorBuilder = new StringBuilder();
-                        process.OutputDataReceived += (s, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); };
-                        process.ErrorDataReceived += (s, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); };
-
                         process.Start();
-                        process.BeginOutputReadLine();
-                        process.BeginErrorReadLine();
-                        process.WaitForExit(); // Use async wait
-
-                        string error = errorBuilder.ToString();
-                        Invoke((MethodInvoker)delegate
-                        {
-                            if (!string.IsNullOrWhiteSpace(error))
-                            {
-                                listBoxStatus.Items.Add("[Error]");
-                                foreach (var line in error.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    listBoxStatus.Items.Add($"  {line}");
-                                }
-                            }
-                        });
+                        // Read streams synchronously on the background thread
+                        outputBuilder.Append(process.StandardOutput.ReadToEnd());
+                        outputBuilder.Append(process.StandardError.ReadToEnd());
+                        process.WaitForExit();
                     }
                 });
             }
             catch (Exception ex)
             {
-                Invoke((MethodInvoker)delegate
-                {
-                    listBoxStatus.Items.Add($"An error occurred: {ex.Message}");
-                });
+                Invoke((MethodInvoker)delegate { outputBuilder.AppendLine($"An error occurred: {ex.Message}"); });
             }
-            finally
+
+            Invoke((MethodInvoker)delegate
             {
-                Invoke((MethodInvoker)delegate
-                {
-                    ToggleAllButtons(true);
-                    listBoxStatus.Items.Add("--- Done ---");
-                    listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-                });
-            }
+                listBoxStatus.Items.Add(outputBuilder.ToString());
+                listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
+            });
             return outputBuilder.ToString();
         }
 
@@ -118,18 +93,16 @@ namespace Multipurpose
             btnRefreshStatus.Enabled = isEnabled;
             btnStartUpgrade.Enabled = isEnabled;
             btnActivate.Enabled = isEnabled;
+            cboProducts.Enabled = isEnabled;
         }
 
-        /// <summary>
-        /// Sets a registry key to remember the upgrade state.
-        /// </summary>
         private void SetUpgradeState(string state)
         {
             try
             {
                 RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryStatePath);
-                key.SetValue(RegistryStateValue, state);
-                key.Close();
+                key?.SetValue(RegistryStateValue, state);
+                key?.Close();
             }
             catch (Exception ex)
             {
@@ -137,18 +110,12 @@ namespace Multipurpose
             }
         }
 
-        /// <summary>
-        /// Reads the upgrade state from the registry.
-        /// </summary>
         private string GetUpgradeState()
         {
             try
             {
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(RegistryStatePath);
-                if (key != null)
-                {
-                    return key.GetValue(RegistryStateValue, "").ToString();
-                }
+                return key?.GetValue(RegistryStateValue, "")?.ToString() ?? "";
             }
             catch (Exception ex)
             {
@@ -157,44 +124,67 @@ namespace Multipurpose
             return "";
         }
 
-        /// <summary>
-        /// Configures the UI based on the state saved in the registry.
-        /// </summary>
         private void CheckForPendingActivation()
         {
             if (GetUpgradeState() == StatePendingActivation)
             {
-                // UI for after-restart state
-                lblProcessDescription.Text = "ตรวจพบว่าเครื่องเพิ่งผ่านการ Restart เพื่อเปลี่ยน Edition กรุณากดปุ่ม 'Activate' เพื่อดำเนินการในขั้นตอนสุดท้าย";
+                lblProcessDescription.Text = "ตรวจพบว่าเครื่องเพิ่งผ่านการ Restart เพื่อเปลี่ยน Edition กรุณาเลือกผลิตภัณฑ์ที่ต้องการ Activate แล้วกดปุ่มด้านล่าง";
                 btnStartUpgrade.Visible = false;
                 btnActivate.Visible = true;
             }
             else
             {
-                // UI for initial state
-                lblProcessDescription.Text = "โปรแกรมจะทำการล้างคีย์เก่า, เปลี่ยน Edition เป็น Pro (อาจมีการ Restart) และลงทะเบียนด้วยคีย์ใหม่";
+                lblProcessDescription.Text = "โปรแกรมจะทำการล้างคีย์เก่า, เปลี่ยน Edition เป็น Pro (อาจมีการ Restart) และลงทะเบียนด้วยผลิตภัณฑ์ที่เลือก";
                 btnStartUpgrade.Visible = true;
                 btnActivate.Visible = false;
             }
         }
 
-        /// <summary>
-        /// Loads the license key from App.config into the textbox.
-        /// </summary>
-        private void LoadLicenseKeyFromConfig()
+        private void LoadLicenseKeysFromCsv()
         {
+            string csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LicenseCsvFileName);
+            if (!File.Exists(csvPath))
+            {
+                listBoxStatus.Items.Add($"Warning: License file '{LicenseCsvFileName}' not found.");
+                return;
+            }
+
+            _productKeys.Clear();
             try
             {
-                string licenseKey = ConfigurationManager.AppSettings["LicenseKey"];
-                if (!string.IsNullOrEmpty(licenseKey))
+                var lines = File.ReadAllLines(csvPath).Skip(1); // Skip header
+
+                foreach (var line in lines)
                 {
-                    txtLicenseKey.Text = licenseKey;
+                    var columns = line.Split(',');
+                    if (columns.Length >= 2)
+                    {
+                        string product = columns[0].Trim().Replace("\"", "");
+                        string key = columns[1].Trim().Replace("\"", "");
+
+                        if (!_productKeys.ContainsKey(product))
+                        {
+                            _productKeys[product] = new List<string>();
+                        }
+                        _productKeys[product].Add(key);
+                    }
                 }
+
+                cboProducts.DataSource = _productKeys.Keys.ToList();
+                cboProducts.SelectedIndex = -1;
+                listBoxStatus.Items.Add($"Successfully loaded {_productKeys.Count} products from {LicenseCsvFileName}.");
             }
             catch (Exception ex)
             {
-                listBoxStatus.Items.Add($"เกิดข้อผิดพลาดในการโหลด License Key: {ex.Message}");
+                MessageBox.Show($"Error reading or parsing '{LicenseCsvFileName}':\n{ex.Message}", "CSV Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private async Task<bool> IsWindowsActivatedAsync()
+        {
+            string result = await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
+            // A simple check for the word "Licensed" in the output.
+            return result.Contains("Licensed");
         }
 
         #endregion
@@ -203,31 +193,20 @@ namespace Multipurpose
 
         private async void btnRefreshStatus_Click(object sender, EventArgs e)
         {
+            listBoxStatus.Items.Clear();
             listBoxStatus.Items.Add("--- Checking Current Windows Status ---");
             lblCurrentEdition.Text = "Loading...";
             lblCurrentStatus.Text = "Loading...";
 
+            ToggleAllButtons(false);
             string result = await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
+            ToggleAllButtons(true);
 
-            // Simple parsing of slmgr output
-            string edition = "N/A";
-            string status = "N/A";
+            string edition = Regex.Match(result, @"Name: (.*)").Groups[1].Value.Trim();
+            string status = Regex.Match(result, @"License Status: (.*)").Groups[1].Value.Trim();
 
-            var lines = result.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var line in lines)
-            {
-                if (line.Trim().StartsWith("Name:"))
-                {
-                    edition = line.Split(':').Last().Trim();
-                }
-                if (line.Trim().StartsWith("License Status:"))
-                {
-                    status = line.Split(':').Last().Trim();
-                }
-            }
-
-            lblCurrentEdition.Text = edition;
-            lblCurrentStatus.Text = status;
+            lblCurrentEdition.Text = string.IsNullOrEmpty(edition) ? "N/A" : edition;
+            lblCurrentStatus.Text = string.IsNullOrEmpty(status) ? "N/A" : status;
         }
 
         private async void btnStartUpgrade_Click(object sender, EventArgs e)
@@ -238,67 +217,101 @@ namespace Multipurpose
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-            if (confirmResult == DialogResult.No)
-            {
-                return;
-            }
+            if (confirmResult == DialogResult.No) return;
 
             listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- Step 1: Preparing and Changing Edition ---");
+            ToggleAllButtons(false);
 
-            // 1. Uninstall old key
+            listBoxStatus.Items.Add("--- Step 1: Preparing and Changing Edition ---");
             await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /upk");
             await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /cpky");
-
-            // 2. Prepare services
             await RunProcessAsync("sc.exe", "config LicenseManager start=auto");
             await RunProcessAsync("sc.exe", "config wuauserv start=auto");
 
-            // 3. Change edition with Generic Key
             string genericKey = ConfigurationManager.AppSettings["GenericWinProKey"];
             if (string.IsNullOrEmpty(genericKey))
             {
                 MessageBox.Show("ไม่พบ GenericWinProKey ในไฟล์ App.config", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ToggleAllButtons(true);
                 return;
             }
 
             listBoxStatus.Items.Add("Attempting to change edition... The system may restart.");
-            SetUpgradeState(StatePendingActivation); // Set state before the command that might reboot
+            SetUpgradeState(StatePendingActivation);
             await RunProcessAsync("changepk.exe", $"/productkey {genericKey}");
 
             listBoxStatus.Items.Add("--- Pre-restart process finished. If the system did not restart, please do it manually and run this tool again. ---");
+            ToggleAllButtons(true);
         }
 
         private async void btnActivate_Click(object sender, EventArgs e)
         {
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- Step 2: Installing New License and Activating ---");
-
-            string licenseKey = txtLicenseKey.Text.Trim();
-            if (string.IsNullOrEmpty(licenseKey) || licenseKey.Length != 29 || licenseKey.Split('-').Length != 5)
+            if (cboProducts.SelectedItem == null)
             {
-                MessageBox.Show("กรุณากรอก License Key ให้ถูกต้อง (รูปแบบ: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)", "Invalid Key", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("กรุณาเลือกผลิตภัณฑ์ที่ต้องการ Activate", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 4. Install new key
-            await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs /ipk {licenseKey}");
+            string selectedProduct = cboProducts.SelectedItem.ToString();
+            if (!_productKeys.ContainsKey(selectedProduct) || !_productKeys[selectedProduct].Any())
+            {
+                MessageBox.Show($"ไม่พบ License Key สำหรับ '{selectedProduct}' ในไฟล์ CSV", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-            // 5. Activate Windows
-            await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /ato");
+            listBoxStatus.Items.Clear();
+            listBoxStatus.Items.Add($"--- Attempting to activate '{selectedProduct}' ---");
+            ToggleAllButtons(false);
 
-            // 6. Display final status
-            await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /xpr");
-            await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
+            List<string> keysToTry = _productKeys[selectedProduct];
+            bool activationSuccess = false;
 
-            SetUpgradeState("Completed"); // Clear the state
-            CheckForPendingActivation(); // Reset UI to initial state
-            listBoxStatus.Items.Add("--- Activation process completed! ---");
+            foreach (var key in keysToTry)
+            {
+                listBoxStatus.Items.Add($"\n--- Trying key: ...{key.Substring(key.Length - 5)} ---");
 
-            // Refresh the status panel
-            btnRefreshStatus_Click(sender, e);
+                // 1. Install the key
+                await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs /ipk {key}");
+
+                // 2. Attempt to activate
+                await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /ato");
+
+                // 3. Check if activation was successful
+                if (await IsWindowsActivatedAsync())
+                {
+                    listBoxStatus.Items.Add($"\nSUCCESS! Successfully activated with key: {key}");
+                    activationSuccess = true;
+                    break; // Exit the loop on success
+                }
+                else
+                {
+                    listBoxStatus.Items.Add($"Activation failed with key: ...{key.Substring(key.Length - 5)}. Trying next key...");
+                }
+            }
+
+            if (!activationSuccess)
+            {
+                listBoxStatus.Items.Add("\n--- ACTIVATION FAILED ---");
+                listBoxStatus.Items.Add($"Tried all available keys for '{selectedProduct}' but none were successful.");
+            }
+
+            SetUpgradeState("Completed");
+            CheckForPendingActivation();
+            ToggleAllButtons(true);
+
+            // Final status check
+            await btnRefreshStatus.InvokeAsync(btnRefreshStatus_Click, sender, e);
         }
 
         #endregion
+    }
+
+    // Custom extension method to allow async click for refresh button
+    public static class ControlExtensions
+    {
+        public static Task InvokeAsync(this Control control, Action<object, EventArgs> action, object sender, EventArgs e)
+        {
+            return Task.Run(() => control.Invoke(action, sender, e));
+        }
     }
 }
