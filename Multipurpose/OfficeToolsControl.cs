@@ -29,8 +29,9 @@ namespace Multipurpose
             _osppPath = FindOsppScriptPath();
             if (string.IsNullOrEmpty(_osppPath))
             {
-                MessageBox.Show("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                listBoxStatus.Items.Add("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้");
+                listBoxStatus.Items.Add("ฟังก์ชันในหน้านี้อาจไม่สามารถใช้งานได้");
+                // Don't block usage, user might want to try anyway
             }
 
             LoadLicenseKeysFromCsv();
@@ -42,6 +43,12 @@ namespace Multipurpose
 
         private async Task ActivateOfficeProductAsync(string productName)
         {
+            if (string.IsNullOrEmpty(_osppPath))
+            {
+                MessageBox.Show("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้", "Activation Script Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             if (!_officeProductKeys.ContainsKey(productName) || !_officeProductKeys[productName].Any())
             {
                 MessageBox.Show($"ไม่พบ License Key สำหรับ '{productName}' ในไฟล์ CSV", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -52,7 +59,6 @@ namespace Multipurpose
             listBoxStatus.Items.Add($"--- เริ่มการ Activate: '{productName}' ---");
             ToggleAllButtons(false);
 
-            // First, uninstall any existing retail keys to avoid conflicts
             await UninstallAllRetailKeys();
 
             List<string> keysToTry = _officeProductKeys[productName];
@@ -89,7 +95,7 @@ namespace Multipurpose
 
         private async Task UninstallAllRetailKeys()
         {
-            listBoxStatus.Items.Add("--- กำลังถอนการติดตั้ง Retail keys ที่มีอยู่ ---");
+            listBoxStatus.Items.Add("--- กำลังถอนการติดตั้ง Retail keys ที่มีอยู่ (ถ้ามี) ---");
             string statusResult = await RunOsppCommand("/dstatus");
             var matches = Regex.Matches(statusResult, @"Last 5 characters of installed product key: ([\w\d]{5})");
             if (matches.Count == 0)
@@ -128,6 +134,12 @@ namespace Multipurpose
         #region Helper Methods
         private async Task RefreshCurrentStatusAsync()
         {
+            if (string.IsNullOrEmpty(_osppPath))
+            {
+                lblCurrentProductName.Text = "Not Found";
+                lblCurrentStatus.Text = "Not Found";
+                return;
+            }
             listBoxStatus.Items.Clear();
             listBoxStatus.Items.Add("--- กำลังตรวจสอบสถานะ Office ---");
             lblCurrentProductName.Text = "Loading...";
@@ -136,10 +148,10 @@ namespace Multipurpose
 
             string statusResult = await RunOsppCommand("/dstatus");
 
-            Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME: (.*)");
-            lblCurrentProductName.Text = nameMatch.Success ? nameMatch.Groups[1].Value.Trim() : "No License Found";
+            Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME:.*?(Office.*?)[\s,]*$|LICENSE NAME: (.*)", RegexOptions.Multiline);
+            lblCurrentProductName.Text = nameMatch.Success ? (nameMatch.Groups[1].Success ? nameMatch.Groups[1].Value.Trim() : nameMatch.Groups[2].Value.Trim()) : "No License Found";
 
-            Match statusMatch = Regex.Match(statusResult, @"LICENSE STATUS: --- (.*) ---");
+            Match statusMatch = Regex.Match(statusResult, @"LICENSE STATUS:\s*---(.*?)---");
             lblCurrentStatus.Text = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
 
             ToggleAllButtons(true);
@@ -147,21 +159,25 @@ namespace Multipurpose
 
         private string FindOsppScriptPath()
         {
-            string[] officePaths = {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "Office16"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Office", "Office16"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "Office15"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Office", "Office15"),
+            // Search in typical paths for Office 2016, 2013, 2010, 2007
+            string[] officeFolders = { "Office16", "Office15", "Office14", "Office12" };
+            string[] programFilesPaths = {
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
             };
 
-            foreach (var path in officePaths)
+            foreach (var pfPath in programFilesPaths)
             {
-                if (File.Exists(Path.Combine(path, "OSPP.VBS")))
+                foreach (var officeFolder in officeFolders)
                 {
-                    return Path.Combine(path, "OSPP.VBS");
+                    string potentialPath = Path.Combine(pfPath, "Microsoft Office", officeFolder, "OSPP.VBS");
+                    if (File.Exists(potentialPath))
+                    {
+                        return potentialPath;
+                    }
                 }
             }
-            return null;
+            return null; // Return null if not found
         }
 
         private async Task<string> RunOsppCommand(string arguments)

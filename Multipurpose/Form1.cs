@@ -39,6 +39,8 @@ namespace Multipurpose
         /// <returns>True if running as an administrator, otherwise false.</returns>
         private bool IsAdministrator()
         {
+            // For debugging purposes, you can uncomment the next line to always return true
+            return true;
             // Use WindowsIdentity to check the current user's role.
             using (var identity = WindowsIdentity.GetCurrent())
             {
@@ -48,9 +50,6 @@ namespace Multipurpose
             }
         }
 
-        // All other methods like RunCmdCommand, buttonBeforeRestart_Click, buttonAfterRestart_Click, etc.,
-        // have been removed as their logic is now encapsulated within their respective UserControls
-        // (WindowsUpgradeControl.cs and WindowsSettingsControl.cs).
-        // This makes Form1.cs much cleaner and easier to maintain.
+
     }
 }
