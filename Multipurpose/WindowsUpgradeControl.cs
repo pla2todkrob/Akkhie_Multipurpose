@@ -8,13 +8,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Win32;
 
 namespace Multipurpose
 {
     public partial class WindowsUpgradeControl : UserControl
     {
-        private const string LicenseCsvFileName = "LicenseWindows.csv";
+        private const string LicenseCsvFileName = @"Licenses\LicenseWindows.csv";
         private Dictionary<string, List<string>> _productKeys = new Dictionary<string, List<string>>();
         private string _currentWindowsEdition = "Unknown";
 
@@ -40,8 +39,8 @@ namespace Multipurpose
                 return;
             }
 
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add($"--- เริ่มการ Activate: '{productName}' ---");
+            LogClear();
+            Log($"--- เริ่มการ Activate: '{productName}' ---");
             ToggleAllButtons(false);
 
             List<string> keysToTry = _productKeys[productName];
@@ -49,27 +48,27 @@ namespace Multipurpose
 
             foreach (var key in keysToTry)
             {
-                listBoxStatus.Items.Add($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
+                Log($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
 
                 await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs /ipk {key}");
                 await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /ato");
 
                 if (await IsWindowsActivatedAsync())
                 {
-                    listBoxStatus.Items.Add($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
+                    Log($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
                     activationSuccess = true;
                     break;
                 }
                 else
                 {
-                    listBoxStatus.Items.Add($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
+                    Log($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
                 }
             }
 
             if (!activationSuccess)
             {
-                listBoxStatus.Items.Add("\n--- การ ACTIVATE ล้มเหลว ---");
-                listBoxStatus.Items.Add($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
+                Log("\n--- การ ACTIVATE ล้มเหลว ---");
+                Log($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
             }
 
             await RefreshCurrentStatusAsync();
@@ -93,15 +92,15 @@ namespace Multipurpose
 
             if (confirmResult == DialogResult.No) return;
 
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add($"--- เริ่มการอัปเกรดเป็น: '{targetProduct}' ---");
+            LogClear();
+            Log($"--- เริ่มการอัปเกรดเป็น: '{targetProduct}' ---");
             ToggleAllButtons(false);
 
             await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /upk");
             await RunProcessAsync("changepk.exe", $"/productkey {genericKey}");
 
-            listBoxStatus.Items.Add("\n--- การอัปเกรดเสร็จสิ้น ---");
-            listBoxStatus.Items.Add("กรุณา Restart เครื่องคอมพิวเตอร์ แล้วเปิดโปรแกรมนี้อีกครั้งเพื่อทำการ Activate");
+            Log("\n--- การอัปเกรดเสร็จสิ้น ---");
+            Log("กรุณา Restart เครื่องคอมพิวเตอร์ แล้วเปิดโปรแกรมนี้อีกครั้งเพื่อทำการ Activate");
             ToggleAllButtons(true);
         }
 
@@ -124,7 +123,7 @@ namespace Multipurpose
 
             string targetProduct = cboProducts.SelectedItem.ToString();
 
-            if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (_currentWindowsEdition.IndexOf(targetProduct.Replace("Windows 11", "").Replace("Windows 10", "").Trim(), StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 await ActivateProductAsync(targetProduct);
             }
@@ -146,7 +145,7 @@ namespace Multipurpose
             btnStartProcess.Enabled = true;
             string targetProduct = cboProducts.SelectedItem.ToString();
 
-            if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (_currentWindowsEdition.IndexOf(targetProduct.Replace("Windows 11", "").Replace("Windows 10", "").Trim(), StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 lblProcessDescription.Text = $"Edition ปัจจุบันตรงกับเป้าหมายแล้ว โปรแกรมจะเข้าสู่โหมด Activate โดยตรง";
                 btnStartProcess.Text = "Activate";
@@ -160,17 +159,40 @@ namespace Multipurpose
         #endregion
 
         #region Helper Methods
+        private void Log(string message)
+        {
+            if (txtStatus.InvokeRequired)
+            {
+                txtStatus.Invoke(new Action(() => Log(message)));
+            }
+            else
+            {
+                txtStatus.AppendText(message + Environment.NewLine);
+            }
+        }
+
+        private void LogClear()
+        {
+            if (txtStatus.InvokeRequired)
+            {
+                txtStatus.Invoke(new Action(LogClear));
+            }
+            else
+            {
+                txtStatus.Clear();
+            }
+        }
         private async Task RefreshCurrentStatusAsync()
         {
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- กำลังตรวจสอบสถานะเครื่องปัจจุบัน ---");
+            LogClear();
+            Log("--- กำลังตรวจสอบสถานะเครื่องปัจจุบัน ---");
             lblCurrentEdition.Text = "Loading...";
             lblCurrentStatus.Text = "Loading...";
             ToggleAllButtons(false);
 
-            // Use wmic which is more reliable for product name
-            string wmicResult = await RunProcessAsync("wmic", "os get Caption");
-            _currentWindowsEdition = wmicResult.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault()?.Trim() ?? "Unknown";
+            string dismResult = await RunProcessAsync("dism.exe", "/online /get-currentedition");
+            Match editionMatch = Regex.Match(dismResult, @"Current Edition : (.*)");
+            _currentWindowsEdition = editionMatch.Success ? editionMatch.Groups[1].Value.Trim() : "Unknown";
 
             string slmgrResult = await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
             Match statusMatch = Regex.Match(slmgrResult, @"License Status: (.*)");
@@ -178,15 +200,16 @@ namespace Multipurpose
 
             lblCurrentEdition.Text = _currentWindowsEdition;
             lblCurrentStatus.Text = status;
+            Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
 
             ToggleAllButtons(true);
-            cboProducts_SelectedIndexChanged(null, null); // Update description label
+            cboProducts_SelectedIndexChanged(null, null);
         }
 
         private async Task<bool> IsWindowsActivatedAsync()
         {
             string result = await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
-            return result.Contains("Licensed");
+            return result.Contains("---LICENSED---");
         }
 
         private async Task<string> RunProcessAsync(string fileName, string arguments)
@@ -196,7 +219,7 @@ namespace Multipurpose
             {
                 await Task.Run(() =>
                 {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    var startInfo = new ProcessStartInfo
                     {
                         FileName = fileName,
                         Arguments = arguments,
@@ -207,13 +230,15 @@ namespace Multipurpose
                         Verb = "runas",
                         StandardOutputEncoding = Encoding.UTF8
                     };
-
-                    using (Process process = new Process { StartInfo = startInfo })
+                    using (var process = new Process { StartInfo = startInfo })
                     {
                         process.Start();
-                        outputBuilder.Append(process.StandardOutput.ReadToEnd());
-                        outputBuilder.Append(process.StandardError.ReadToEnd());
+                        string output = process.StandardOutput.ReadToEnd();
+                        string error = process.StandardError.ReadToEnd();
                         process.WaitForExit();
+
+                        if (!string.IsNullOrWhiteSpace(output)) outputBuilder.AppendLine(output);
+                        if (!string.IsNullOrWhiteSpace(error)) outputBuilder.AppendLine(error);
                     }
                 });
             }
@@ -221,6 +246,7 @@ namespace Multipurpose
             {
                 outputBuilder.AppendLine($"An error occurred: {ex.Message}");
             }
+            Log(outputBuilder.ToString());
             return outputBuilder.ToString();
         }
 

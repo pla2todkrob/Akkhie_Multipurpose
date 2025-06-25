@@ -52,9 +52,9 @@
             this.listViewShortcuts = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.listBoxStatus = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.txtStatus = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -315,17 +315,6 @@
             this.columnHeader2.Text = "Target Path";
             this.columnHeader2.Width = 300;
             // 
-            // listBoxStatus
-            // 
-            this.listBoxStatus.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBoxStatus.FormattingEnabled = true;
-            this.listBoxStatus.ItemHeight = 16;
-            this.listBoxStatus.Location = new System.Drawing.Point(0, 0);
-            this.listBoxStatus.Margin = new System.Windows.Forms.Padding(4);
-            this.listBoxStatus.Name = "listBoxStatus";
-            this.listBoxStatus.Size = new System.Drawing.Size(1021, 185);
-            this.listBoxStatus.TabIndex = 0;
-            // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -340,7 +329,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.listBoxStatus);
+            this.splitContainer1.Panel2.Controls.Add(this.txtStatus);
             this.splitContainer1.Size = new System.Drawing.Size(1021, 650);
             this.splitContainer1.SplitterDistance = 460;
             this.splitContainer1.SplitterWidth = 5;
@@ -359,6 +348,19 @@
             this.flowLayoutPanel1.Size = new System.Drawing.Size(1021, 460);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
+            // txtStatus
+            // 
+            this.txtStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtStatus.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtStatus.Location = new System.Drawing.Point(0, 0);
+            this.txtStatus.Margin = new System.Windows.Forms.Padding(4);
+            this.txtStatus.Multiline = true;
+            this.txtStatus.Name = "txtStatus";
+            this.txtStatus.ReadOnly = true;
+            this.txtStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtStatus.Size = new System.Drawing.Size(1021, 185);
+            this.txtStatus.TabIndex = 0;
+            // 
             // WindowsSettingsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -374,6 +376,7 @@
             this.groupBox4.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -392,7 +395,6 @@
         private System.Windows.Forms.Button btnInstallFonts;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button btnCreateAllShortcuts;
-        private System.Windows.Forms.ListBox listBoxStatus;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.ListView listViewShortcuts;
@@ -410,5 +412,6 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ListView listViewFonts;
         private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.TextBox txtStatus;
     }
 }

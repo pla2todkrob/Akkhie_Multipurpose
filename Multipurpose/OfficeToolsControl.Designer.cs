@@ -41,7 +41,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.lblCurrentProductName = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.listBoxStatus = new System.Windows.Forms.ListBox();
+            this.txtStatus = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -66,7 +66,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.listBoxStatus);
+            this.splitContainer1.Panel2.Controls.Add(this.txtStatus);
             this.splitContainer1.Size = new System.Drawing.Size(766, 528);
             this.splitContainer1.SplitterDistance = 220;
             this.splitContainer1.TabIndex = 1;
@@ -209,14 +209,17 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "ชื่อผลิตภัณฑ์ Office:";
             // 
-            // listBoxStatus
+            // txtStatus
             // 
-            this.listBoxStatus.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBoxStatus.FormattingEnabled = true;
-            this.listBoxStatus.Location = new System.Drawing.Point(0, 0);
-            this.listBoxStatus.Name = "listBoxStatus";
-            this.listBoxStatus.Size = new System.Drawing.Size(766, 304);
-            this.listBoxStatus.TabIndex = 0;
+            this.txtStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtStatus.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtStatus.Location = new System.Drawing.Point(0, 0);
+            this.txtStatus.Multiline = true;
+            this.txtStatus.Name = "txtStatus";
+            this.txtStatus.ReadOnly = true;
+            this.txtStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtStatus.Size = new System.Drawing.Size(766, 304);
+            this.txtStatus.TabIndex = 0;
             // 
             // OfficeToolsControl
             // 
@@ -226,8 +229,6 @@
             this.Name = "OfficeToolsControl";
             this.Size = new System.Drawing.Size(766, 528);
             this.Load += new System.EventHandler(this.OfficeToolsControl_Load);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
@@ -235,6 +236,8 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -254,6 +257,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label lblCurrentProductName;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ListBox listBoxStatus;
+        private System.Windows.Forms.TextBox txtStatus;
     }
 }

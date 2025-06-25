@@ -12,7 +12,7 @@ namespace Multipurpose
 {
     public partial class OfficeToolsControl : UserControl
     {
-        private const string LicenseCsvFileName = "LicenseOffice.csv";
+        private const string LicenseCsvFileName = @"Licenses\LicenseOffice.csv";
         private Dictionary<string, List<string>> _officeProductKeys = new Dictionary<string, List<string>>();
         private string _osppPath = "";
 
@@ -29,9 +29,8 @@ namespace Multipurpose
             _osppPath = FindOsppScriptPath();
             if (string.IsNullOrEmpty(_osppPath))
             {
-                listBoxStatus.Items.Add("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้");
-                listBoxStatus.Items.Add("ฟังก์ชันในหน้านี้อาจไม่สามารถใช้งานได้");
-                // Don't block usage, user might want to try anyway
+                Log("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้");
+                Log("ฟังก์ชันในหน้านี้อาจไม่สามารถใช้งานได้");
             }
 
             LoadLicenseKeysFromCsv();
@@ -55,8 +54,8 @@ namespace Multipurpose
                 return;
             }
 
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add($"--- เริ่มการ Activate: '{productName}' ---");
+            LogClear();
+            Log($"--- เริ่มการ Activate: '{productName}' ---");
             ToggleAllButtons(false);
 
             await UninstallAllRetailKeys();
@@ -66,27 +65,27 @@ namespace Multipurpose
 
             foreach (var key in keysToTry)
             {
-                listBoxStatus.Items.Add($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
+                Log($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
 
                 await RunOsppCommand($"/inpkey:{key}");
                 await RunOsppCommand("/act");
 
                 if (await IsOfficeActivatedAsync())
                 {
-                    listBoxStatus.Items.Add($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
+                    Log($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
                     activationSuccess = true;
                     break;
                 }
                 else
                 {
-                    listBoxStatus.Items.Add($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
+                    Log($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
                 }
             }
 
             if (!activationSuccess)
             {
-                listBoxStatus.Items.Add("\n--- การ ACTIVATE ล้มเหลว ---");
-                listBoxStatus.Items.Add($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
+                Log("\n--- การ ACTIVATE ล้มเหลว ---");
+                Log($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
             }
 
             await RefreshCurrentStatusAsync();
@@ -95,19 +94,19 @@ namespace Multipurpose
 
         private async Task UninstallAllRetailKeys()
         {
-            listBoxStatus.Items.Add("--- กำลังถอนการติดตั้ง Retail keys ที่มีอยู่ (ถ้ามี) ---");
+            Log("--- กำลังถอนการติดตั้ง Retail keys ที่มีอยู่ (ถ้ามี) ---");
             string statusResult = await RunOsppCommand("/dstatus");
             var matches = Regex.Matches(statusResult, @"Last 5 characters of installed product key: ([\w\d]{5})");
             if (matches.Count == 0)
             {
-                listBoxStatus.Items.Add("ไม่พบ Retail key ที่ติดตั้งไว้");
+                Log("ไม่พบ Retail key ที่ติดตั้งไว้");
                 return;
             }
 
             foreach (Match match in matches)
             {
                 string last5 = match.Groups[1].Value;
-                listBoxStatus.Items.Add($"กำลังถอนการติดตั้งคีย์ที่ลงท้ายด้วย: {last5}");
+                Log($"กำลังถอนการติดตั้งคีย์ที่ลงท้ายด้วย: {last5}");
                 await RunOsppCommand($"/unpkey:{last5}");
             }
         }
@@ -132,6 +131,28 @@ namespace Multipurpose
         #endregion
 
         #region Helper Methods
+        private void Log(string message)
+        {
+            if (txtStatus.InvokeRequired)
+            {
+                txtStatus.Invoke(new Action(() => Log(message)));
+            }
+            else
+            {
+                txtStatus.AppendText(message + Environment.NewLine);
+            }
+        }
+        private void LogClear()
+        {
+            if (txtStatus.InvokeRequired)
+            {
+                txtStatus.Invoke(new Action(LogClear));
+            }
+            else
+            {
+                txtStatus.Clear();
+            }
+        }
         private async Task RefreshCurrentStatusAsync()
         {
             if (string.IsNullOrEmpty(_osppPath))
@@ -140,13 +161,14 @@ namespace Multipurpose
                 lblCurrentStatus.Text = "Not Found";
                 return;
             }
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- กำลังตรวจสอบสถานะ Office ---");
+            LogClear();
+            Log("--- กำลังตรวจสอบสถานะ Office ---");
             lblCurrentProductName.Text = "Loading...";
             lblCurrentStatus.Text = "Loading...";
             ToggleAllButtons(false);
 
             string statusResult = await RunOsppCommand("/dstatus");
+            Log(statusResult); // Log the full output for debugging
 
             Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME:.*?(Office.*?)[\s,]*$|LICENSE NAME: (.*)", RegexOptions.Multiline);
             lblCurrentProductName.Text = nameMatch.Success ? (nameMatch.Groups[1].Success ? nameMatch.Groups[1].Value.Trim() : nameMatch.Groups[2].Value.Trim()) : "No License Found";
@@ -154,12 +176,12 @@ namespace Multipurpose
             Match statusMatch = Regex.Match(statusResult, @"LICENSE STATUS:\s*---(.*?)---");
             lblCurrentStatus.Text = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
 
+            Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
             ToggleAllButtons(true);
         }
 
         private string FindOsppScriptPath()
         {
-            // Search in typical paths for Office 2016, 2013, 2010, 2007
             string[] officeFolders = { "Office16", "Office15", "Office14", "Office12" };
             string[] programFilesPaths = {
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
@@ -173,11 +195,12 @@ namespace Multipurpose
                     string potentialPath = Path.Combine(pfPath, "Microsoft Office", officeFolder, "OSPP.VBS");
                     if (File.Exists(potentialPath))
                     {
+                        Log($"พบ OSPP.VBS ที่: {potentialPath}");
                         return potentialPath;
                     }
                 }
             }
-            return null; // Return null if not found
+            return null;
         }
 
         private async Task<string> RunOsppCommand(string arguments)
@@ -198,7 +221,7 @@ namespace Multipurpose
             {
                 await Task.Run(() =>
                 {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    var startInfo = new ProcessStartInfo
                     {
                         FileName = fileName,
                         Arguments = arguments,
@@ -209,8 +232,7 @@ namespace Multipurpose
                         Verb = "runas",
                         StandardOutputEncoding = Encoding.UTF8
                     };
-
-                    using (Process process = new Process { StartInfo = startInfo })
+                    using (var process = new Process { StartInfo = startInfo })
                     {
                         process.Start();
                         outputBuilder.Append(process.StandardOutput.ReadToEnd());

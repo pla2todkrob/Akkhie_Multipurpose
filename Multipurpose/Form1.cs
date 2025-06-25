@@ -40,7 +40,7 @@ namespace Multipurpose
         private bool IsAdministrator()
         {
             // For debugging purposes, you can uncomment the next line to always return true
-            return true;
+            //return true;
             // Use WindowsIdentity to check the current user's role.
             using (var identity = WindowsIdentity.GetCurrent())
             {

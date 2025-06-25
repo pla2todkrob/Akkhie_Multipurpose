@@ -44,20 +44,26 @@ namespace Multipurpose
 
         #region Helper and Core Logic Methods
 
-        private async Task RunProcessAsync(string fileName, string arguments)
+        private void Log(string message)
         {
-            Invoke((MethodInvoker)delegate
+            if (txtStatus.InvokeRequired)
             {
-                listBoxStatus.Items.Add($"Executing: {fileName} {arguments}");
-                listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-                ToggleAllButtons(false);
-            });
+                txtStatus.Invoke(new Action(() => Log(message)));
+            }
+            else
+            {
+                txtStatus.AppendText(message + Environment.NewLine);
+            }
+        }
 
+        private async Task<string> RunProcessAsync(string fileName, string arguments)
+        {
+            var outputBuilder = new StringBuilder();
             try
             {
-                await Task.Run(() => // Removed async from Task.Run as it's not needed
+                await Task.Run(() =>
                 {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    var startInfo = new ProcessStartInfo
                     {
                         FileName = fileName,
                         Arguments = arguments,
@@ -66,72 +72,29 @@ namespace Multipurpose
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         Verb = "runas",
-                        StandardOutputEncoding = Encoding.UTF8,
-                        StandardErrorEncoding = Encoding.UTF8
+                        StandardOutputEncoding = Encoding.UTF8
                     };
-
-                    using (Process process = new Process { StartInfo = startInfo })
+                    using (var process = new Process { StartInfo = startInfo })
                     {
-                        var outputBuilder = new StringBuilder();
-                        var errorBuilder = new StringBuilder();
-
-                        process.OutputDataReceived += (s, args) => { if (args.Data != null) outputBuilder.AppendLine(args.Data); };
-                        process.ErrorDataReceived += (s, args) => { if (args.Data != null) errorBuilder.AppendLine(args.Data); };
-
                         process.Start();
-                        process.BeginOutputReadLine();
-                        process.BeginErrorReadLine();
-
-                        // --- FIX ---
-                        // Replaced WaitForExitAsync() with the synchronous WaitForExit()
-                        // This method is compatible with .NET Framework 4.8
-                        // It runs on a background thread via Task.Run, so it won't freeze the UI.
+                        outputBuilder.Append(process.StandardOutput.ReadToEnd());
+                        outputBuilder.Append(process.StandardError.ReadToEnd());
                         process.WaitForExit();
-                        // --- END FIX ---
-
-                        string output = outputBuilder.ToString();
-                        string error = errorBuilder.ToString();
-
-                        Invoke((MethodInvoker)delegate
-                        {
-                            if (!string.IsNullOrWhiteSpace(output))
-                            {
-                                listBoxStatus.Items.Add("[Output]");
-                                foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    listBoxStatus.Items.Add($"  {line}");
-                                }
-                            }
-                            if (!string.IsNullOrWhiteSpace(error))
-                            {
-                                listBoxStatus.Items.Add("[Error]");
-                                foreach (var line in error.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    listBoxStatus.Items.Add($"  {line}");
-                                }
-                            }
-                        });
                     }
                 });
             }
             catch (Exception ex)
             {
-                Invoke((MethodInvoker)delegate { listBoxStatus.Items.Add($"[Exception] {ex.Message}"); });
+                outputBuilder.AppendLine($"An error occurred: {ex.Message}");
             }
-            finally
-            {
-                Invoke((MethodInvoker)delegate
-                {
-                    listBoxStatus.Items.Add("--- Done ---");
-                    listBoxStatus.SelectedIndex = listBoxStatus.Items.Count - 1;
-                    ToggleAllButtons(true);
-                });
-            }
+            return outputBuilder.ToString();
         }
 
         private async Task RunPowerShellScript(string script)
         {
-            await RunProcessAsync("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
+            Log("--- Executing PowerShell Script ---");
+            string result = await RunProcessAsync("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
+            Log(result);
         }
 
         private void ToggleAllButtons(bool isEnabled)
@@ -176,12 +139,7 @@ namespace Multipurpose
         private void LoadShortcutsToListView()
         {
             string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcuts.json");
-            if (!System.IO.File.Exists(jsonPath))
-            {
-                MessageBox.Show("File 'shortcuts.json' not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
+            if (!System.IO.File.Exists(jsonPath)) return;
             try
             {
                 string jsonContent = System.IO.File.ReadAllText(jsonPath);
@@ -192,7 +150,7 @@ namespace Multipurpose
                 {
                     var listViewItem = new ListViewItem(shortcut.Name);
                     listViewItem.SubItems.Add(shortcut.TargetPath);
-                    listViewItem.Tag = shortcut; // Store the full object
+                    listViewItem.Tag = shortcut;
                     listViewShortcuts.Items.Add(listViewItem);
                 }
             }
@@ -204,53 +162,53 @@ namespace Multipurpose
 
         private async Task<bool> TestDbConnectionAsync(string connectionString)
         {
-            listBoxStatus.Items.Add("Attempting to connect to SQL Server...");
+            Log("Attempting to connect to SQL Server...");
             try
             {
                 using (var connection = new SqlConnection(connectionString))
                 {
                     await connection.OpenAsync();
-                    listBoxStatus.Items.Add("  -> Connection Successful!");
+                    Log("  -> Connection Successful!");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                listBoxStatus.Items.Add("  -> Connection Failed!");
-                listBoxStatus.Items.Add($"  -> Error: {ex.Message}");
+                Log("  -> Connection Failed!");
+                Log($"  -> Error: {ex.Message}");
                 return false;
             }
         }
 
         private void UpdateAppConfig()
         {
-            listBoxStatus.Items.Add("Checking for changes to update App.config...");
+            Log("Checking for changes to update App.config...");
             try
             {
                 var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 var settings = configFile.AppSettings.Settings;
 
                 bool changed = false;
-                if (settings["OdbcDsnName"].Value != txtOdbcDsnName.Text) { settings["OdbcDsnName"].Value = txtOdbcDsnName.Text; changed = true; }
-                if (settings["OdbcServer"].Value != txtOdbcServer.Text) { settings["OdbcServer"].Value = txtOdbcServer.Text; changed = true; }
-                if (settings["OdbcDatabase"].Value != txtOdbcDb.Text) { settings["OdbcDatabase"].Value = txtOdbcDb.Text; changed = true; }
-                if (settings["OdbcUid"].Value != txtOdbcUid.Text) { settings["OdbcUid"].Value = txtOdbcUid.Text; changed = true; }
-                if (settings["OdbcPwd"].Value != txtOdbcPwd.Text) { settings["OdbcPwd"].Value = txtOdbcPwd.Text; changed = true; }
+                if (settings["OdbcDsnName"]?.Value != txtOdbcDsnName.Text) { settings["OdbcDsnName"].Value = txtOdbcDsnName.Text; changed = true; }
+                if (settings["OdbcServer"]?.Value != txtOdbcServer.Text) { settings["OdbcServer"].Value = txtOdbcServer.Text; changed = true; }
+                if (settings["OdbcDatabase"]?.Value != txtOdbcDb.Text) { settings["OdbcDatabase"].Value = txtOdbcDb.Text; changed = true; }
+                if (settings["OdbcUid"]?.Value != txtOdbcUid.Text) { settings["OdbcUid"].Value = txtOdbcUid.Text; changed = true; }
+                if (settings["OdbcPwd"]?.Value != txtOdbcPwd.Text) { settings["OdbcPwd"].Value = txtOdbcPwd.Text; changed = true; }
 
                 if (changed)
                 {
                     configFile.Save(ConfigurationSaveMode.Modified);
                     ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                    listBoxStatus.Items.Add("  -> App.config updated successfully.");
+                    Log("  -> App.config updated successfully.");
                 }
                 else
                 {
-                    listBoxStatus.Items.Add("  -> No changes detected. App.config is up to date.");
+                    Log("  -> No changes detected. App.config is up to date.");
                 }
             }
             catch (ConfigurationErrorsException ex)
             {
-                listBoxStatus.Items.Add($"[Error] Could not update App.config: {ex.Message}");
+                Log($"[Error] Could not update App.config: {ex.Message}");
             }
         }
         #endregion
@@ -259,7 +217,7 @@ namespace Multipurpose
 
         private async void btnCreateOdbc_Click(object sender, EventArgs e)
         {
-            listBoxStatus.Items.Clear();
+            txtStatus.Clear();
             ToggleAllButtons(false);
 
             string server = txtOdbcServer.Text.Trim();
@@ -268,11 +226,7 @@ namespace Multipurpose
             string pass = txtOdbcPwd.Text.Trim();
             string dsnName = txtOdbcDsnName.Text.Trim();
 
-            var csBuilder = new SqlConnectionStringBuilder
-            {
-                DataSource = server,
-                ConnectTimeout = 5
-            };
+            var csBuilder = new SqlConnectionStringBuilder { DataSource = server, ConnectTimeout = 5 };
 
             if (!string.IsNullOrEmpty(user))
             {
@@ -300,30 +254,39 @@ namespace Multipurpose
 
             UpdateAppConfig();
 
-            listBoxStatus.Items.Add("Connection test passed. Creating DSN...");
+            Log("Connection test passed. Creating DSN...");
             string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
-            var properties = new List<string> { $"\"Server={server}\"" };
-            if (!string.IsNullOrEmpty(db)) properties.Add($"\"Database={db}\"");
+
+            var properties = new List<string>();
+            properties.Add($"Server={server}");
+            if (!string.IsNullOrEmpty(db)) properties.Add($"Database={db}");
             if (!string.IsNullOrEmpty(user))
             {
-                properties.Add($"\"UID={user}\"");
-                properties.Add($"\"PWD={pass}\"");
+                properties.Add($"UID={user}");
+                properties.Add($"PWD={pass}");
             }
             else
             {
-                properties.Add("\"Trusted_Connection=Yes\"");
+                properties.Add("Trusted_Connection=Yes");
             }
-            string propertyString = string.Join(",", properties);
-            string script = $"Add-Dsn -Name '{dsnName}' -DsnType 'System' -Platform '64-bit' -DriverName '{driver}' -SetPropertyValue @({propertyString})";
+
+            var quotedProperties = properties.Select(p => $"'{p}'");
+            string propertyString = string.Join(",", quotedProperties);
+
+            // --- START FIX: Added "Import-Module Wdac;" to the beginning of the script ---
+            string script = $"Import-Module Wdac; Add-Dsn -Name '{dsnName}' -DsnType 'System' -Platform '64-bit' -DriverName '{driver}' -SetPropertyValue @({propertyString})";
+            // --- END FIX ---
+
             await RunPowerShellScript(script);
 
-            // The ToggleAllButtons(true) is called in the finally block of RunProcessAsync
+            ToggleAllButtons(true);
         }
 
         private async void btnSetLocalization_Click(object sender, EventArgs e)
         {
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- Setting Localization (Timezone, Region, Keyboard) ---");
+            txtStatus.Clear();
+            Log("--- Setting Localization (Timezone, Region, Keyboard) ---");
+            ToggleAllButtons(false);
             await RunProcessAsync("tzutil.exe", "/s \"SE Asia Standard Time\"");
             string script = "$list = New-WinUserLanguageList -Language 'th-TH'; $list.Add('en-US'); Set-WinUserLanguageList -LanguageList $list -Force;";
             await RunPowerShellScript(script);
@@ -331,23 +294,24 @@ namespace Multipurpose
             try
             {
                 Registry.CurrentUser.CreateSubKey(@"Keyboard Layout\Toggle")?.SetValue("Language Hotkey", "3", RegistryValueKind.String);
-                listBoxStatus.Items.Add("  - Set language hotkey successfully.");
+                Log("  - Set language hotkey successfully.");
             }
             catch (Exception ex)
             {
-                listBoxStatus.Items.Add($"  - Error setting registry key: {ex.Message}");
+                Log($"  - Error setting registry key: {ex.Message}");
             }
+            ToggleAllButtons(true);
         }
 
         private void btnInstallFonts_Click(object sender, EventArgs e)
         {
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add("--- Installing fonts ---");
+            txtStatus.Clear();
+            Log("--- Installing fonts ---");
             ToggleAllButtons(false);
             string fontFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts");
-            if (!Directory.Exists(fontFolderPath)) { listBoxStatus.Items.Add($"Folder 'Fonts' not found."); ToggleAllButtons(true); return; }
+            if (!Directory.Exists(fontFolderPath)) { Log($"Folder 'Fonts' not found."); ToggleAllButtons(true); return; }
             var fontFiles = Directory.GetFiles(fontFolderPath, "*.ttf").Concat(Directory.GetFiles(fontFolderPath, "*.otf"));
-            if (!fontFiles.Any()) { listBoxStatus.Items.Add("No font files (.ttf, .otf) found."); ToggleAllButtons(true); return; }
+            if (!fontFiles.Any()) { Log("No font files (.ttf, .otf) found."); ToggleAllButtons(true); return; }
             int successCount = 0;
             string windowsFontsDir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
             foreach (var fontFile in fontFiles)
@@ -358,10 +322,10 @@ namespace Multipurpose
                     System.IO.File.Copy(fontFile, destPath, true);
                     if (AddFontResource(destPath) != 0) { successCount++; }
                 }
-                catch (Exception ex) { listBoxStatus.Items.Add($"[Error] '{Path.GetFileName(fontFile)}': {ex.Message}"); }
+                catch (Exception ex) { Log($"[Error] '{Path.GetFileName(fontFile)}': {ex.Message}"); }
             }
             SendMessage(HWND_BROADCAST, WM_FONTCHANGE, IntPtr.Zero, IntPtr.Zero);
-            listBoxStatus.Items.Add($"Successfully installed {successCount} font(s).");
+            Log($"Successfully installed {successCount} font(s).");
             ToggleAllButtons(true);
         }
 
@@ -373,8 +337,8 @@ namespace Multipurpose
                 return;
             }
 
-            listBoxStatus.Items.Clear();
-            listBoxStatus.Items.Add($"--- Creating {shortcutsToCreate.Count} shortcuts on Desktop ---");
+            txtStatus.Clear();
+            Log($"--- Creating {shortcutsToCreate.Count} shortcuts on Desktop ---");
             ToggleAllButtons(false);
 
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -390,22 +354,21 @@ namespace Multipurpose
                     shortcut.Description = shortcutConfig.Description;
                     shortcut.TargetPath = shortcutConfig.TargetPath;
                     shortcut.Save();
-                    listBoxStatus.Items.Add($"  - Created '{shortcutConfig.Name}.lnk'");
+                    Log($"  - Created '{shortcutConfig.Name}.lnk'");
                     successCount++;
                 }
                 catch (Exception ex)
                 {
-                    listBoxStatus.Items.Add($"  - [Error] Failed to create '{shortcutConfig.Name}': {ex.Message}");
+                    Log($"  - [Error] Failed to create '{shortcutConfig.Name}': {ex.Message}");
                 }
             }
 
-            listBoxStatus.Items.Add($"--- Successfully created {successCount} shortcut(s) ---");
+            Log($"--- Successfully created {successCount} shortcut(s) ---");
             ToggleAllButtons(true);
         }
         #endregion
     }
 
-    // Helper class to deserialize JSON (Unchanged)
     public class ShortcutConfig
     {
         public string Name { get; set; }

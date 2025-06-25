@@ -5,18 +5,13 @@
     "Description": "AKP base application"
   },
   {
-    "Name": "Project Folder",
-    "TargetPath": "C:\\source\\my-project",
-    "Description": "Opens the main project folder"
+    "Name": "AKP Waste data form",
+    "TargetPath": "\\\\192.168.1.2\\akpapp\\AKPWasteDataForm.exe",
+    "Description": "AKP base application"
   },
   {
-    "Name": "Notepad",
-    "TargetPath": "C:\\Windows\\System32\\notepad.exe",
-    "Description": "Launches Notepad"
-  },
-  {
-    "Name": "Ford Everest",
-    "TargetPath": "https://www.ford.co.th/suvs/everest/",
-    "Description": "ดูข้อมูลรถ Ford Everest ของคุณก้อง"
+    "Name": "BWG app",
+    "TargetPath": "\\\\192.168.1.2\\BWGApp\\BWGApp.exe",
+    "Description": "BWG base application"
   }
 ]
