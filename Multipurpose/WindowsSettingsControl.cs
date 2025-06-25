@@ -58,14 +58,10 @@ namespace Multipurpose
 
         private string Get64BitPowerShellPath()
         {
-            // If we are a 64-bit process, "powershell.exe" will resolve to the correct 64-bit version.
             if (Environment.Is64BitProcess)
             {
                 return "powershell.exe";
             }
-
-            // If we are a 32-bit process running on a 64-bit OS, we need to explicitly call the 64-bit PowerShell.
-            // We use the 'Sysnative' virtual folder to escape the WOW64 file system redirection.
             if (Environment.Is64BitOperatingSystem)
             {
                 string sysnativePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "WindowsPowerShell\\v1.0\\powershell.exe");
@@ -74,8 +70,6 @@ namespace Multipurpose
                     return sysnativePath;
                 }
             }
-
-            // Fallback for a 32-bit process on a 32-bit OS, or if Sysnative path can't be found.
             return "powershell.exe";
         }
 
@@ -119,7 +113,6 @@ namespace Multipurpose
             Log("--- Executing PowerShell Script ---");
             string powerShellExePath = Get64BitPowerShellPath();
             Log($"--- Executing with: {powerShellExePath} ---");
-            // Using -Command with quotes around the script handles spaces and special characters.
             string result = await RunProcessAsync(powerShellExePath, $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
             Log(result);
         }
@@ -131,6 +124,7 @@ namespace Multipurpose
             btnSetLocalization.Enabled = isEnabled;
             btnInstallFonts.Enabled = isEnabled;
             btnCreateAllShortcuts.Enabled = isEnabled;
+            btnInstallCrystalReports.Enabled = isEnabled; // Add new button here
         }
 
         private void LoadOdbcSettingsToForm()
@@ -248,98 +242,146 @@ namespace Multipurpose
             txtStatus.Clear();
             ToggleAllButtons(false);
 
-            string server = txtOdbcServer.Text.Trim();
-            string db = txtOdbcDb.Text.Trim();
-            string user = txtOdbcUid.Text.Trim();
-            string pass = txtOdbcPwd.Text.Trim();
-            string dsnName = txtOdbcDsnName.Text.Trim();
-            string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
+            try
+            {
+                string server = txtOdbcServer.Text.Trim();
+                string db = txtOdbcDb.Text.Trim();
+                string user = txtOdbcUid.Text.Trim();
+                string pass = txtOdbcPwd.Text.Trim();
+                string dsnName = txtOdbcDsnName.Text.Trim();
+                string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
 
-            // Step 1: Test connection
-            var csBuilder = new SqlConnectionStringBuilder { DataSource = server, ConnectTimeout = 5 };
-            if (!string.IsNullOrEmpty(user))
-            {
-                csBuilder.UserID = user;
-                csBuilder.Password = pass;
-            }
-            else
-            {
-                csBuilder.IntegratedSecurity = true;
-            }
-            if (!string.IsNullOrEmpty(db))
-            {
-                csBuilder.InitialCatalog = db;
-            }
+                // Step 1: Test connection
+                var csBuilder = new SqlConnectionStringBuilder { DataSource = server, ConnectTimeout = 5 };
+                if (!string.IsNullOrEmpty(user))
+                {
+                    csBuilder.UserID = user;
+                    csBuilder.Password = pass;
+                }
+                else
+                {
+                    csBuilder.IntegratedSecurity = true;
+                }
+                if (!string.IsNullOrEmpty(db))
+                {
+                    csBuilder.InitialCatalog = db;
+                }
 
-            if (!await TestDbConnectionAsync(csBuilder.ConnectionString))
+                if (!await TestDbConnectionAsync(csBuilder.ConnectionString))
+                {
+                    MessageBox.Show("Could not connect to the database. Please check settings.", "Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Step 2: Update config
+                UpdateAppConfig();
+
+                // Step 3: Build and run PowerShell script
+                Log("Connection test passed. Creating 32-bit and 64-bit DSNs...");
+
+                var scriptBuilder = new StringBuilder();
+                scriptBuilder.AppendLine("$ErrorActionPreference = 'Stop';");
+
+                scriptBuilder.AppendLine("function New-OdbcDsnInRegistry {");
+                scriptBuilder.AppendLine("    param ([string]$RegistryPath, [string]$DsnName, [string]$Driver, [string]$Server, [string]$Database, [string]$User)");
+                scriptBuilder.AppendLine("    $dsnKeyPath = Join-Path -Path $RegistryPath -ChildPath $DsnName;");
+                scriptBuilder.AppendLine("    $odbcDataSourcesPath = Join-Path -Path $RegistryPath -ChildPath 'ODBC Data Sources';");
+                scriptBuilder.AppendLine("    if (-not (Test-Path $odbcDataSourcesPath)) { New-Item -Path $odbcDataSourcesPath -Force | Out-Null; }");
+                scriptBuilder.AppendLine("    if (-not (Test-Path $dsnKeyPath)) { New-Item -Path $dsnKeyPath -Force | Out-Null; }");
+                scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Driver' -Value $Driver;");
+                scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Server' -Value $Server;");
+                scriptBuilder.AppendLine("    if ($Database) { Set-ItemProperty -Path $dsnKeyPath -Name 'Database' -Value $Database; }");
+                scriptBuilder.AppendLine("    if ($User) { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'No'; Set-ItemProperty -Path $dsnKeyPath -Name 'LastUser' -Value $User; }");
+                scriptBuilder.AppendLine("    else { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'Yes'; }");
+                scriptBuilder.AppendLine($"    Set-ItemProperty -Path $odbcDataSourcesPath -Name $DsnName -Value $Driver;");
+                scriptBuilder.AppendLine("}");
+
+                scriptBuilder.AppendLine("try {");
+                scriptBuilder.AppendLine("    Write-Output '--- Creating 64-bit System DSN ---';");
+                scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
+                scriptBuilder.AppendLine("    Write-Output '64-bit DSN created successfully.';");
+                scriptBuilder.AppendLine("    Write-Output '--- Creating 32-bit System DSN ---';");
+                scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
+                scriptBuilder.AppendLine("    Write-Output '32-bit DSN created successfully.';");
+                scriptBuilder.AppendLine("    Write-Output 'PowerShell: DSN creation process completed successfully!';");
+                scriptBuilder.AppendLine("} catch { $errMsg = 'PowerShell Registry Error: ' + $_.Exception.Message; Write-Error -Message $errMsg; exit 1; }");
+
+                await RunPowerShellScript(scriptBuilder.ToString());
+            }
+            finally
             {
-                MessageBox.Show("Could not connect to the database. Please check settings.", "Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ToggleAllButtons(true);
-                return;
             }
-
-            // Step 2: Update config
-            UpdateAppConfig();
-
-            // Step 3: Build and run PowerShell script
-            Log("Connection test passed. Creating 32-bit and 64-bit DSNs...");
-
-            var scriptBuilder = new StringBuilder();
-            scriptBuilder.AppendLine("$ErrorActionPreference = 'Stop';");
-
-            // Define a reusable PowerShell function to create a DSN in a given registry path
-            scriptBuilder.AppendLine("function New-OdbcDsnInRegistry {");
-            scriptBuilder.AppendLine("    param (");
-            scriptBuilder.AppendLine("        [string]$RegistryPath,");
-            scriptBuilder.AppendLine("        [string]$DsnName,");
-            scriptBuilder.AppendLine("        [string]$Driver,");
-            scriptBuilder.AppendLine("        [string]$Server,");
-            scriptBuilder.AppendLine("        [string]$Database,");
-            scriptBuilder.AppendLine("        [string]$User");
-            scriptBuilder.AppendLine("    )");
-            scriptBuilder.AppendLine($"    $dsnKeyPath = Join-Path -Path $RegistryPath -ChildPath $DsnName;");
-            scriptBuilder.AppendLine("    $odbcDataSourcesPath = Join-Path -Path $RegistryPath -ChildPath 'ODBC Data Sources';");
-            scriptBuilder.AppendLine("    if (-not (Test-Path $odbcDataSourcesPath)) { New-Item -Path $odbcDataSourcesPath -Force | Out-Null; }");
-            scriptBuilder.AppendLine("    if (-not (Test-Path $dsnKeyPath)) { New-Item -Path $dsnKeyPath -Force | Out-Null; }");
-            scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Driver' -Value $Driver;");
-            scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Server' -Value $Server;");
-            scriptBuilder.AppendLine("    if ($Database) {");
-            scriptBuilder.AppendLine($"        Set-ItemProperty -Path $dsnKeyPath -Name 'Database' -Value $Database;");
-            scriptBuilder.AppendLine("    }");
-            scriptBuilder.AppendLine("    if ($User) {");
-            scriptBuilder.AppendLine("        Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'No';");
-            scriptBuilder.AppendLine($"        Set-ItemProperty -Path $dsnKeyPath -Name 'LastUser' -Value $User;");
-            scriptBuilder.AppendLine("    } else {");
-            scriptBuilder.AppendLine("        Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'Yes';");
-            scriptBuilder.AppendLine("    }");
-            scriptBuilder.AppendLine($"    Set-ItemProperty -Path $odbcDataSourcesPath -Name $DsnName -Value $Driver;");
-            scriptBuilder.AppendLine("}");
-
-            // Main execution block
-            scriptBuilder.AppendLine("try {");
-            scriptBuilder.AppendLine("    # Create 64-bit DSN");
-            scriptBuilder.AppendLine("    Write-Output '--- Creating 64-bit System DSN ---';");
-            scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
-            scriptBuilder.AppendLine("    Write-Output '64-bit DSN created successfully.';");
-
-            scriptBuilder.AppendLine("    # Create 32-bit DSN");
-            scriptBuilder.AppendLine("    Write-Output '--- Creating 32-bit System DSN ---';");
-            scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
-            scriptBuilder.AppendLine("    Write-Output '32-bit DSN created successfully.';");
-
-            scriptBuilder.AppendLine("    Write-Output 'PowerShell: DSN creation process completed successfully!';");
-            scriptBuilder.AppendLine("}");
-            scriptBuilder.AppendLine("catch {");
-            scriptBuilder.AppendLine("    $errMsg = 'PowerShell Registry Error: ' + $_.Exception.Message;");
-            scriptBuilder.AppendLine("    Write-Error -Message $errMsg;");
-            scriptBuilder.AppendLine("    exit 1;");
-            scriptBuilder.AppendLine("}");
-
-            await RunPowerShellScript(scriptBuilder.ToString());
-
-            ToggleAllButtons(true);
         }
 
+        private async void btnInstallCrystalReports_Click(object sender, EventArgs e)
+        {
+            txtStatus.Clear();
+            Log("--- Starting Crystal Reports Installation ---");
+            ToggleAllButtons(false);
+
+            try
+            {
+                // 1. Get Product Key from App.config
+                string productKey = ConfigurationManager.AppSettings["CrystalReportsKey"];
+                if (string.IsNullOrEmpty(productKey))
+                {
+                    Log("[Error] CrystalReportsKey not found in App.config.");
+                    MessageBox.Show("Crystal Reports Product Key not found in App.config.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                Log($"  -> Product Key found.");
+
+                // 2. Define file paths
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string devInstallerPath = Path.Combine(baseDir, "scrdev.msi");
+                string runtimeInstallerPath = Path.Combine(baseDir, "CRRuntime_64bit.msi");
+
+                // 3. Check if installers exist
+                if (!System.IO.File.Exists(devInstallerPath))
+                {
+                    Log($"[Error] Developer installer not found at: {devInstallerPath}");
+                    MessageBox.Show("Crystal Reports Developer installer (scrdev.msi) not found.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                if (!System.IO.File.Exists(runtimeInstallerPath))
+                {
+                    Log($"[Error] Runtime installer not found at: {runtimeInstallerPath}");
+                    MessageBox.Show("Crystal Reports Runtime installer (CRRuntime_64bit.msi) not found.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                Log("  -> All installer files found.");
+
+                string msiexecPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "msiexec.exe");
+
+                // 4. Install Developer version
+                Log("\n--- Installing Crystal Reports for Visual Studio ---");
+                Log("This may take several minutes. Please wait...");
+                // msiexec prefers keys without dashes for the PIDKEY property
+                string devArgs = $"/i \"{devInstallerPath}\" /qn PIDKEY={productKey.Replace("-", "")}";
+                await RunProcessAsync(msiexecPath, devArgs);
+                Log("--- Developer installation process finished. ---");
+
+                // 5. Install Runtime version
+                Log("\n--- Installing Crystal Reports Runtime (64-bit) ---");
+                Log("This may take a moment...");
+                string runtimeArgs = $"/i \"{runtimeInstallerPath}\" /qn";
+                await RunProcessAsync(msiexecPath, runtimeArgs);
+                Log("--- Runtime installation process finished. ---");
+
+                Log("\n--- Crystal Reports installation process completed. ---");
+                MessageBox.Show("Crystal Reports installation process has finished. Please check the log for details.", "Installation Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                Log($"[FATAL ERROR] An unexpected error occurred: {ex.GetBaseException().Message}");
+                MessageBox.Show($"An unexpected error occurred during installation: \n{ex.GetBaseException().Message}", "Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                ToggleAllButtons(true);
+            }
+        }
 
         private async void btnSetLocalization_Click(object sender, EventArgs e)
         {

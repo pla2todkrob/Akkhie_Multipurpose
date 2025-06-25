@@ -54,6 +54,9 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.btnInstallCrystalReports = new System.Windows.Forms.Button();
             this.txtStatus = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -64,6 +67,7 @@
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -274,14 +278,14 @@
             this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Size = new System.Drawing.Size(500, 209);
+            this.groupBox4.Size = new System.Drawing.Size(500, 149);
             this.groupBox4.TabIndex = 3;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "4. สร้าง Shortcut (จาก shortcuts.json)";
             // 
             // btnCreateAllShortcuts
             // 
-            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(283, 161);
+            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(283, 101);
             this.btnCreateAllShortcuts.Margin = new System.Windows.Forms.Padding(4);
             this.btnCreateAllShortcuts.Name = "btnCreateAllShortcuts";
             this.btnCreateAllShortcuts.Size = new System.Drawing.Size(209, 40);
@@ -300,7 +304,7 @@
             this.listViewShortcuts.HideSelection = false;
             this.listViewShortcuts.Location = new System.Drawing.Point(15, 28);
             this.listViewShortcuts.Name = "listViewShortcuts";
-            this.listViewShortcuts.Size = new System.Drawing.Size(477, 126);
+            this.listViewShortcuts.Size = new System.Drawing.Size(477, 66);
             this.listViewShortcuts.TabIndex = 0;
             this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
             this.listViewShortcuts.View = System.Windows.Forms.View.Details;
@@ -341,12 +345,43 @@
             this.flowLayoutPanel1.Controls.Add(this.groupBox2);
             this.flowLayoutPanel1.Controls.Add(this.groupBox3);
             this.flowLayoutPanel1.Controls.Add(this.groupBox4);
+            this.flowLayoutPanel1.Controls.Add(this.groupBox5);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(4);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(1021, 460);
             this.flowLayoutPanel1.TabIndex = 0;
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.label4);
+            this.groupBox5.Controls.Add(this.btnInstallCrystalReports);
+            this.groupBox5.Location = new System.Drawing.Point(3, 468);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(501, 100);
+            this.groupBox5.TabIndex = 4;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "5. ติดตั้ง Crystal Reports";
+            // 
+            // label4
+            // 
+            this.label4.Location = new System.Drawing.Point(7, 20);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(488, 38);
+            this.label4.TabIndex = 1;
+            this.label4.Text = "ติดตั้ง Crystal Reports for Visual Studio และ Runtime (64-bit) แบบอัตโนมัติจากไฟล" +
+    "์ในโฟลเดอร์โปรแกรม";
+            // 
+            // btnInstallCrystalReports
+            // 
+            this.btnInstallCrystalReports.Location = new System.Drawing.Point(268, 61);
+            this.btnInstallCrystalReports.Name = "btnInstallCrystalReports";
+            this.btnInstallCrystalReports.Size = new System.Drawing.Size(227, 33);
+            this.btnInstallCrystalReports.TabIndex = 0;
+            this.btnInstallCrystalReports.Text = "Install Crystal Reports";
+            this.btnInstallCrystalReports.UseVisualStyleBackColor = true;
+            this.btnInstallCrystalReports.Click += new System.EventHandler(this.btnInstallCrystalReports_Click);
             // 
             // txtStatus
             // 
@@ -380,6 +415,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.flowLayoutPanel1.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -413,5 +449,8 @@
         private System.Windows.Forms.ListView listViewFonts;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.TextBox txtStatus;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btnInstallCrystalReports;
     }
 }
