@@ -85,7 +85,7 @@ namespace Multipurpose
             }
             catch (Exception ex)
             {
-                outputBuilder.AppendLine($"An error occurred: {ex.Message}");
+                outputBuilder.AppendLine($"An error occurred: {ex.GetBaseException().Message}");
             }
             return outputBuilder.ToString();
         }
@@ -117,7 +117,7 @@ namespace Multipurpose
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading ODBC settings from App.config:\n{ex.Message}", "Config Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading ODBC settings from App.config:\n{ex.GetBaseException().Message}", "Config Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -156,7 +156,7 @@ namespace Multipurpose
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error reading or parsing shortcuts.json:\n{ex.Message}", "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error reading or parsing shortcuts.json:\n{ex.GetBaseException().Message}", "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -175,7 +175,7 @@ namespace Multipurpose
             catch (Exception ex)
             {
                 Log("  -> Connection Failed!");
-                Log($"  -> Error: {ex.Message}");
+                Log($"  -> Error: {ex.GetBaseException().Message}");
                 return false;
             }
         }
@@ -208,7 +208,7 @@ namespace Multipurpose
             }
             catch (ConfigurationErrorsException ex)
             {
-                Log($"[Error] Could not update App.config: {ex.Message}");
+                Log($"[Error] Could not update App.config: {ex.GetBaseException().Message}");
             }
         }
         #endregion
@@ -273,11 +273,21 @@ namespace Multipurpose
             var quotedProperties = properties.Select(p => $"'{p}'");
             string propertyString = string.Join(",", quotedProperties);
 
-            // --- START FIX: Added "Import-Module Wdac;" to the beginning of the script ---
-            string script = $"Import-Module Wdac; Add-Dsn -Name '{dsnName}' -DsnType 'System' -Platform '64-bit' -DriverName '{driver}' -SetPropertyValue @({propertyString})";
+            var scriptBuilder = new StringBuilder();
+            scriptBuilder.AppendLine("$ErrorActionPreference = 'Stop';");
+            scriptBuilder.AppendLine("try {");
+            scriptBuilder.AppendLine("    Import-Module Wdac -ErrorAction Stop;");
+            scriptBuilder.AppendLine($"    Add-Dsn -Name '{dsnName}' -DsnType 'System' -Platform '64-bit' -DriverName '{driver}' -SetPropertyValue @({propertyString}) -ErrorAction Stop;");
+            scriptBuilder.AppendLine("    Write-Output 'PowerShell: DSN created successfully.'");
+            scriptBuilder.AppendLine("}");
+            scriptBuilder.AppendLine("catch {");
+            // --- START FIX: Using the explicit -Message parameter ---
+            scriptBuilder.AppendLine("    Write-Error -Message \"PowerShell Error: $($_.Exception.Message)\";");
             // --- END FIX ---
+            scriptBuilder.AppendLine("    exit 1;");
+            scriptBuilder.AppendLine("}");
 
-            await RunPowerShellScript(script);
+            await RunPowerShellScript(scriptBuilder.ToString());
 
             ToggleAllButtons(true);
         }
@@ -298,7 +308,7 @@ namespace Multipurpose
             }
             catch (Exception ex)
             {
-                Log($"  - Error setting registry key: {ex.Message}");
+                Log($"  - Error setting registry key: {ex.GetBaseException().Message}");
             }
             ToggleAllButtons(true);
         }
@@ -322,7 +332,7 @@ namespace Multipurpose
                     System.IO.File.Copy(fontFile, destPath, true);
                     if (AddFontResource(destPath) != 0) { successCount++; }
                 }
-                catch (Exception ex) { Log($"[Error] '{Path.GetFileName(fontFile)}': {ex.Message}"); }
+                catch (Exception ex) { Log($"[Error] '{Path.GetFileName(fontFile)}': {ex.GetBaseException().Message}"); }
             }
             SendMessage(HWND_BROADCAST, WM_FONTCHANGE, IntPtr.Zero, IntPtr.Zero);
             Log($"Successfully installed {successCount} font(s).");
@@ -359,7 +369,7 @@ namespace Multipurpose
                 }
                 catch (Exception ex)
                 {
-                    Log($"  - [Error] Failed to create '{shortcutConfig.Name}': {ex.Message}");
+                    Log($"  - [Error] Failed to create '{shortcutConfig.Name}': {ex.GetBaseException().Message}");
                 }
             }
 

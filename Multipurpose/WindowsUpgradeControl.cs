@@ -244,7 +244,7 @@ namespace Multipurpose
             }
             catch (Exception ex)
             {
-                outputBuilder.AppendLine($"An error occurred: {ex.Message}");
+                outputBuilder.AppendLine($"An error occurred: {ex.GetBaseException().Message}");
             }
             Log(outputBuilder.ToString());
             return outputBuilder.ToString();
@@ -291,7 +291,7 @@ namespace Multipurpose
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error reading or parsing '{LicenseCsvFileName}':\n{ex.Message}", "CSV Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error reading or parsing '{LicenseCsvFileName}':\n{ex.GetBaseException().Message}", "CSV Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         #endregion
