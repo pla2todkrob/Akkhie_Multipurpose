@@ -124,7 +124,9 @@ namespace Multipurpose
             btnSetLocalization.Enabled = isEnabled;
             btnInstallFonts.Enabled = isEnabled;
             btnCreateAllShortcuts.Enabled = isEnabled;
-            btnInstallCrystalReports.Enabled = isEnabled; // Add new button here
+            btnInstallCrystalReports.Enabled = isEnabled;
+            radLangSwitchGrave.Enabled = isEnabled;
+            radLangSwitchAltShift.Enabled = isEnabled;
         }
 
         private void LoadOdbcSettingsToForm()
@@ -251,60 +253,19 @@ namespace Multipurpose
                 string dsnName = txtOdbcDsnName.Text.Trim();
                 string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
 
-                // Step 1: Test connection
-                var csBuilder = new SqlConnectionStringBuilder { DataSource = server, ConnectTimeout = 5 };
-                if (!string.IsNullOrEmpty(user))
-                {
-                    csBuilder.UserID = user;
-                    csBuilder.Password = pass;
-                }
-                else
-                {
-                    csBuilder.IntegratedSecurity = true;
-                }
-                if (!string.IsNullOrEmpty(db))
-                {
-                    csBuilder.InitialCatalog = db;
-                }
-
-                if (!await TestDbConnectionAsync(csBuilder.ConnectionString))
+                if (!await TestDbConnectionAsync(new SqlConnectionStringBuilder { DataSource = server, UserID = user, Password = pass, InitialCatalog = db, ConnectTimeout = 5 }.ConnectionString))
                 {
                     MessageBox.Show("Could not connect to the database. Please check settings.", "Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                // Step 2: Update config
                 UpdateAppConfig();
-
-                // Step 3: Build and run PowerShell script
                 Log("Connection test passed. Creating 32-bit and 64-bit DSNs...");
 
                 var scriptBuilder = new StringBuilder();
                 scriptBuilder.AppendLine("$ErrorActionPreference = 'Stop';");
-
-                scriptBuilder.AppendLine("function New-OdbcDsnInRegistry {");
-                scriptBuilder.AppendLine("    param ([string]$RegistryPath, [string]$DsnName, [string]$Driver, [string]$Server, [string]$Database, [string]$User)");
-                scriptBuilder.AppendLine("    $dsnKeyPath = Join-Path -Path $RegistryPath -ChildPath $DsnName;");
-                scriptBuilder.AppendLine("    $odbcDataSourcesPath = Join-Path -Path $RegistryPath -ChildPath 'ODBC Data Sources';");
-                scriptBuilder.AppendLine("    if (-not (Test-Path $odbcDataSourcesPath)) { New-Item -Path $odbcDataSourcesPath -Force | Out-Null; }");
-                scriptBuilder.AppendLine("    if (-not (Test-Path $dsnKeyPath)) { New-Item -Path $dsnKeyPath -Force | Out-Null; }");
-                scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Driver' -Value $Driver;");
-                scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Server' -Value $Server;");
-                scriptBuilder.AppendLine("    if ($Database) { Set-ItemProperty -Path $dsnKeyPath -Name 'Database' -Value $Database; }");
-                scriptBuilder.AppendLine("    if ($User) { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'No'; Set-ItemProperty -Path $dsnKeyPath -Name 'LastUser' -Value $User; }");
-                scriptBuilder.AppendLine("    else { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'Yes'; }");
-                scriptBuilder.AppendLine($"    Set-ItemProperty -Path $odbcDataSourcesPath -Name $DsnName -Value $Driver;");
-                scriptBuilder.AppendLine("}");
-
-                scriptBuilder.AppendLine("try {");
-                scriptBuilder.AppendLine("    Write-Output '--- Creating 64-bit System DSN ---';");
-                scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
-                scriptBuilder.AppendLine("    Write-Output '64-bit DSN created successfully.';");
-                scriptBuilder.AppendLine("    Write-Output '--- Creating 32-bit System DSN ---';");
-                scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
-                scriptBuilder.AppendLine("    Write-Output '32-bit DSN created successfully.';");
-                scriptBuilder.AppendLine("    Write-Output 'PowerShell: DSN creation process completed successfully!';");
-                scriptBuilder.AppendLine("} catch { $errMsg = 'PowerShell Registry Error: ' + $_.Exception.Message; Write-Error -Message $errMsg; exit 1; }");
+                scriptBuilder.AppendLine("function New-OdbcDsnInRegistry { param ([string]$RegistryPath, [string]$DsnName, [string]$Driver, [string]$Server, [string]$Database, [string]$User) $dsnKeyPath = Join-Path -Path $RegistryPath -ChildPath $DsnName; $odbcDataSourcesPath = Join-Path -Path $RegistryPath -ChildPath 'ODBC Data Sources'; if (-not (Test-Path $odbcDataSourcesPath)) { New-Item -Path $odbcDataSourcesPath -Force | Out-Null; } if (-not (Test-Path $dsnKeyPath)) { New-Item -Path $dsnKeyPath -Force | Out-Null; } Set-ItemProperty -Path $dsnKeyPath -Name 'Driver' -Value $Driver; Set-ItemProperty -Path $dsnKeyPath -Name 'Server' -Value $Server; if ($Database) { Set-ItemProperty -Path $dsnKeyPath -Name 'Database' -Value $Database; } if ($User) { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'No'; Set-ItemProperty -Path $dsnKeyPath -Name 'LastUser' -Value $User; } else { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'Yes'; } Set-ItemProperty -Path $odbcDataSourcesPath -Name $DsnName -Value $Driver; }");
+                scriptBuilder.AppendLine("try { Write-Output '--- Creating 64-bit System DSN ---'; New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\ODBC\\ODBC.INI' -DsnName '" + dsnName + "' -Driver '" + driver + "' -Server '" + server + "' -Database '" + db + "' -User '" + user + "'; Write-Output '64-bit DSN created successfully.'; Write-Output '--- Creating 32-bit System DSN ---'; New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI' -DsnName '" + dsnName + "' -Driver '" + driver + "' -Server '" + server + "' -Database '" + db + "' -User '" + user + "'; Write-Output '32-bit DSN created successfully.'; Write-Output 'PowerShell: DSN creation process completed successfully!'; } catch { $errMsg = 'PowerShell Registry Error: ' + $_.Exception.Message; Write-Error -Message $errMsg; exit 1; }");
 
                 await RunPowerShellScript(scriptBuilder.ToString());
             }
@@ -314,6 +275,67 @@ namespace Multipurpose
             }
         }
 
+        private async void btnSetLocalization_Click(object sender, EventArgs e)
+        {
+            txtStatus.Clear();
+            Log("--- Applying Localization Settings ---");
+            ToggleAllButtons(false);
+
+            try
+            {
+                // Determine the selected language hotkey value
+                string hotkey = radLangSwitchGrave.Checked ? "3" : "1"; // 3 for Grave, 1 for Alt+Shift
+
+                var script = new StringBuilder();
+                script.AppendLine("$ErrorActionPreference = 'Stop';");
+                script.AppendLine("try {");
+
+                // 1. Set Time Zone and enable auto-update
+                script.AppendLine("    Write-Output 'Setting Time Zone to (UTC+07:00) Bangkok...';");
+                script.AppendLine("    Set-TimeZone -Id 'SE Asia Standard Time';");
+                script.AppendLine("    Write-Output 'Enabling Windows Time service for automatic updates...';");
+                script.AppendLine("    Set-Service -Name w32time -StartupType Automatic;");
+                script.AppendLine("    Start-Service -Name w32time;");
+
+                // 2. Set Region and Language Preferences
+                script.AppendLine("    Write-Output 'Setting Region to Thailand and Language to en-US...';");
+                script.AppendLine("    Set-WinHomeLocation -GeoId 244; # 244 is the GeoID for Thailand");
+                script.AppendLine("    $list = New-WinUserLanguageList -Language 'en-US';");
+                script.AppendLine("    $list.Add('th-TH');");
+                script.AppendLine("    Set-WinUserLanguageList -LanguageList $list -Force;");
+
+                // 3. Set Regional Format
+                script.AppendLine("    Write-Output 'Setting Regional Format to Thailand...';");
+                script.AppendLine("    Set-WinSystemLocale -SystemLocale 'th-TH';");
+
+                // 4. Set Keyboard toggle hotkey
+                script.AppendLine($"    Write-Output 'Setting keyboard hotkey...';");
+                script.AppendLine("    $regPath = 'HKCU:\\Keyboard Layout\\Toggle';");
+                script.AppendLine("    if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null; }");
+                script.AppendLine($"    Set-ItemProperty -Path $regPath -Name 'Language Hotkey' -Value '{hotkey}';");
+
+                script.AppendLine("    Write-Output 'Localization settings applied successfully. A restart might be required for all changes to take effect.';");
+                script.AppendLine("} catch {");
+                script.AppendLine("    $errMsg = 'PowerShell Localization Error: ' + $_.Exception.Message;");
+                script.AppendLine("    Write-Error -Message $errMsg;");
+                script.AppendLine("    exit 1;");
+                script.AppendLine("}");
+
+                await RunPowerShellScript(script.ToString());
+                MessageBox.Show("Localization settings have been applied. A restart is recommended for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                Log($"[FATAL ERROR] An unexpected error occurred: {ex.GetBaseException().Message}");
+                MessageBox.Show($"An unexpected error occurred: \n{ex.GetBaseException().Message}", "Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                ToggleAllButtons(true);
+            }
+        }
+
+
         private async void btnInstallCrystalReports_Click(object sender, EventArgs e)
         {
             txtStatus.Clear();
@@ -322,7 +344,6 @@ namespace Multipurpose
 
             try
             {
-                // 1. Get Product Key from App.config
                 string productKey = ConfigurationManager.AppSettings["CrystalReportsKey"];
                 if (string.IsNullOrEmpty(productKey))
                 {
@@ -332,37 +353,26 @@ namespace Multipurpose
                 }
                 Log($"  -> Product Key found.");
 
-                // 2. Define file paths
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 string devInstallerPath = Path.Combine(baseDir, "scrdev.msi");
                 string runtimeInstallerPath = Path.Combine(baseDir, "CRRuntime_64bit.msi");
 
-                // 3. Check if installers exist
-                if (!System.IO.File.Exists(devInstallerPath))
+                if (!System.IO.File.Exists(devInstallerPath) || !System.IO.File.Exists(runtimeInstallerPath))
                 {
-                    Log($"[Error] Developer installer not found at: {devInstallerPath}");
-                    MessageBox.Show("Crystal Reports Developer installer (scrdev.msi) not found.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                if (!System.IO.File.Exists(runtimeInstallerPath))
-                {
-                    Log($"[Error] Runtime installer not found at: {runtimeInstallerPath}");
-                    MessageBox.Show("Crystal Reports Runtime installer (CRRuntime_64bit.msi) not found.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Log($"[Error] Installer files not found.");
+                    MessageBox.Show("Crystal Reports installer (scrdev.msi or CRRuntime_64bit.msi) not found.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 Log("  -> All installer files found.");
 
                 string msiexecPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "msiexec.exe");
 
-                // 4. Install Developer version
                 Log("\n--- Installing Crystal Reports for Visual Studio ---");
                 Log("This may take several minutes. Please wait...");
-                // msiexec prefers keys without dashes for the PIDKEY property
                 string devArgs = $"/i \"{devInstallerPath}\" /qn PIDKEY={productKey.Replace("-", "")}";
                 await RunProcessAsync(msiexecPath, devArgs);
                 Log("--- Developer installation process finished. ---");
 
-                // 5. Install Runtime version
                 Log("\n--- Installing Crystal Reports Runtime (64-bit) ---");
                 Log("This may take a moment...");
                 string runtimeArgs = $"/i \"{runtimeInstallerPath}\" /qn";
@@ -383,51 +393,36 @@ namespace Multipurpose
             }
         }
 
-        private async void btnSetLocalization_Click(object sender, EventArgs e)
-        {
-            txtStatus.Clear();
-            Log("--- Setting Localization (Timezone, Region, Keyboard) ---");
-            ToggleAllButtons(false);
-            await RunProcessAsync("tzutil.exe", "/s \"SE Asia Standard Time\"");
-            string script = "$list = New-WinUserLanguageList -Language 'th-TH'; $list.Add('en-US'); Set-WinUserLanguageList -LanguageList $list -Force;";
-            await RunPowerShellScript(script);
-            await RunPowerShellScript("Set-WinSystemLocale -SystemLocale th-TH");
-            try
-            {
-                Registry.CurrentUser.CreateSubKey(@"Keyboard Layout\Toggle")?.SetValue("Language Hotkey", "3", RegistryValueKind.String);
-                Log("  - Set language hotkey successfully.");
-            }
-            catch (Exception ex)
-            {
-                Log($"  - Error setting registry key: {ex.GetBaseException().Message}");
-            }
-            ToggleAllButtons(true);
-        }
-
         private void btnInstallFonts_Click(object sender, EventArgs e)
         {
             txtStatus.Clear();
             Log("--- Installing fonts ---");
             ToggleAllButtons(false);
-            string fontFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts");
-            if (!Directory.Exists(fontFolderPath)) { Log($"Folder 'Fonts' not found."); ToggleAllButtons(true); return; }
-            var fontFiles = Directory.GetFiles(fontFolderPath, "*.ttf").Concat(Directory.GetFiles(fontFolderPath, "*.otf"));
-            if (!fontFiles.Any()) { Log("No font files (.ttf, .otf) found."); ToggleAllButtons(true); return; }
-            int successCount = 0;
-            string windowsFontsDir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
-            foreach (var fontFile in fontFiles)
+            try
             {
-                try
+                string fontFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts");
+                if (!Directory.Exists(fontFolderPath)) { Log($"Folder 'Fonts' not found."); return; }
+                var fontFiles = Directory.GetFiles(fontFolderPath, "*.ttf").Concat(Directory.GetFiles(fontFolderPath, "*.otf"));
+                if (!fontFiles.Any()) { Log("No font files (.ttf, .otf) found."); return; }
+                int successCount = 0;
+                string windowsFontsDir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+                foreach (var fontFile in fontFiles)
                 {
-                    string destPath = Path.Combine(windowsFontsDir, Path.GetFileName(fontFile));
-                    System.IO.File.Copy(fontFile, destPath, true);
-                    if (AddFontResource(destPath) != 0) { successCount++; }
+                    try
+                    {
+                        string destPath = Path.Combine(windowsFontsDir, Path.GetFileName(fontFile));
+                        System.IO.File.Copy(fontFile, destPath, true);
+                        if (AddFontResource(destPath) != 0) { successCount++; }
+                    }
+                    catch (Exception ex) { Log($"[Error] '{Path.GetFileName(fontFile)}': {ex.GetBaseException().Message}"); }
                 }
-                catch (Exception ex) { Log($"[Error] '{Path.GetFileName(fontFile)}': {ex.GetBaseException().Message}"); }
+                SendMessage(HWND_BROADCAST, WM_FONTCHANGE, IntPtr.Zero, IntPtr.Zero);
+                Log($"Successfully installed {successCount} font(s).");
             }
-            SendMessage(HWND_BROADCAST, WM_FONTCHANGE, IntPtr.Zero, IntPtr.Zero);
-            Log($"Successfully installed {successCount} font(s).");
-            ToggleAllButtons(true);
+            finally
+            {
+                ToggleAllButtons(true);
+            }
         }
 
         private void btnCreateAllShortcuts_Click(object sender, EventArgs e)
@@ -441,31 +436,35 @@ namespace Multipurpose
             txtStatus.Clear();
             Log($"--- Creating {shortcutsToCreate.Count} shortcuts on Desktop ---");
             ToggleAllButtons(false);
-
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            int successCount = 0;
-
-            foreach (var shortcutConfig in shortcutsToCreate)
+            try
             {
-                try
-                {
-                    string shortcutLocation = Path.Combine(desktopPath, shortcutConfig.Name + ".lnk");
-                    WshShell shell = new WshShell();
-                    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
-                    shortcut.Description = shortcutConfig.Description;
-                    shortcut.TargetPath = shortcutConfig.TargetPath;
-                    shortcut.Save();
-                    Log($"  - Created '{shortcutConfig.Name}.lnk'");
-                    successCount++;
-                }
-                catch (Exception ex)
-                {
-                    Log($"  - [Error] Failed to create '{shortcutConfig.Name}': {ex.GetBaseException().Message}");
-                }
-            }
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                int successCount = 0;
 
-            Log($"--- Successfully created {successCount} shortcut(s) ---");
-            ToggleAllButtons(true);
+                foreach (var shortcutConfig in shortcutsToCreate)
+                {
+                    try
+                    {
+                        string shortcutLocation = Path.Combine(desktopPath, shortcutConfig.Name + ".lnk");
+                        WshShell shell = new WshShell();
+                        IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
+                        shortcut.Description = shortcutConfig.Description;
+                        shortcut.TargetPath = shortcutConfig.TargetPath;
+                        shortcut.Save();
+                        Log($"  - Created '{shortcutConfig.Name}.lnk'");
+                        successCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"  - [Error] Failed to create '{shortcutConfig.Name}': {ex.GetBaseException().Message}");
+                    }
+                }
+                Log($"--- Successfully created {successCount} shortcut(s) ---");
+            }
+            finally
+            {
+                ToggleAllButtons(true);
+            }
         }
         #endregion
     }
