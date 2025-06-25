@@ -56,6 +56,30 @@ namespace Multipurpose
             }
         }
 
+        private string Get64BitPowerShellPath()
+        {
+            // If we are a 64-bit process, "powershell.exe" will resolve to the correct 64-bit version.
+            if (Environment.Is64BitProcess)
+            {
+                return "powershell.exe";
+            }
+
+            // If we are a 32-bit process running on a 64-bit OS, we need to explicitly call the 64-bit PowerShell.
+            // We use the 'Sysnative' virtual folder to escape the WOW64 file system redirection.
+            if (Environment.Is64BitOperatingSystem)
+            {
+                string sysnativePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "WindowsPowerShell\\v1.0\\powershell.exe");
+                if (System.IO.File.Exists(sysnativePath))
+                {
+                    return sysnativePath;
+                }
+            }
+
+            // Fallback for a 32-bit process on a 32-bit OS, or if Sysnative path can't be found.
+            return "powershell.exe";
+        }
+
+
         private async Task<string> RunProcessAsync(string fileName, string arguments)
         {
             var outputBuilder = new StringBuilder();
@@ -93,9 +117,13 @@ namespace Multipurpose
         private async Task RunPowerShellScript(string script)
         {
             Log("--- Executing PowerShell Script ---");
-            string result = await RunProcessAsync("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
+            string powerShellExePath = Get64BitPowerShellPath();
+            Log($"--- Executing with: {powerShellExePath} ---");
+            // Using -Command with quotes around the script handles spaces and special characters.
+            string result = await RunProcessAsync(powerShellExePath, $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
             Log(result);
         }
+
 
         private void ToggleAllButtons(bool isEnabled)
         {
@@ -225,14 +253,14 @@ namespace Multipurpose
             string user = txtOdbcUid.Text.Trim();
             string pass = txtOdbcPwd.Text.Trim();
             string dsnName = txtOdbcDsnName.Text.Trim();
+            string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
 
+            // Step 1: Test connection
             var csBuilder = new SqlConnectionStringBuilder { DataSource = server, ConnectTimeout = 5 };
-
             if (!string.IsNullOrEmpty(user))
             {
                 csBuilder.UserID = user;
                 csBuilder.Password = pass;
-                csBuilder.IntegratedSecurity = false;
             }
             else
             {
@@ -243,47 +271,67 @@ namespace Multipurpose
                 csBuilder.InitialCatalog = db;
             }
 
-            bool canConnect = await TestDbConnectionAsync(csBuilder.ConnectionString);
-
-            if (!canConnect)
+            if (!await TestDbConnectionAsync(csBuilder.ConnectionString))
             {
-                MessageBox.Show("Could not connect to the database. Please check the settings and try again.", "Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Could not connect to the database. Please check settings.", "Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ToggleAllButtons(true);
                 return;
             }
 
+            // Step 2: Update config
             UpdateAppConfig();
 
-            Log("Connection test passed. Creating DSN...");
-            string driver = ConfigurationManager.AppSettings["OdbcDriver"] ?? "SQL Server";
-
-            var properties = new List<string>();
-            properties.Add($"Server={server}");
-            if (!string.IsNullOrEmpty(db)) properties.Add($"Database={db}");
-            if (!string.IsNullOrEmpty(user))
-            {
-                properties.Add($"UID={user}");
-                properties.Add($"PWD={pass}");
-            }
-            else
-            {
-                properties.Add("Trusted_Connection=Yes");
-            }
-
-            var quotedProperties = properties.Select(p => $"'{p}'");
-            string propertyString = string.Join(",", quotedProperties);
+            // Step 3: Build and run PowerShell script
+            Log("Connection test passed. Creating 32-bit and 64-bit DSNs...");
 
             var scriptBuilder = new StringBuilder();
             scriptBuilder.AppendLine("$ErrorActionPreference = 'Stop';");
+
+            // Define a reusable PowerShell function to create a DSN in a given registry path
+            scriptBuilder.AppendLine("function New-OdbcDsnInRegistry {");
+            scriptBuilder.AppendLine("    param (");
+            scriptBuilder.AppendLine("        [string]$RegistryPath,");
+            scriptBuilder.AppendLine("        [string]$DsnName,");
+            scriptBuilder.AppendLine("        [string]$Driver,");
+            scriptBuilder.AppendLine("        [string]$Server,");
+            scriptBuilder.AppendLine("        [string]$Database,");
+            scriptBuilder.AppendLine("        [string]$User");
+            scriptBuilder.AppendLine("    )");
+            scriptBuilder.AppendLine($"    $dsnKeyPath = Join-Path -Path $RegistryPath -ChildPath $DsnName;");
+            scriptBuilder.AppendLine("    $odbcDataSourcesPath = Join-Path -Path $RegistryPath -ChildPath 'ODBC Data Sources';");
+            scriptBuilder.AppendLine("    if (-not (Test-Path $odbcDataSourcesPath)) { New-Item -Path $odbcDataSourcesPath -Force | Out-Null; }");
+            scriptBuilder.AppendLine("    if (-not (Test-Path $dsnKeyPath)) { New-Item -Path $dsnKeyPath -Force | Out-Null; }");
+            scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Driver' -Value $Driver;");
+            scriptBuilder.AppendLine($"    Set-ItemProperty -Path $dsnKeyPath -Name 'Server' -Value $Server;");
+            scriptBuilder.AppendLine("    if ($Database) {");
+            scriptBuilder.AppendLine($"        Set-ItemProperty -Path $dsnKeyPath -Name 'Database' -Value $Database;");
+            scriptBuilder.AppendLine("    }");
+            scriptBuilder.AppendLine("    if ($User) {");
+            scriptBuilder.AppendLine("        Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'No';");
+            scriptBuilder.AppendLine($"        Set-ItemProperty -Path $dsnKeyPath -Name 'LastUser' -Value $User;");
+            scriptBuilder.AppendLine("    } else {");
+            scriptBuilder.AppendLine("        Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'Yes';");
+            scriptBuilder.AppendLine("    }");
+            scriptBuilder.AppendLine($"    Set-ItemProperty -Path $odbcDataSourcesPath -Name $DsnName -Value $Driver;");
+            scriptBuilder.AppendLine("}");
+
+            // Main execution block
             scriptBuilder.AppendLine("try {");
-            scriptBuilder.AppendLine("    Import-Module Wdac -ErrorAction Stop;");
-            scriptBuilder.AppendLine($"    Add-Dsn -Name '{dsnName}' -DsnType 'System' -Platform '64-bit' -DriverName '{driver}' -SetPropertyValue @({propertyString}) -ErrorAction Stop;");
-            scriptBuilder.AppendLine("    Write-Output 'PowerShell: DSN created successfully.'");
+            scriptBuilder.AppendLine("    # Create 64-bit DSN");
+            scriptBuilder.AppendLine("    Write-Output '--- Creating 64-bit System DSN ---';");
+            scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
+            scriptBuilder.AppendLine("    Write-Output '64-bit DSN created successfully.';");
+
+            scriptBuilder.AppendLine("    # Create 32-bit DSN");
+            scriptBuilder.AppendLine("    Write-Output '--- Creating 32-bit System DSN ---';");
+            scriptBuilder.AppendLine($"    New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI' -DsnName '{dsnName}' -Driver '{driver}' -Server '{server}' -Database '{db}' -User '{user}';");
+            scriptBuilder.AppendLine("    Write-Output '32-bit DSN created successfully.';");
+
+            scriptBuilder.AppendLine("    Write-Output 'PowerShell: DSN creation process completed successfully!';");
             scriptBuilder.AppendLine("}");
             scriptBuilder.AppendLine("catch {");
-            // --- START FIX: Using the explicit -Message parameter ---
-            scriptBuilder.AppendLine("    Write-Error -Message \"PowerShell Error: $($_.Exception.Message)\";");
-            // --- END FIX ---
+            scriptBuilder.AppendLine("    $errMsg = 'PowerShell Registry Error: ' + $_.Exception.Message;");
+            scriptBuilder.AppendLine("    Write-Error -Message $errMsg;");
             scriptBuilder.AppendLine("    exit 1;");
             scriptBuilder.AppendLine("}");
 
@@ -291,6 +339,7 @@ namespace Multipurpose
 
             ToggleAllButtons(true);
         }
+
 
         private async void btnSetLocalization_Click(object sender, EventArgs e)
         {
