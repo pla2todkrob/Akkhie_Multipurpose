@@ -60,9 +60,6 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.btnCreateAllShortcuts = new System.Windows.Forms.Button();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.btnInstallCrystalReports = new System.Windows.Forms.Button();
             this.txtStatus = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -77,7 +74,6 @@
             this.tlpFonts.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.tlpShortcuts.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -111,14 +107,12 @@
             this.tlpMain.Controls.Add(this.groupBox2, 1, 0);
             this.tlpMain.Controls.Add(this.groupBox3, 0, 1);
             this.tlpMain.Controls.Add(this.groupBox4, 1, 1);
-            this.tlpMain.Controls.Add(this.groupBox5, 0, 2);
             this.tlpMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tlpMain.Location = new System.Drawing.Point(10, 10);
             this.tlpMain.Name = "tlpMain";
-            this.tlpMain.RowCount = 3;
+            this.tlpMain.RowCount = 2;
             this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 260F));
             this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 110F));
             this.tlpMain.Size = new System.Drawing.Size(1001, 440);
             this.tlpMain.TabIndex = 0;
             // 
@@ -354,7 +348,7 @@
             this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox3.Size = new System.Drawing.Size(492, 62);
+            this.groupBox3.Size = new System.Drawing.Size(492, 172);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "3. ติดตั้งฟอนต์ (จากโฟลเดอร์ Fonts)";
@@ -371,7 +365,7 @@
             this.tlpFonts.RowCount = 2;
             this.tlpFonts.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tlpFonts.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
-            this.tlpFonts.Size = new System.Drawing.Size(484, 39);
+            this.tlpFonts.Size = new System.Drawing.Size(484, 149);
             this.tlpFonts.TabIndex = 4;
             // 
             // listViewFonts
@@ -383,7 +377,7 @@
             this.listViewFonts.HideSelection = false;
             this.listViewFonts.Location = new System.Drawing.Point(3, 3);
             this.listViewFonts.Name = "listViewFonts";
-            this.listViewFonts.Size = new System.Drawing.Size(478, 1);
+            this.listViewFonts.Size = new System.Drawing.Size(478, 95);
             this.listViewFonts.TabIndex = 3;
             this.listViewFonts.UseCompatibleStateImageBehavior = false;
             this.listViewFonts.View = System.Windows.Forms.View.Details;
@@ -396,7 +390,7 @@
             // btnInstallFonts
             // 
             this.btnInstallFonts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnInstallFonts.Location = new System.Drawing.Point(310, 4);
+            this.btnInstallFonts.Location = new System.Drawing.Point(310, 105);
             this.btnInstallFonts.Margin = new System.Windows.Forms.Padding(4);
             this.btnInstallFonts.Name = "btnInstallFonts";
             this.btnInstallFonts.Size = new System.Drawing.Size(170, 40);
@@ -413,7 +407,7 @@
             this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Size = new System.Drawing.Size(493, 62);
+            this.groupBox4.Size = new System.Drawing.Size(493, 172);
             this.groupBox4.TabIndex = 3;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "4. สร้าง Shortcut (จาก shortcuts.json)";
@@ -430,7 +424,7 @@
             this.tlpShortcuts.RowCount = 2;
             this.tlpShortcuts.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tlpShortcuts.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
-            this.tlpShortcuts.Size = new System.Drawing.Size(485, 39);
+            this.tlpShortcuts.Size = new System.Drawing.Size(485, 149);
             this.tlpShortcuts.TabIndex = 10;
             // 
             // listViewShortcuts
@@ -444,7 +438,7 @@
             this.listViewShortcuts.HideSelection = false;
             this.listViewShortcuts.Location = new System.Drawing.Point(3, 3);
             this.listViewShortcuts.Name = "listViewShortcuts";
-            this.listViewShortcuts.Size = new System.Drawing.Size(479, 1);
+            this.listViewShortcuts.Size = new System.Drawing.Size(479, 95);
             this.listViewShortcuts.TabIndex = 0;
             this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
             this.listViewShortcuts.View = System.Windows.Forms.View.Details;
@@ -462,7 +456,7 @@
             // btnCreateAllShortcuts
             // 
             this.btnCreateAllShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(272, 4);
+            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(272, 105);
             this.btnCreateAllShortcuts.Margin = new System.Windows.Forms.Padding(4);
             this.btnCreateAllShortcuts.Name = "btnCreateAllShortcuts";
             this.btnCreateAllShortcuts.Size = new System.Drawing.Size(209, 40);
@@ -470,41 +464,6 @@
             this.btnCreateAllShortcuts.Text = "สร้าง Shortcut ทั้งหมด";
             this.btnCreateAllShortcuts.UseVisualStyleBackColor = true;
             this.btnCreateAllShortcuts.Click += new System.EventHandler(this.btnCreateAllShortcuts_Click);
-            // 
-            // groupBox5
-            // 
-            this.tlpMain.SetColumnSpan(this.groupBox5, 2);
-            this.groupBox5.Controls.Add(this.label4);
-            this.groupBox5.Controls.Add(this.btnInstallCrystalReports);
-            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox5.Location = new System.Drawing.Point(3, 333);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(995, 104);
-            this.groupBox5.TabIndex = 4;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "5. ติดตั้ง Crystal Reports";
-            // 
-            // label4
-            // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label4.Location = new System.Drawing.Point(7, 20);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(982, 38);
-            this.label4.TabIndex = 1;
-            this.label4.Text = "ติดตั้ง Crystal Reports for Visual Studio (scrdev.msi) และ Runtime (CRRuntime_64b" +
-    "it.msi) แบบอัตโนมัติจากไฟล์ในโฟลเดอร์โปรแกรม";
-            // 
-            // btnInstallCrystalReports
-            // 
-            this.btnInstallCrystalReports.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnInstallCrystalReports.Location = new System.Drawing.Point(762, 61);
-            this.btnInstallCrystalReports.Name = "btnInstallCrystalReports";
-            this.btnInstallCrystalReports.Size = new System.Drawing.Size(227, 33);
-            this.btnInstallCrystalReports.TabIndex = 0;
-            this.btnInstallCrystalReports.Text = "Install Crystal Reports";
-            this.btnInstallCrystalReports.UseVisualStyleBackColor = true;
-            this.btnInstallCrystalReports.Click += new System.EventHandler(this.btnInstallCrystalReports_Click);
             // 
             // txtStatus
             // 
@@ -543,7 +502,6 @@
             this.tlpFonts.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             this.tlpShortcuts.ResumeLayout(false);
-            this.groupBox5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -575,9 +533,6 @@
         private System.Windows.Forms.ListView listViewShortcuts;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.GroupBox groupBox5;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button btnInstallCrystalReports;
         private System.Windows.Forms.ListView listViewFonts;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.TableLayoutPanel tlpFonts;

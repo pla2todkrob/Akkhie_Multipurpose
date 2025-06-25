@@ -124,7 +124,6 @@ namespace Multipurpose
             btnSetLocalization.Enabled = isEnabled;
             btnInstallFonts.Enabled = isEnabled;
             btnCreateAllShortcuts.Enabled = isEnabled;
-            btnInstallCrystalReports.Enabled = isEnabled;
             radLangSwitchGrave.Enabled = isEnabled;
             radLangSwitchAltShift.Enabled = isEnabled;
         }
@@ -283,43 +282,29 @@ namespace Multipurpose
 
             try
             {
-                // Determine the selected language hotkey value
-                string hotkey = radLangSwitchGrave.Checked ? "3" : "1"; // 3 for Grave, 1 for Alt+Shift
+                string hotkey = radLangSwitchGrave.Checked ? "3" : "1";
 
                 var script = new StringBuilder();
                 script.AppendLine("$ErrorActionPreference = 'Stop';");
                 script.AppendLine("try {");
-
-                // 1. Set Time Zone and enable auto-update
                 script.AppendLine("    Write-Output 'Setting Time Zone to (UTC+07:00) Bangkok...';");
                 script.AppendLine("    Set-TimeZone -Id 'SE Asia Standard Time';");
                 script.AppendLine("    Write-Output 'Enabling Windows Time service for automatic updates...';");
                 script.AppendLine("    Set-Service -Name w32time -StartupType Automatic;");
                 script.AppendLine("    Start-Service -Name w32time;");
-
-                // 2. Set Region and Language Preferences
                 script.AppendLine("    Write-Output 'Setting Region to Thailand and Language to en-US...';");
-                script.AppendLine("    Set-WinHomeLocation -GeoId 244; # 244 is the GeoID for Thailand");
+                script.AppendLine("    Set-WinHomeLocation -GeoId 244;");
                 script.AppendLine("    $list = New-WinUserLanguageList -Language 'en-US';");
                 script.AppendLine("    $list.Add('th-TH');");
                 script.AppendLine("    Set-WinUserLanguageList -LanguageList $list -Force;");
-
-                // 3. Set Regional Format
                 script.AppendLine("    Write-Output 'Setting Regional Format to Thailand...';");
                 script.AppendLine("    Set-WinSystemLocale -SystemLocale 'th-TH';");
-
-                // 4. Set Keyboard toggle hotkey
                 script.AppendLine($"    Write-Output 'Setting keyboard hotkey...';");
                 script.AppendLine("    $regPath = 'HKCU:\\Keyboard Layout\\Toggle';");
                 script.AppendLine("    if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null; }");
                 script.AppendLine($"    Set-ItemProperty -Path $regPath -Name 'Language Hotkey' -Value '{hotkey}';");
-
                 script.AppendLine("    Write-Output 'Localization settings applied successfully. A restart might be required for all changes to take effect.';");
-                script.AppendLine("} catch {");
-                script.AppendLine("    $errMsg = 'PowerShell Localization Error: ' + $_.Exception.Message;");
-                script.AppendLine("    Write-Error -Message $errMsg;");
-                script.AppendLine("    exit 1;");
-                script.AppendLine("}");
+                script.AppendLine("} catch { $errMsg = 'PowerShell Localization Error: ' + $_.Exception.Message; Write-Error -Message $errMsg; exit 1; }");
 
                 await RunPowerShellScript(script.ToString());
                 MessageBox.Show("Localization settings have been applied. A restart is recommended for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -328,64 +313,6 @@ namespace Multipurpose
             {
                 Log($"[FATAL ERROR] An unexpected error occurred: {ex.GetBaseException().Message}");
                 MessageBox.Show($"An unexpected error occurred: \n{ex.GetBaseException().Message}", "Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                ToggleAllButtons(true);
-            }
-        }
-
-
-        private async void btnInstallCrystalReports_Click(object sender, EventArgs e)
-        {
-            txtStatus.Clear();
-            Log("--- Starting Crystal Reports Installation ---");
-            ToggleAllButtons(false);
-
-            try
-            {
-                string productKey = ConfigurationManager.AppSettings["CrystalReportsKey"];
-                if (string.IsNullOrEmpty(productKey))
-                {
-                    Log("[Error] CrystalReportsKey not found in App.config.");
-                    MessageBox.Show("Crystal Reports Product Key not found in App.config.", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                Log($"  -> Product Key found.");
-
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string devInstallerPath = Path.Combine(baseDir, "scrdev.msi");
-                string runtimeInstallerPath = Path.Combine(baseDir, "CRRuntime_64bit.msi");
-
-                if (!System.IO.File.Exists(devInstallerPath) || !System.IO.File.Exists(runtimeInstallerPath))
-                {
-                    Log($"[Error] Installer files not found.");
-                    MessageBox.Show("Crystal Reports installer (scrdev.msi or CRRuntime_64bit.msi) not found.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                Log("  -> All installer files found.");
-
-                string msiexecPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "msiexec.exe");
-
-                Log("\n--- Installing Crystal Reports for Visual Studio ---");
-                Log("This may take several minutes. Please wait...");
-                string devArgs = $"/i \"{devInstallerPath}\" /qn PIDKEY={productKey.Replace("-", "")}";
-                await RunProcessAsync(msiexecPath, devArgs);
-                Log("--- Developer installation process finished. ---");
-
-                Log("\n--- Installing Crystal Reports Runtime (64-bit) ---");
-                Log("This may take a moment...");
-                string runtimeArgs = $"/i \"{runtimeInstallerPath}\" /qn";
-                await RunProcessAsync(msiexecPath, runtimeArgs);
-                Log("--- Runtime installation process finished. ---");
-
-                Log("\n--- Crystal Reports installation process completed. ---");
-                MessageBox.Show("Crystal Reports installation process has finished. Please check the log for details.", "Installation Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                Log($"[FATAL ERROR] An unexpected error occurred: {ex.GetBaseException().Message}");
-                MessageBox.Show($"An unexpected error occurred during installation: \n{ex.GetBaseException().Message}", "Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {

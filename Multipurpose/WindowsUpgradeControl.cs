@@ -40,18 +40,22 @@ namespace Multipurpose
             }
 
             LogClear();
-            Log($"--- เริ่มการ Activate: '{productName}' ---");
+            Log($"--- เริ่มการ Activate สำหรับ: '{productName}' ---");
             ToggleAllButtons(false);
 
             List<string> keysToTry = _productKeys[productName];
             bool activationSuccess = false;
 
+            Log("--- Clearing any existing product key... ---");
+            await RunSlmgrCommand("/upk");
+
             foreach (var key in keysToTry)
             {
                 Log($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
+                await RunSlmgrCommand($"/ipk {key}");
 
-                await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs /ipk {key}");
-                await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /ato");
+                Log("--- Attempting to activate Windows... ---");
+                await RunSlmgrCommand("/ato");
 
                 if (await IsWindowsActivatedAsync())
                 {
@@ -85,22 +89,31 @@ namespace Multipurpose
             }
 
             var confirmResult = MessageBox.Show(
-                $"คุณกำลังจะอัปเกรด Windows จาก '{_currentWindowsEdition}' เป็น '{targetProduct}'.\nขั้นตอนนี้อาจทำให้เครื่อง Restart อัตโนมัติ.\n\nดำเนินการต่อหรือไม่?",
-                "ยืนยันการอัปเกรด Edition",
+                $"คุณกำลังจะเปลี่ยน Edition ของ Windows จาก '{_currentWindowsEdition}' เป็น '{targetProduct}'.\nขั้นตอนนี้อาจต้องใช้เวลาและเครื่องอาจจะ Restart อัตโนมัติหลังเสร็จสิ้น\n\nดำเนินการต่อหรือไม่?",
+                "ยืนยันการเปลี่ยน Edition",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
             if (confirmResult == DialogResult.No) return;
 
             LogClear();
-            Log($"--- เริ่มการอัปเกรดเป็น: '{targetProduct}' ---");
+            Log($"--- เริ่มการเปลี่ยน Edition เป็น: '{targetProduct}' ---");
             ToggleAllButtons(false);
 
-            await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /upk");
-            await RunProcessAsync("changepk.exe", $"/productkey {genericKey}");
+            Log("--- Clearing any existing product key... ---");
+            await RunSlmgrCommand("/upk");
 
-            Log("\n--- การอัปเกรดเสร็จสิ้น ---");
-            Log("กรุณา Restart เครื่องคอมพิวเตอร์ แล้วเปิดโปรแกรมนี้อีกครั้งเพื่อทำการ Activate");
+            Log($"--- Installing Generic Key for '{targetProduct}'... ---");
+            await RunSlmgrCommand($"/ipk {genericKey}");
+
+            Log("--- Attempting to activate to trigger edition change... ---");
+            await RunSlmgrCommand("/ato");
+
+            Log("\n--- กระบวนการเปลี่ยน Edition เสร็จสิ้น ---");
+            Log("กรุณาตรวจสอบสถานะ Windows และ Restart เครื่องคอมพิวเตอร์");
+            Log("หลังจาก Restart, หาก Windows ยังไม่ Activate, ให้เปิดโปรแกรมนี้อีกครั้งแล้วกด Activate ซ้ำ");
+
+            await RefreshCurrentStatusAsync();
             ToggleAllButtons(true);
         }
 
@@ -147,13 +160,13 @@ namespace Multipurpose
 
             if (_currentWindowsEdition.IndexOf(targetProduct.Replace("Windows 11", "").Replace("Windows 10", "").Trim(), StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                lblProcessDescription.Text = $"Edition ปัจจุบันตรงกับเป้าหมายแล้ว โปรแกรมจะเข้าสู่โหมด Activate โดยตรง";
+                lblProcessDescription.Text = $"Edition ปัจจุบันตรงกับเป้าหมายแล้ว โปรแกรมจะทำการ Activate โดยใช้คีย์จากไฟล์ CSV";
                 btnStartProcess.Text = "Activate";
             }
             else
             {
-                lblProcessDescription.Text = $"Edition ปัจจุบัน ('{_currentWindowsEdition}') ไม่ตรงกับเป้าหมาย โปรแกรมจะทำการ Upgrade Edition ก่อน";
-                btnStartProcess.Text = "Upgrade Edition";
+                lblProcessDescription.Text = $"Edition ปัจจุบัน ('{_currentWindowsEdition}') ไม่ตรงกับเป้าหมาย โปรแกรมจะทำการเปลี่ยน Edition โดยใช้ Generic Key จาก App.config";
+                btnStartProcess.Text = "Change Edition";
             }
         }
         #endregion
@@ -161,13 +174,14 @@ namespace Multipurpose
         #region Helper Methods
         private void Log(string message)
         {
+            if (string.IsNullOrEmpty(message)) return;
             if (txtStatus.InvokeRequired)
             {
                 txtStatus.Invoke(new Action(() => Log(message)));
             }
             else
             {
-                txtStatus.AppendText(message + Environment.NewLine);
+                txtStatus.AppendText(message.Trim() + Environment.NewLine);
             }
         }
 
@@ -182,6 +196,18 @@ namespace Multipurpose
                 txtStatus.Clear();
             }
         }
+
+        private string Get64BitPowerShellPath()
+        {
+            if (Environment.Is64BitProcess) return "powershell.exe";
+            if (Environment.Is64BitOperatingSystem)
+            {
+                string sysnativePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "WindowsPowerShell\\v1.0\\powershell.exe");
+                if (File.Exists(sysnativePath)) return sysnativePath;
+            }
+            return "powershell.exe";
+        }
+
         private async Task RefreshCurrentStatusAsync()
         {
             LogClear();
@@ -190,26 +216,59 @@ namespace Multipurpose
             lblCurrentStatus.Text = "Loading...";
             ToggleAllButtons(false);
 
-            string dismResult = await RunProcessAsync("dism.exe", "/online /get-currentedition");
-            Match editionMatch = Regex.Match(dismResult, @"Current Edition : (.*)");
-            _currentWindowsEdition = editionMatch.Success ? editionMatch.Groups[1].Value.Trim() : "Unknown";
+            try
+            {
+                // FIX: Use PowerShell Get-CimInstance which is more reliable than the deprecated wmic.exe
+                string powerShellExe = Get64BitPowerShellPath();
+                string psCommand = "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption";
+                string osCaptionResult = await RunProcessAsync(powerShellExe, $"-Command \"{psCommand}\"");
 
-            string slmgrResult = await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
-            Match statusMatch = Regex.Match(slmgrResult, @"License Status: (.*)");
-            string status = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
+                _currentWindowsEdition = osCaptionResult.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim();
 
-            lblCurrentEdition.Text = _currentWindowsEdition;
-            lblCurrentStatus.Text = status;
-            Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
+                if (string.IsNullOrWhiteSpace(_currentWindowsEdition))
+                {
+                    _currentWindowsEdition = "Unknown (Error fetching)";
+                    Log("[Error] Could not determine OS Edition via PowerShell.");
+                }
 
-            ToggleAllButtons(true);
-            cboProducts_SelectedIndexChanged(null, null);
+                string slmgrResult = await RunSlmgrCommand("/dli", false); // Run silently first
+                Match statusMatch = Regex.Match(slmgrResult, @"License Status: (.*)", RegexOptions.IgnoreCase);
+                string status = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
+
+                lblCurrentEdition.Text = _currentWindowsEdition;
+                lblCurrentStatus.Text = status;
+                Log($"OS Edition: {_currentWindowsEdition}");
+                Log($"License Status: {status}");
+                Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
+            }
+            catch (Exception ex)
+            {
+                Log($"[FATAL] An error occurred during status refresh: {ex.Message}");
+                lblCurrentEdition.Text = "Error";
+                lblCurrentStatus.Text = "Error";
+            }
+            finally
+            {
+                ToggleAllButtons(true);
+                cboProducts_SelectedIndexChanged(null, null);
+            }
         }
+
 
         private async Task<bool> IsWindowsActivatedAsync()
         {
-            string result = await RunProcessAsync("cscript.exe", "//Nologo C:\\Windows\\System32\\slmgr.vbs /dli");
-            return result.Contains("---LICENSED---");
+            string result = await RunSlmgrCommand("/dli", false); // Run silently, we only need the result
+            return result.IndexOf("Licensed", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private async Task<string> RunSlmgrCommand(string arguments, bool logToUi = true)
+        {
+            string result = await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs {arguments}");
+            if (logToUi)
+            {
+                Log(result);
+            }
+            return result;
         }
 
         private async Task<string> RunProcessAsync(string fileName, string arguments)
@@ -237,8 +296,8 @@ namespace Multipurpose
                         string error = process.StandardError.ReadToEnd();
                         process.WaitForExit();
 
-                        if (!string.IsNullOrWhiteSpace(output)) outputBuilder.AppendLine(output);
-                        if (!string.IsNullOrWhiteSpace(error)) outputBuilder.AppendLine(error);
+                        if (!string.IsNullOrWhiteSpace(output)) outputBuilder.Append(output);
+                        if (!string.IsNullOrWhiteSpace(error)) outputBuilder.Append(error);
                     }
                 });
             }
@@ -246,7 +305,6 @@ namespace Multipurpose
             {
                 outputBuilder.AppendLine($"An error occurred: {ex.GetBaseException().Message}");
             }
-            Log(outputBuilder.ToString());
             return outputBuilder.ToString();
         }
 
