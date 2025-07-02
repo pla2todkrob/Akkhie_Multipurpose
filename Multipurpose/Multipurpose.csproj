@@ -70,6 +70,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UpdateSetApp.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UpdateSetApp.Designer.cs">
+      <DependentUpon>UpdateSetApp.cs</DependentUpon>
+    </Compile>
     <Compile Include="WindowsSettingsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
