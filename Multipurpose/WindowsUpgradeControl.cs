@@ -16,6 +16,7 @@ namespace Multipurpose
         private const string LicenseCsvFileName = @"Licenses\LicenseWindows.csv";
         private Dictionary<string, List<string>> _productKeys = new Dictionary<string, List<string>>();
         private string _currentWindowsEdition = "Unknown";
+        private string _currentWindowsFamily = "Unknown";
 
         public WindowsUpgradeControl()
         {
@@ -29,8 +30,12 @@ namespace Multipurpose
             await RefreshCurrentStatusAsync();
         }
 
-        #region Core Logic
+        #region Core Logic: Two-Part Process
 
+        /// <summary>
+        /// Part 2: ทำงานหลัง Upgrade และ Restart สำเร็จแล้ว
+        /// จะทำการติดตั้ง License Key ของจริงและพยายาม Activate
+        /// </summary>
         private async Task ActivateProductAsync(string productName)
         {
             if (!_productKeys.ContainsKey(productName) || !_productKeys[productName].Any())
@@ -40,21 +45,18 @@ namespace Multipurpose
             }
 
             LogClear();
-            Log($"--- เริ่มการ Activate สำหรับ: '{productName}' ---");
+            Log($"--- PART 2: เริ่มการ Activate สำหรับ '{productName}' ---");
             ToggleAllButtons(false);
 
             List<string> keysToTry = _productKeys[productName];
             bool activationSuccess = false;
 
-            Log("--- Clearing any existing product key... ---");
-            await RunSlmgrCommand("/upk");
-
             foreach (var key in keysToTry)
             {
-                Log($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
+                Log($"\n[7] กำลังติดตั้ง License Key: ...{key.Substring(key.Length - 5)}");
                 await RunSlmgrCommand($"/ipk {key}");
 
-                Log("--- Attempting to activate Windows... ---");
+                Log("[8] กำลังพยายาม Activate Windows (Online)...");
                 await RunSlmgrCommand("/ato");
 
                 if (await IsWindowsActivatedAsync())
@@ -65,7 +67,7 @@ namespace Multipurpose
                 }
                 else
                 {
-                    Log($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
+                    Log($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป (ถ้ามี)...");
                 }
             }
 
@@ -75,10 +77,22 @@ namespace Multipurpose
                 Log($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
             }
 
+            Log("\n[9] กำลังตรวจสอบวันหมดอายุ...");
+            await RunSlmgrCommand("/xpr");
+
+            Log("\n[10] กำลังแสดงข้อมูล License โดยละเอียด...");
+            await RunSlmgrCommand("/dli");
+
+            Log("\n--- กระบวนการทั้งหมดเสร็จสิ้น ---");
+
             await RefreshCurrentStatusAsync();
             ToggleAllButtons(true);
         }
 
+        /// <summary>
+        /// Part 1: เริ่มกระบวนการ Upgrade Edition
+        /// จะเตรียมระบบและเริ่มการอัปเกรด ซึ่งจะทำให้เครื่อง Restart
+        /// </summary>
         private async Task UpgradeEditionAsync(string targetProduct)
         {
             string genericKey = ConfigurationManager.AppSettings[$"GenericKey:{targetProduct}"];
@@ -89,32 +103,43 @@ namespace Multipurpose
             }
 
             var confirmResult = MessageBox.Show(
-                $"คุณกำลังจะเปลี่ยน Edition ของ Windows จาก '{_currentWindowsEdition}' เป็น '{targetProduct}'.\nขั้นตอนนี้อาจต้องใช้เวลาและเครื่องอาจจะ Restart อัตโนมัติหลังเสร็จสิ้น\n\nดำเนินการต่อหรือไม่?",
-                "ยืนยันการเปลี่ยน Edition",
+                $"คุณกำลังจะอัปเกรด Windows เป็น '{targetProduct}'.\n\nขั้นตอนนี้จะทำให้เครื่องคอมพิวเตอร์ Restart อัตโนมัติ\n**หลังจาก Restart เสร็จสิ้น ให้เปิดโปรแกรมนี้อีกครั้งแล้วกด 'Activate'**\n\nดำเนินการต่อหรือไม่?",
+                "ยืนยันการ Upgrade Edition",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
             if (confirmResult == DialogResult.No) return;
 
             LogClear();
-            Log($"--- เริ่มการเปลี่ยน Edition เป็น: '{targetProduct}' ---");
+            Log($"--- PART 1: เริ่มการ Upgrade Edition เป็น '{targetProduct}' ---");
             ToggleAllButtons(false);
 
-            Log("--- Clearing any existing product key... ---");
+            Log("[1] กำลังล้าง Product Key เก่า (ถ้ามี)...");
             await RunSlmgrCommand("/upk");
 
-            Log($"--- Installing Generic Key for '{targetProduct}'... ---");
-            await RunSlmgrCommand($"/ipk {genericKey}");
+            Log("[2] กำลังล้าง Product Key จาก Registry...");
+            await RunSlmgrCommand("/cpky");
 
-            Log("--- Attempting to activate to trigger edition change... ---");
-            await RunSlmgrCommand("/ato");
+            Log("[3] กำลังตรวจสอบและเริ่ม Service 'License Manager'...");
+            await RunProcessAsync("sc.exe", "config LicenseManager start= auto");
+            await RunProcessAsync("net.exe", "start LicenseManager");
 
-            Log("\n--- กระบวนการเปลี่ยน Edition เสร็จสิ้น ---");
-            Log("กรุณาตรวจสอบสถานะ Windows และ Restart เครื่องคอมพิวเตอร์");
-            Log("หลังจาก Restart, หาก Windows ยังไม่ Activate, ให้เปิดโปรแกรมนี้อีกครั้งแล้วกด Activate ซ้ำ");
+            Log("[4] กำลังตรวจสอบและเริ่ม Service 'Windows Update'...");
+            await RunProcessAsync("sc.exe", "config wuauserv start= auto");
+            await RunProcessAsync("net.exe", "start wuauserv");
 
-            await RefreshCurrentStatusAsync();
-            ToggleAllButtons(true);
+            // *** MODIFIED: Use the modern WindowsUpdateAdministrator COM object for the most reliable upgrade ***
+            Log("\n[5] กำลังเริ่มการอัปเกรดด้วย Windows Update Administrator API...");
+            Log($"   - Generic Product Key: {genericKey}");
+            Log("--- จะมีหน้าต่างของ Windows แสดงขึ้นมาเพื่อดำเนินการต่อ ---");
+
+            string powerShellScript = $"try {{ $updater = New-Object -ComObject 'Windows.System.Update.WindowsUpdateAdministrator'; $updater.UpgradeEdition('{genericKey}'); Write-Output 'Upgrade process initiated successfully.'; }} catch {{ Write-Error -Message $_.Exception.Message; exit 1; }}";
+            string psOutput = await RunPowerShellScriptAsync(powerShellScript);
+            Log(psOutput);
+
+            Log("\n--- กระบวนการอัปเกรดเริ่มต้นแล้ว ---");
+            Log("เครื่องจะทำการอัปเกรดและ Restart ในไม่ช้า");
+            Log("!!! สำคัญ: หลังจากเครื่องเปิดขึ้นมาใหม่ ให้เปิดโปรแกรมนี้อีกครั้งและกดปุ่ม 'Activate' เพื่อทำการ Activate ด้วย License Key ของคุณ !!!");
         }
 
         #endregion
@@ -136,12 +161,15 @@ namespace Multipurpose
 
             string targetProduct = cboProducts.SelectedItem.ToString();
 
-            if (_currentWindowsEdition.IndexOf(targetProduct.Replace("Windows 11", "").Replace("Windows 10", "").Trim(), StringComparison.OrdinalIgnoreCase) >= 0)
+            // ตรวจสอบว่า Edition ปัจจุบันตรงกับเป้าหมายหรือไม่
+            if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
             {
+                // ถ้าตรงกัน แสดงว่าเป็นการ Activate
                 await ActivateProductAsync(targetProduct);
             }
             else
             {
+                // ถ้าไม่ตรง แสดงว่าเป็นการ Upgrade
                 await UpgradeEditionAsync(targetProduct);
             }
         }
@@ -158,15 +186,16 @@ namespace Multipurpose
             btnStartProcess.Enabled = true;
             string targetProduct = cboProducts.SelectedItem.ToString();
 
-            if (_currentWindowsEdition.IndexOf(targetProduct.Replace("Windows 11", "").Replace("Windows 10", "").Trim(), StringComparison.OrdinalIgnoreCase) >= 0)
+            // ตรรกะใหม่สำหรับปุ่มและคำอธิบาย
+            if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                lblProcessDescription.Text = $"Edition ปัจจุบันตรงกับเป้าหมายแล้ว โปรแกรมจะทำการ Activate โดยใช้คีย์จากไฟล์ CSV";
-                btnStartProcess.Text = "Activate";
+                lblProcessDescription.Text = $"Edition ปัจจุบันตรงกับเป้าหมายแล้ว\nกดปุ่มด้านล่างเพื่อเริ่มการ Activate ด้วย License Key ของคุณ";
+                btnStartProcess.Text = "Activate Windows";
             }
             else
             {
-                lblProcessDescription.Text = $"Edition ปัจจุบัน ('{_currentWindowsEdition}') ไม่ตรงกับเป้าหมาย โปรแกรมจะทำการเปลี่ยน Edition โดยใช้ Generic Key จาก App.config";
-                btnStartProcess.Text = "Change Edition";
+                lblProcessDescription.Text = $"Edition ปัจจุบัน ('{_currentWindowsEdition}') ไม่ตรงกับเป้าหมาย\nกดปุ่มด้านล่างเพื่อเริ่มการ Upgrade Edition (จำเป็นต้อง Restart)";
+                btnStartProcess.Text = "Upgrade Edition";
             }
         }
         #endregion
@@ -197,6 +226,13 @@ namespace Multipurpose
             }
         }
 
+        private async Task<string> RunPowerShellScriptAsync(string script)
+        {
+            string powerShellExe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WindowsPowerShell\\v1.0\\powershell.exe");
+            return await RunProcessAsync(powerShellExe, $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
+        }
+
+
         private string Get64BitPowerShellPath()
         {
             if (Environment.Is64BitProcess) return "powershell.exe";
@@ -218,12 +254,11 @@ namespace Multipurpose
 
             try
             {
-                // FIX: Use PowerShell Get-CimInstance which is more reliable than the deprecated wmic.exe
                 string powerShellExe = Get64BitPowerShellPath();
                 string psCommand = "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption";
                 string osCaptionResult = await RunProcessAsync(powerShellExe, $"-Command \"{psCommand}\"");
 
-                _currentWindowsEdition = osCaptionResult.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim();
+                _currentWindowsEdition = osCaptionResult.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim().Replace("Microsoft ", "");
 
                 if (string.IsNullOrWhiteSpace(_currentWindowsEdition))
                 {
@@ -231,12 +266,16 @@ namespace Multipurpose
                     Log("[Error] Could not determine OS Edition via PowerShell.");
                 }
 
-                string slmgrResult = await RunSlmgrCommand("/dli", false); // Run silently first
+                _currentWindowsFamily = GetWindowsFamily(_currentWindowsEdition);
+                UpdateProductComboBox();
+
+                string slmgrResult = await RunSlmgrCommand("/dli", false);
                 Match statusMatch = Regex.Match(slmgrResult, @"License Status: (.*)", RegexOptions.IgnoreCase);
                 string status = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
 
                 lblCurrentEdition.Text = _currentWindowsEdition;
                 lblCurrentStatus.Text = status;
+                Log($"OS Family: {_currentWindowsFamily}");
                 Log($"OS Edition: {_currentWindowsEdition}");
                 Log($"License Status: {status}");
                 Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
@@ -254,10 +293,41 @@ namespace Multipurpose
             }
         }
 
+        private string GetWindowsFamily(string fullOsName)
+        {
+            if (string.IsNullOrWhiteSpace(fullOsName)) return "Unknown";
+            if (fullOsName.IndexOf("Windows 11", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows 11";
+            if (fullOsName.IndexOf("Windows 10", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows 10";
+            if (fullOsName.IndexOf("Server 2016", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows Server 2016";
+            if (fullOsName.IndexOf("Server 2012", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows Server 2012";
+            if (fullOsName.IndexOf("Server 2008", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows Server 2008";
+            if (fullOsName.IndexOf("Windows 8.1", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows 8.1";
+            if (fullOsName.IndexOf("Windows 8", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows 8";
+            if (fullOsName.IndexOf("Windows 7", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows 7";
+            if (fullOsName.IndexOf("Vista", StringComparison.OrdinalIgnoreCase) >= 0) return "Windows Vista";
+            return "Unknown";
+        }
+
+        private void UpdateProductComboBox()
+        {
+            if (_productKeys == null || !_productKeys.Any()) return;
+
+            var filteredProducts = _productKeys.Keys
+                                        .Where(p => p.StartsWith(_currentWindowsFamily, StringComparison.OrdinalIgnoreCase))
+                                        .ToList();
+
+            cboProducts.DataSource = filteredProducts;
+            cboProducts.SelectedIndex = -1;
+
+            if (!filteredProducts.Any())
+            {
+                Log($"[Warning] ไม่พบ License Key สำหรับ '{_currentWindowsFamily}' ในไฟล์ {LicenseCsvFileName}");
+            }
+        }
 
         private async Task<bool> IsWindowsActivatedAsync()
         {
-            string result = await RunSlmgrCommand("/dli", false); // Run silently, we only need the result
+            string result = await RunSlmgrCommand("/dli", false);
             return result.IndexOf("Licensed", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
@@ -311,8 +381,8 @@ namespace Multipurpose
         private void ToggleAllButtons(bool isEnabled)
         {
             btnRefreshStatus.Enabled = isEnabled;
-            btnStartProcess.Enabled = isEnabled;
-            cboProducts.Enabled = isEnabled;
+            btnStartProcess.Enabled = isEnabled && cboProducts.Items.Count > 0;
+            cboProducts.Enabled = isEnabled && cboProducts.Items.Count > 0;
         }
 
         private void LoadLicenseKeysFromCsv()
@@ -344,7 +414,6 @@ namespace Multipurpose
                         _productKeys[product].Add(key);
                     }
                 }
-                cboProducts.DataSource = _productKeys.Keys.ToList();
                 cboProducts.SelectedIndex = -1;
             }
             catch (Exception ex)

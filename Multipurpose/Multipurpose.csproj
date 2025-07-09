@@ -70,6 +70,24 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShippingCostControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ShippingCostControl.Designer.cs">
+      <DependentUpon>ShippingCostControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Tools\DeleteAllBoxesTool.cs" />
+    <Compile Include="Tools\ITroubleshooterTool.cs" />
+    <Compile Include="Tools\NewWasteAddTool.cs" />
+    <Compile Include="Tools\NewWasteTool.cs" />
+    <Compile Include="Tools\ToolHelpers.cs" />
+    <Compile Include="Tools\UnlockQuotationTool.cs" />
+    <Compile Include="TroubleshooterControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TroubleshooterControl.Designer.cs">
+      <DependentUpon>TroubleshooterControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="UpdateSetApp.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -100,6 +118,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="TroubleshooterControl.resx">
+      <DependentUpon>TroubleshooterControl.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Fonts\THSarabunNew Bold.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
