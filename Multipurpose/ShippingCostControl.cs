@@ -132,6 +132,7 @@ namespace Multipurpose
 
             if (!DataAccess.IsConnectionConfigured())
             {
+                MessageBox.Show("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบการตั้งค่าใน App.config", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Enabled = false;
                 return;
             }
@@ -183,8 +184,7 @@ namespace Multipurpose
                     .AsEnumerable().Select(r => new TruckType { ID = r.Field<string>("TruckTypeID"), Description = r.Field<string>("TruckTypeDesc") }).ToList();
 
                 // --- Populate ComboBoxes ---
-                PopulateComboBox(cboAreaProvince, _provinces, "Name", "ID");
-
+                PopulateComboBox(cboAreaProvince, new List<Province>(_provinces), "Name", "ID");
                 PopulateComboBox(cboRouteFromProvince, new List<Province>(_provinces), "Name", "ID");
                 PopulateComboBox(cboRouteToProvince, new List<Province>(_provinces), "Name", "ID");
                 PopulateComboBox(cboAreaTruckType, new List<TruckType>(_truckTypes), "Description", "ID");
@@ -218,6 +218,7 @@ namespace Multipurpose
             dgvAreaRate.DataSource = null;
             btnAreaSave.Text = "บันทึก";
             _selectedAreaRateId = null;
+            btnAreaDelete.Enabled = false;
         }
 
         private void cboAreaProvince_SelectedIndexChanged(object sender, EventArgs e)
@@ -280,7 +281,13 @@ namespace Multipurpose
 
         private void dgvAreaRate_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvAreaRate.CurrentRow == null || dgvAreaRate.CurrentRow.DataBoundItem == null) return;
+            if (dgvAreaRate.CurrentRow == null || dgvAreaRate.CurrentRow.DataBoundItem == null)
+            {
+                _selectedAreaRateId = null;
+                btnAreaSave.Text = "บันทึก";
+                btnAreaDelete.Enabled = false;
+                return;
+            }
 
             var row = (dgvAreaRate.CurrentRow.DataBoundItem as DataRowView).Row;
             _selectedAreaRateId = row["TruckRateID"].ToString();
@@ -332,7 +339,6 @@ namespace Multipurpose
                                 // If no record was updated, insert a new one.
                                 cmd.CommandText = "INSERT INTO tbTruckRate (TruckRateID, TruckTypeID, TumbolID, Rate) VALUES (@TruckRateID, @TruckTypeID, @TumbolID, @Rate)";
 
-                                // *** MODIFIED: Call Stored Procedure to get new ID ***
                                 object newIdResult;
                                 using (var spCmd = new SqlCommand("sp_GetID", conn, transaction))
                                 {
@@ -433,12 +439,11 @@ namespace Multipurpose
             }
             try
             {
-                // CORRECTED: Using CarTypeID in the WHERE clause as per the schema
                 string query = "SELECT * FROM tbTransChargeRate2 WHERE FromAumphurID = @FromID AND ToAumphurID = @ToID AND CarTypeID = @CarTypeID ORDER BY StartDate DESC";
                 var dt = await DataAccess.GetDataTableAsync(query,
                     new SqlParameter("@FromID", cboRouteFromAumphur.SelectedValue),
                     new SqlParameter("@ToID", cboRouteToAumphur.SelectedValue),
-                    new SqlParameter("@CarTypeID", cboRouteTruckType.SelectedValue)); // Pass TruckTypeID to the parameter named @CarTypeID
+                    new SqlParameter("@CarTypeID", cboRouteTruckType.SelectedValue));
                 dgvRouteRate.DataSource = dt;
             }
             catch (Exception ex)
@@ -449,35 +454,27 @@ namespace Multipurpose
 
         private void dgvRouteRate_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvRouteRate.CurrentRow == null || dgvRouteRate.CurrentRow.DataBoundItem == null) return;
+            if (dgvRouteRate.CurrentRow == null || dgvRouteRate.CurrentRow.DataBoundItem == null)
+            {
+                _selectedRouteRateId = null;
+                btnRouteSave.Text = "บันทึก";
+                btnRouteDelete.Enabled = false;
+                return;
+            }
 
             var row = (dgvRouteRate.CurrentRow.DataBoundItem as DataRowView).Row;
             _selectedRouteRateId = row["ChargeRateID"].ToString();
             numRouteTripRate.Value = row.Field<decimal?>("CustRatePerTrip") ?? 0;
             numRouteTrailerRate.Value = row.Field<decimal?>("TrailerCustRateTrip") ?? 0;
 
-            if (DateTime.TryParseExact(row["StartDate"].ToString(), "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime startDate))
+            if (DateTime.TryParse(row["StartDate"].ToString(), out DateTime startDate))
             {
-                if (startDate >= dtpRouteStartDate.MinDate && startDate <= dtpRouteStartDate.MaxDate)
-                {
-                    dtpRouteStartDate.Value = startDate;
-                }
+                dtpRouteStartDate.Value = startDate;
             }
 
-            if (DateTime.TryParseExact(row["EndDate"].ToString(), "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime endDate))
+            if (DateTime.TryParse(row["EndDate"].ToString(), out DateTime endDate))
             {
-                if (endDate >= dtpRouteEndDate.MaxDate)
-                {
-                    dtpRouteEndDate.Value = dtpRouteEndDate.MaxDate;
-                }
-                else if (endDate <= dtpRouteEndDate.MinDate)
-                {
-                    dtpRouteEndDate.Value = dtpRouteEndDate.MinDate;
-                }
-                else
-                {
-                    dtpRouteEndDate.Value = endDate;
-                }
+                dtpRouteEndDate.Value = endDate;
             }
 
             btnRouteSave.Text = "อัปเดต";
@@ -497,19 +494,17 @@ namespace Multipurpose
                 string query;
                 var parameters = new List<SqlParameter>
                 {
-                    // CORRECTED: The parameter name is @CarTypeID to match the column in tbTransChargeRate2
                     new SqlParameter("@CarTypeID", cboRouteTruckType.SelectedValue),
                     new SqlParameter("@FromAumphurID", cboRouteFromAumphur.SelectedValue),
                     new SqlParameter("@ToAumphurID", cboRouteToAumphur.SelectedValue),
                     new SqlParameter("@CustRatePerTrip", numRouteTripRate.Value),
                     new SqlParameter("@TrailerCustRateTrip", numRouteTrailerRate.Value),
-                    new SqlParameter("@StartDate", dtpRouteStartDate.Value.ToString("yyyy/MM/dd")),
-                    new SqlParameter("@EndDate", dtpRouteEndDate.Value.ToString("yyyy/MM/dd"))
+                    new SqlParameter("@StartDate", dtpRouteStartDate.Value.ToString("yyyy-MM-dd")),
+                    new SqlParameter("@EndDate", dtpRouteEndDate.Value.ToString("yyyy-MM-dd"))
                 };
 
                 if (string.IsNullOrEmpty(_selectedRouteRateId)) // INSERT
                 {
-                    // *** MODIFIED: Call Stored Procedure to get new ID ***
                     query = @"INSERT INTO tbTransChargeRate2 (ChargeRateID, CarTypeID, FromAumphurID, ToAumphurID, CustRatePerTrip, TrailerCustRateTrip, StartDate, EndDate)
                               VALUES (@ChargeRateID, @CarTypeID, @FromAumphurID, @ToAumphurID, @CustRatePerTrip, @TrailerCustRateTrip, @StartDate, @EndDate)";
 
@@ -524,7 +519,6 @@ namespace Multipurpose
                 }
                 else // UPDATE
                 {
-                    // CORRECTED: Using CarTypeID in the UPDATE statement
                     query = @"UPDATE tbTransChargeRate2 SET 
                                 CarTypeID = @CarTypeID, FromAumphurID = @FromAumphurID, ToAumphurID = @ToAumphurID, 
                                 CustRatePerTrip = @CustRatePerTrip, TrailerCustRateTrip = @TrailerCustRateTrip, 

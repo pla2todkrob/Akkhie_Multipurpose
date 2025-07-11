@@ -13,7 +13,7 @@ namespace Multipurpose
     public partial class OfficeToolsControl : UserControl
     {
         private const string LicenseCsvFileName = @"Licenses\LicenseOffice.csv";
-        private Dictionary<string, List<string>> _officeProductKeys = new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<string>> _officeProductKeys = new Dictionary<string, List<string>>();
         private string _osppPath = "";
 
         public OfficeToolsControl()
@@ -157,24 +157,24 @@ namespace Multipurpose
         {
             if (string.IsNullOrEmpty(_osppPath))
             {
-                lblCurrentProductName.Text = "Not Found";
-                lblCurrentStatus.Text = "Not Found";
+                lblCurrentProductNameValue.Text = "Not Found";
+                lblCurrentStatusValue.Text = "Not Found";
                 return;
             }
             LogClear();
             Log("--- กำลังตรวจสอบสถานะ Office ---");
-            lblCurrentProductName.Text = "Loading...";
-            lblCurrentStatus.Text = "Loading...";
+            lblCurrentProductNameValue.Text = "Loading...";
+            lblCurrentStatusValue.Text = "Loading...";
             ToggleAllButtons(false);
 
             string statusResult = await RunOsppCommand("/dstatus");
             Log(statusResult); // Log the full output for debugging
 
             Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME:.*?(Office.*?)[\s,]*$|LICENSE NAME: (.*)", RegexOptions.Multiline);
-            lblCurrentProductName.Text = nameMatch.Success ? (nameMatch.Groups[1].Success ? nameMatch.Groups[1].Value.Trim() : nameMatch.Groups[2].Value.Trim()) : "No License Found";
+            lblCurrentProductNameValue.Text = nameMatch.Success ? (nameMatch.Groups[1].Success ? nameMatch.Groups[1].Value.Trim() : nameMatch.Groups[2].Value.Trim()) : "No License Found";
 
             Match statusMatch = Regex.Match(statusResult, @"LICENSE STATUS:\s*---(.*?)---");
-            lblCurrentStatus.Text = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
+            lblCurrentStatusValue.Text = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
 
             Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
             ToggleAllButtons(true);
@@ -229,7 +229,7 @@ namespace Multipurpose
                         RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
-                        Verb = "runas",
+                        // Verb = "runas", // Consider if admin rights are needed for every call
                         StandardOutputEncoding = Encoding.UTF8
                     };
                     using (var process = new Process { StartInfo = startInfo })
@@ -250,9 +250,16 @@ namespace Multipurpose
 
         private void ToggleAllButtons(bool isEnabled)
         {
-            btnRefreshStatus.Enabled = isEnabled;
-            btnActivateOffice.Enabled = isEnabled;
-            cboOfficeProducts.Enabled = isEnabled;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => ToggleAllButtons(isEnabled)));
+            }
+            else
+            {
+                btnRefreshStatus.Enabled = isEnabled;
+                btnActivateOffice.Enabled = isEnabled;
+                cboOfficeProducts.Enabled = isEnabled;
+            }
         }
 
         private void LoadLicenseKeysFromCsv()
@@ -285,7 +292,8 @@ namespace Multipurpose
                     }
                 }
                 cboOfficeProducts.DataSource = _officeProductKeys.Keys.ToList();
-                cboOfficeProducts.SelectedIndex = -1;
+                if (cboOfficeProducts.Items.Count > 0)
+                    cboOfficeProducts.SelectedIndex = 0;
             }
             catch (Exception ex)
             {

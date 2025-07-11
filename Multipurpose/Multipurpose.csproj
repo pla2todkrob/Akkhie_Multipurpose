@@ -56,6 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AkpAppToolsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AkpAppToolsControl.Designer.cs">
+      <DependentUpon>AkpAppToolsControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
