@@ -68,11 +68,8 @@
             this.mainTableLayoutPanel.Padding = new System.Windows.Forms.Padding(10);
             this.mainTableLayoutPanel.RowCount = 4;
             this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            // --- CHANGE START ---
-            // เปลี่ยนจาก Absolute เป็น AutoSize เพื่อให้ปรับขนาดตามเนื้อหา
             this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
             this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            // --- CHANGE END ---
             this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.mainTableLayoutPanel.Size = new System.Drawing.Size(758, 533);
             this.mainTableLayoutPanel.TabIndex = 0;
@@ -203,6 +200,7 @@
             // 
             // actionsTableLayoutPanel
             // 
+            this.actionsTableLayoutPanel.AutoSize = true;
             this.actionsTableLayoutPanel.ColumnCount = 3;
             this.actionsTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.actionsTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));

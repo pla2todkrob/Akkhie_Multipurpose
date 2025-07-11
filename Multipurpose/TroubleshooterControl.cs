@@ -152,17 +152,17 @@ namespace Multipurpose
             dtpTo.Value = DateTime.Now;
             panelDateRange.Enabled = false;
 
-            // --- CHANGE START ---
-            // เปลี่ยน flpActions เป็น flpVerticalActions และลบ grpActions ที่ไม่มีแล้วออกไป
-            flpVerticalActions.Enabled = true; // The panel itself is enabled
-            // --- CHANGE END ---
-            UpdateToolButtonStates(); // But individual buttons are controlled
+            flpVerticalActions.Enabled = true;
+
+            UpdateToolButtonStates();
 
             dgvResults.DataSource = null;
             dgvResults.Columns.Clear();
 
             panelProcess.Visible = false;
+            btnCancel.Enabled = true;
             btnProcess.Enabled = false;
+            
             btnProcess.Text = "ดำเนินการ";
 
             _activeTool = null;
@@ -312,7 +312,6 @@ namespace Multipurpose
             // The confirmation logic is now handled inside the tool itself for better context.
 
             btnProcess.Enabled = false;
-            btnCancel.Enabled = false;
 
             try
             {
