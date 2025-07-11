@@ -112,6 +112,9 @@
     <Compile Include="WindowsUpgradeControl.Designer.cs">
       <DependentUpon>WindowsUpgradeControl.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -121,6 +124,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="TroubleshooterControl.resx">
+      <DependentUpon>TroubleshooterControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WindowsSettingsControl.resx">
       <DependentUpon>WindowsSettingsControl.cs</DependentUpon>
     </EmbeddedResource>

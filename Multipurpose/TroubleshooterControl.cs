@@ -131,7 +131,10 @@ namespace Multipurpose
         /// </summary>
         private void UpdateToolButtonStates()
         {
-            foreach (Button btn in flpActions.Controls.OfType<Button>())
+            // --- CHANGE START ---
+            // เปลี่ยน flpActions เป็น flpVerticalActions
+            foreach (Button btn in flpVerticalActions.Controls.OfType<Button>())
+            // --- CHANGE END ---
             {
                 // A button is enabled only if a tool is registered for it.
                 btn.Enabled = _tools.ContainsKey(btn.Name);
@@ -149,8 +152,10 @@ namespace Multipurpose
             dtpTo.Value = DateTime.Now;
             panelDateRange.Enabled = false;
 
-            grpActions.Enabled = true;
-            flpActions.Enabled = true; // The panel itself is enabled
+            // --- CHANGE START ---
+            // เปลี่ยน flpActions เป็น flpVerticalActions และลบ grpActions ที่ไม่มีแล้วออกไป
+            flpVerticalActions.Enabled = true; // The panel itself is enabled
+            // --- CHANGE END ---
             UpdateToolButtonStates(); // But individual buttons are controlled
 
             dgvResults.DataSource = null;
@@ -167,7 +172,10 @@ namespace Multipurpose
         {
             chkUseDateRange.CheckedChanged += chkUseDateRange_CheckedChanged;
 
-            foreach (Button btn in flpActions.Controls.OfType<Button>())
+            // --- CHANGE START ---
+            // เปลี่ยน flpActions เป็น flpVerticalActions
+            foreach (Button btn in flpVerticalActions.Controls.OfType<Button>())
+            // --- CHANGE END ---
             {
                 btn.Click += ActionButton_Click;
             }
@@ -193,7 +201,10 @@ namespace Multipurpose
             }
 
             grpFilters.Enabled = false;
-            flpActions.Enabled = false;
+            // --- CHANGE START ---
+            // เปลี่ยน flpActions เป็น flpVerticalActions
+            flpVerticalActions.Enabled = false;
+            // --- CHANGE END ---
             panelProcess.Visible = true;
             btnProcess.Text = _activeTool.ToolName;
 

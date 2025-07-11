@@ -68,8 +68,11 @@
             this.mainTableLayoutPanel.Padding = new System.Windows.Forms.Padding(10);
             this.mainTableLayoutPanel.RowCount = 4;
             this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 80F));
+            // --- CHANGE START ---
+            // เปลี่ยนจาก Absolute เป็น AutoSize เพื่อให้ปรับขนาดตามเนื้อหา
+            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            // --- CHANGE END ---
             this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.mainTableLayoutPanel.Size = new System.Drawing.Size(758, 533);
             this.mainTableLayoutPanel.TabIndex = 0;
@@ -96,12 +99,14 @@
             // 
             // statusGroupBox
             // 
+            this.statusGroupBox.AutoSize = true;
             this.statusGroupBox.Controls.Add(this.statusTableLayoutPanel);
             this.statusGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.statusGroupBox.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.statusGroupBox.Location = new System.Drawing.Point(13, 63);
             this.statusGroupBox.Name = "statusGroupBox";
-            this.statusGroupBox.Size = new System.Drawing.Size(732, 94);
+            this.statusGroupBox.Padding = new System.Windows.Forms.Padding(3, 3, 3, 8);
+            this.statusGroupBox.Size = new System.Drawing.Size(732, 102);
             this.statusGroupBox.TabIndex = 1;
             this.statusGroupBox.TabStop = false;
             this.statusGroupBox.Text = "Current Status";
@@ -117,7 +122,7 @@
             this.statusTableLayoutPanel.Controls.Add(this.lblCurrentProductNameValue, 1, 0);
             this.statusTableLayoutPanel.Controls.Add(this.lblCurrentProductNameLabel, 0, 0);
             this.statusTableLayoutPanel.Controls.Add(this.btnRefreshStatus, 2, 0);
-            this.statusTableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.statusTableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.statusTableLayoutPanel.Location = new System.Drawing.Point(3, 21);
             this.statusTableLayoutPanel.Name = "statusTableLayoutPanel";
             this.statusTableLayoutPanel.RowCount = 2;
@@ -128,45 +133,45 @@
             // 
             // lblCurrentStatusValue
             // 
+            this.lblCurrentStatusValue.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCurrentStatusValue.AutoSize = true;
             this.lblCurrentStatusValue.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentStatusValue.Location = new System.Drawing.Point(105, 35);
+            this.lblCurrentStatusValue.Location = new System.Drawing.Point(105, 44);
             this.lblCurrentStatusValue.Name = "lblCurrentStatusValue";
-            this.lblCurrentStatusValue.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.lblCurrentStatusValue.Size = new System.Drawing.Size(60, 22);
+            this.lblCurrentStatusValue.Size = new System.Drawing.Size(60, 17);
             this.lblCurrentStatusValue.TabIndex = 3;
             this.lblCurrentStatusValue.Text = "Loading...";
             // 
             // lblCurrentStatusLabel
             // 
+            this.lblCurrentStatusLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCurrentStatusLabel.AutoSize = true;
             this.lblCurrentStatusLabel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentStatusLabel.Location = new System.Drawing.Point(3, 35);
+            this.lblCurrentStatusLabel.Location = new System.Drawing.Point(3, 44);
             this.lblCurrentStatusLabel.Name = "lblCurrentStatusLabel";
-            this.lblCurrentStatusLabel.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.lblCurrentStatusLabel.Size = new System.Drawing.Size(96, 22);
+            this.lblCurrentStatusLabel.Size = new System.Drawing.Size(96, 17);
             this.lblCurrentStatusLabel.TabIndex = 2;
             this.lblCurrentStatusLabel.Text = "License Status:";
             // 
             // lblCurrentProductNameValue
             // 
+            this.lblCurrentProductNameValue.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCurrentProductNameValue.AutoSize = true;
             this.lblCurrentProductNameValue.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentProductNameValue.Location = new System.Drawing.Point(105, 0);
+            this.lblCurrentProductNameValue.Location = new System.Drawing.Point(105, 9);
             this.lblCurrentProductNameValue.Name = "lblCurrentProductNameValue";
-            this.lblCurrentProductNameValue.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.lblCurrentProductNameValue.Size = new System.Drawing.Size(60, 22);
+            this.lblCurrentProductNameValue.Size = new System.Drawing.Size(60, 17);
             this.lblCurrentProductNameValue.TabIndex = 1;
             this.lblCurrentProductNameValue.Text = "Loading...";
             // 
             // lblCurrentProductNameLabel
             // 
+            this.lblCurrentProductNameLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCurrentProductNameLabel.AutoSize = true;
             this.lblCurrentProductNameLabel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentProductNameLabel.Location = new System.Drawing.Point(3, 0);
+            this.lblCurrentProductNameLabel.Location = new System.Drawing.Point(3, 9);
             this.lblCurrentProductNameLabel.Name = "lblCurrentProductNameLabel";
-            this.lblCurrentProductNameLabel.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.lblCurrentProductNameLabel.Size = new System.Drawing.Size(96, 22);
+            this.lblCurrentProductNameLabel.Size = new System.Drawing.Size(96, 17);
             this.lblCurrentProductNameLabel.TabIndex = 0;
             this.lblCurrentProductNameLabel.Text = "Product Name:";
             // 
@@ -177,7 +182,7 @@
             this.btnRefreshStatus.Location = new System.Drawing.Point(623, 3);
             this.btnRefreshStatus.Name = "btnRefreshStatus";
             this.statusTableLayoutPanel.SetRowSpan(this.btnRefreshStatus, 2);
-            this.btnRefreshStatus.Size = new System.Drawing.Size(100, 30);
+            this.btnRefreshStatus.Size = new System.Drawing.Size(100, 35);
             this.btnRefreshStatus.TabIndex = 4;
             this.btnRefreshStatus.Text = "Refresh";
             this.btnRefreshStatus.UseVisualStyleBackColor = true;
@@ -185,12 +190,13 @@
             // 
             // actionsGroupBox
             // 
+            this.actionsGroupBox.AutoSize = true;
             this.actionsGroupBox.Controls.Add(this.actionsTableLayoutPanel);
             this.actionsGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.actionsGroupBox.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.actionsGroupBox.Location = new System.Drawing.Point(13, 163);
+            this.actionsGroupBox.Location = new System.Drawing.Point(13, 171);
             this.actionsGroupBox.Name = "actionsGroupBox";
-            this.actionsGroupBox.Size = new System.Drawing.Size(732, 74);
+            this.actionsGroupBox.Size = new System.Drawing.Size(732, 76);
             this.actionsGroupBox.TabIndex = 2;
             this.actionsGroupBox.TabStop = false;
             this.actionsGroupBox.Text = "Actions";
@@ -209,7 +215,7 @@
             this.actionsTableLayoutPanel.Name = "actionsTableLayoutPanel";
             this.actionsTableLayoutPanel.RowCount = 1;
             this.actionsTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.actionsTableLayoutPanel.Size = new System.Drawing.Size(726, 50);
+            this.actionsTableLayoutPanel.Size = new System.Drawing.Size(726, 52);
             this.actionsTableLayoutPanel.TabIndex = 0;
             // 
             // cboOfficeProducts
@@ -217,7 +223,7 @@
             this.cboOfficeProducts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.cboOfficeProducts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboOfficeProducts.FormattingEnabled = true;
-            this.cboOfficeProducts.Location = new System.Drawing.Point(105, 12);
+            this.cboOfficeProducts.Location = new System.Drawing.Point(105, 13);
             this.cboOfficeProducts.Name = "cboOfficeProducts";
             this.cboOfficeProducts.Size = new System.Drawing.Size(512, 25);
             this.cboOfficeProducts.TabIndex = 1;
@@ -227,7 +233,7 @@
             this.lblSelectProduct.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblSelectProduct.AutoSize = true;
             this.lblSelectProduct.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSelectProduct.Location = new System.Drawing.Point(3, 16);
+            this.lblSelectProduct.Location = new System.Drawing.Point(3, 17);
             this.lblSelectProduct.Name = "lblSelectProduct";
             this.lblSelectProduct.Size = new System.Drawing.Size(96, 17);
             this.lblSelectProduct.TabIndex = 0;
@@ -237,7 +243,7 @@
             // 
             this.btnActivateOffice.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnActivateOffice.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnActivateOffice.Location = new System.Drawing.Point(623, 7);
+            this.btnActivateOffice.Location = new System.Drawing.Point(623, 8);
             this.btnActivateOffice.Name = "btnActivateOffice";
             this.btnActivateOffice.Size = new System.Drawing.Size(100, 35);
             this.btnActivateOffice.TabIndex = 2;
@@ -250,25 +256,26 @@
             this.logGroupBox.Controls.Add(this.txtStatus);
             this.logGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.logGroupBox.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.logGroupBox.Location = new System.Drawing.Point(13, 243);
+            this.logGroupBox.Location = new System.Drawing.Point(13, 253);
             this.logGroupBox.Name = "logGroupBox";
-            this.logGroupBox.Size = new System.Drawing.Size(732, 287);
+            this.logGroupBox.Size = new System.Drawing.Size(732, 267);
             this.logGroupBox.TabIndex = 3;
             this.logGroupBox.TabStop = false;
             this.logGroupBox.Text = "Log";
             // 
             // txtStatus
             // 
-            this.txtStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.txtStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
             this.txtStatus.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.txtStatus.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtStatus.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtStatus.ForeColor = System.Drawing.Color.Gainsboro;
             this.txtStatus.Location = new System.Drawing.Point(3, 21);
             this.txtStatus.Multiline = true;
             this.txtStatus.Name = "txtStatus";
             this.txtStatus.ReadOnly = true;
             this.txtStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStatus.Size = new System.Drawing.Size(726, 263);
+            this.txtStatus.Size = new System.Drawing.Size(726, 243);
             this.txtStatus.TabIndex = 0;
             // 
             // OfficeToolsControl
@@ -281,12 +288,15 @@
             this.Size = new System.Drawing.Size(758, 533);
             this.Load += new System.EventHandler(this.OfficeToolsControl_Load);
             this.mainTableLayoutPanel.ResumeLayout(false);
+            this.mainTableLayoutPanel.PerformLayout();
             this.headerPanel.ResumeLayout(false);
             this.headerPanel.PerformLayout();
             this.statusGroupBox.ResumeLayout(false);
+            this.statusGroupBox.PerformLayout();
             this.statusTableLayoutPanel.ResumeLayout(false);
             this.statusTableLayoutPanel.PerformLayout();
             this.actionsGroupBox.ResumeLayout(false);
+            this.actionsGroupBox.PerformLayout();
             this.actionsTableLayoutPanel.ResumeLayout(false);
             this.actionsTableLayoutPanel.PerformLayout();
             this.logGroupBox.ResumeLayout(false);

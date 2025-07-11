@@ -165,8 +165,11 @@
             // tlpAreaRateMain
             // 
             this.tlpAreaRateMain.ColumnCount = 2;
-            this.tlpAreaRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 400F));
-            this.tlpAreaRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            // --- CHANGE START ---
+            // เปลี่ยนจาก Absolute(400F) เป็น Percent(50F)
+            this.tlpAreaRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            // --- CHANGE END ---
+            this.tlpAreaRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tlpAreaRateMain.Controls.Add(this.areaControlsPanel, 0, 0);
             this.tlpAreaRateMain.Controls.Add(this.dgvAreaRate, 1, 0);
             this.tlpAreaRateMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -185,20 +188,20 @@
             this.areaControlsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.areaControlsPanel.Location = new System.Drawing.Point(3, 3);
             this.areaControlsPanel.Name = "areaControlsPanel";
-            this.areaControlsPanel.Size = new System.Drawing.Size(394, 515);
+            this.areaControlsPanel.Size = new System.Drawing.Size(403, 515);
             this.areaControlsPanel.TabIndex = 0;
             // 
             // grpAreaRateInput
             // 
-            this.grpAreaRateInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.grpAreaRateInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpAreaRateInput.Controls.Add(this.btnAreaDelete);
             this.grpAreaRateInput.Controls.Add(this.btnAreaSave);
             this.grpAreaRateInput.Controls.Add(this.numAreaRate);
             this.grpAreaRateInput.Controls.Add(this.label7);
-            this.grpAreaRateInput.Location = new System.Drawing.Point(3, 402);
+            this.grpAreaRateInput.Location = new System.Drawing.Point(3, 412);
             this.grpAreaRateInput.Name = "grpAreaRateInput";
-            this.grpAreaRateInput.Size = new System.Drawing.Size(388, 100);
+            this.grpAreaRateInput.Size = new System.Drawing.Size(397, 100);
             this.grpAreaRateInput.TabIndex = 2;
             this.grpAreaRateInput.TabStop = false;
             this.grpAreaRateInput.Text = "กำหนดค่าขนส่ง";
@@ -219,7 +222,7 @@
             // 
             this.btnAreaSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAreaSave.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAreaSave.Location = new System.Drawing.Point(282, 59);
+            this.btnAreaSave.Location = new System.Drawing.Point(291, 59);
             this.btnAreaSave.Name = "btnAreaSave";
             this.btnAreaSave.Size = new System.Drawing.Size(100, 35);
             this.btnAreaSave.TabIndex = 2;
@@ -238,7 +241,7 @@
             0,
             0});
             this.numAreaRate.Name = "numAreaRate";
-            this.numAreaRate.Size = new System.Drawing.Size(271, 25);
+            this.numAreaRate.Size = new System.Drawing.Size(280, 25);
             this.numAreaRate.TabIndex = 1;
             // 
             // label7
@@ -252,12 +255,13 @@
             // 
             // grpAreaTumbol
             // 
-            this.grpAreaTumbol.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.grpAreaTumbol.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpAreaTumbol.Controls.Add(this.tlpTumbolSelection);
             this.grpAreaTumbol.Location = new System.Drawing.Point(3, 173);
             this.grpAreaTumbol.Name = "grpAreaTumbol";
-            this.grpAreaTumbol.Size = new System.Drawing.Size(388, 223);
+            this.grpAreaTumbol.Size = new System.Drawing.Size(397, 233);
             this.grpAreaTumbol.TabIndex = 1;
             this.grpAreaTumbol.TabStop = false;
             this.grpAreaTumbol.Text = "เลือกตำบล (ไม่เลือก = ทุกตำบล)";
@@ -274,7 +278,7 @@
             this.tlpTumbolSelection.RowCount = 2;
             this.tlpTumbolSelection.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tlpTumbolSelection.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpTumbolSelection.Size = new System.Drawing.Size(382, 199);
+            this.tlpTumbolSelection.Size = new System.Drawing.Size(391, 209);
             this.tlpTumbolSelection.TabIndex = 3;
             // 
             // flpTumbolLinks
@@ -286,14 +290,14 @@
             this.flpTumbolLinks.Location = new System.Drawing.Point(0, 0);
             this.flpTumbolLinks.Margin = new System.Windows.Forms.Padding(0);
             this.flpTumbolLinks.Name = "flpTumbolLinks";
-            this.flpTumbolLinks.Size = new System.Drawing.Size(382, 25);
+            this.flpTumbolLinks.Size = new System.Drawing.Size(391, 25);
             this.flpTumbolLinks.TabIndex = 0;
             // 
             // linkAreaUnselectAll
             // 
             this.linkAreaUnselectAll.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.linkAreaUnselectAll.AutoSize = true;
-            this.linkAreaUnselectAll.Location = new System.Drawing.Point(292, 4);
+            this.linkAreaUnselectAll.Location = new System.Drawing.Point(301, 4);
             this.linkAreaUnselectAll.Name = "linkAreaUnselectAll";
             this.linkAreaUnselectAll.Size = new System.Drawing.Size(87, 17);
             this.linkAreaUnselectAll.TabIndex = 2;
@@ -304,7 +308,7 @@
             // 
             this.linkAreaSelectAll.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.linkAreaSelectAll.AutoSize = true;
-            this.linkAreaSelectAll.Location = new System.Drawing.Point(209, 4);
+            this.linkAreaSelectAll.Location = new System.Drawing.Point(218, 4);
             this.linkAreaSelectAll.Margin = new System.Windows.Forms.Padding(3);
             this.linkAreaSelectAll.Name = "linkAreaSelectAll";
             this.linkAreaSelectAll.Size = new System.Drawing.Size(77, 17);
@@ -318,7 +322,7 @@
             this.clbAreaTumbol.FormattingEnabled = true;
             this.clbAreaTumbol.Location = new System.Drawing.Point(3, 28);
             this.clbAreaTumbol.Name = "clbAreaTumbol";
-            this.clbAreaTumbol.Size = new System.Drawing.Size(376, 168);
+            this.clbAreaTumbol.Size = new System.Drawing.Size(385, 178);
             this.clbAreaTumbol.TabIndex = 1;
             // 
             // grpAreaFilters
@@ -333,7 +337,7 @@
             this.grpAreaFilters.Controls.Add(this.label6);
             this.grpAreaFilters.Location = new System.Drawing.Point(3, 3);
             this.grpAreaFilters.Name = "grpAreaFilters";
-            this.grpAreaFilters.Size = new System.Drawing.Size(388, 164);
+            this.grpAreaFilters.Size = new System.Drawing.Size(397, 164);
             this.grpAreaFilters.TabIndex = 0;
             this.grpAreaFilters.TabStop = false;
             this.grpAreaFilters.Text = "เลือกพื้นที่";
@@ -346,7 +350,7 @@
             this.cboAreaTruckType.FormattingEnabled = true;
             this.cboAreaTruckType.Location = new System.Drawing.Point(9, 129);
             this.cboAreaTruckType.Name = "cboAreaTruckType";
-            this.cboAreaTruckType.Size = new System.Drawing.Size(373, 25);
+            this.cboAreaTruckType.Size = new System.Drawing.Size(382, 25);
             this.cboAreaTruckType.TabIndex = 11;
             // 
             // label1
@@ -366,7 +370,7 @@
             this.cboAreaAumphur.FormattingEnabled = true;
             this.cboAreaAumphur.Location = new System.Drawing.Point(9, 81);
             this.cboAreaAumphur.Name = "cboAreaAumphur";
-            this.cboAreaAumphur.Size = new System.Drawing.Size(373, 25);
+            this.cboAreaAumphur.Size = new System.Drawing.Size(382, 25);
             this.cboAreaAumphur.TabIndex = 9;
             // 
             // label2
@@ -387,7 +391,7 @@
             this.cboAreaProvince.FormattingEnabled = true;
             this.cboAreaProvince.Location = new System.Drawing.Point(9, 33);
             this.cboAreaProvince.Name = "cboAreaProvince";
-            this.cboAreaProvince.Size = new System.Drawing.Size(373, 25);
+            this.cboAreaProvince.Size = new System.Drawing.Size(382, 25);
             this.cboAreaProvince.TabIndex = 7;
             // 
             // label6
@@ -408,12 +412,12 @@
             this.dgvAreaRate.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvAreaRate.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvAreaRate.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvAreaRate.Location = new System.Drawing.Point(403, 3);
+            this.dgvAreaRate.Location = new System.Drawing.Point(412, 3);
             this.dgvAreaRate.Name = "dgvAreaRate";
             this.dgvAreaRate.ReadOnly = true;
             this.dgvAreaRate.RowHeadersWidth = 51;
             this.dgvAreaRate.RowTemplate.Height = 24;
-            this.dgvAreaRate.Size = new System.Drawing.Size(412, 515);
+            this.dgvAreaRate.Size = new System.Drawing.Size(403, 515);
             this.dgvAreaRate.TabIndex = 1;
             // 
             // tabRateByRoute
@@ -430,8 +434,11 @@
             // tlpRouteRateMain
             // 
             this.tlpRouteRateMain.ColumnCount = 2;
-            this.tlpRouteRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 400F));
-            this.tlpRouteRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            // --- CHANGE START ---
+            // เปลี่ยนจาก Absolute(400F) เป็น Percent(50F)
+            this.tlpRouteRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            // --- CHANGE END ---
+            this.tlpRouteRateMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tlpRouteRateMain.Controls.Add(this.routeControlsPanel, 0, 0);
             this.tlpRouteRateMain.Controls.Add(this.dgvRouteRate, 1, 0);
             this.tlpRouteRateMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -449,7 +456,7 @@
             this.routeControlsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.routeControlsPanel.Location = new System.Drawing.Point(3, 3);
             this.routeControlsPanel.Name = "routeControlsPanel";
-            this.routeControlsPanel.Size = new System.Drawing.Size(394, 515);
+            this.routeControlsPanel.Size = new System.Drawing.Size(403, 515);
             this.routeControlsPanel.TabIndex = 0;
             // 
             // grpRouteRateInput
@@ -468,7 +475,7 @@
             this.grpRouteRateInput.Controls.Add(this.label12);
             this.grpRouteRateInput.Location = new System.Drawing.Point(3, 237);
             this.grpRouteRateInput.Name = "grpRouteRateInput";
-            this.grpRouteRateInput.Size = new System.Drawing.Size(388, 200);
+            this.grpRouteRateInput.Size = new System.Drawing.Size(397, 200);
             this.grpRouteRateInput.TabIndex = 1;
             this.grpRouteRateInput.TabStop = false;
             this.grpRouteRateInput.Text = "กำหนดค่าขนส่ง";
@@ -547,7 +554,7 @@
             // 
             this.btnRouteSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRouteSave.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRouteSave.Location = new System.Drawing.Point(282, 159);
+            this.btnRouteSave.Location = new System.Drawing.Point(291, 159);
             this.btnRouteSave.Name = "btnRouteSave";
             this.btnRouteSave.Size = new System.Drawing.Size(100, 35);
             this.btnRouteSave.TabIndex = 2;
@@ -592,7 +599,7 @@
             this.grpRouteFilters.Controls.Add(this.label3);
             this.grpRouteFilters.Location = new System.Drawing.Point(3, 3);
             this.grpRouteFilters.Name = "grpRouteFilters";
-            this.grpRouteFilters.Size = new System.Drawing.Size(388, 228);
+            this.grpRouteFilters.Size = new System.Drawing.Size(397, 228);
             this.grpRouteFilters.TabIndex = 0;
             this.grpRouteFilters.TabStop = false;
             this.grpRouteFilters.Text = "เลือกเส้นทาง";
@@ -605,7 +612,7 @@
             this.cboRouteTruckType.FormattingEnabled = true;
             this.cboRouteTruckType.Location = new System.Drawing.Point(9, 189);
             this.cboRouteTruckType.Name = "cboRouteTruckType";
-            this.cboRouteTruckType.Size = new System.Drawing.Size(373, 25);
+            this.cboRouteTruckType.Size = new System.Drawing.Size(382, 25);
             this.cboRouteTruckType.TabIndex = 15;
             // 
             // label11
@@ -625,7 +632,7 @@
             this.cboRouteToAumphur.FormattingEnabled = true;
             this.cboRouteToAumphur.Location = new System.Drawing.Point(9, 141);
             this.cboRouteToAumphur.Name = "cboRouteToAumphur";
-            this.cboRouteToAumphur.Size = new System.Drawing.Size(373, 25);
+            this.cboRouteToAumphur.Size = new System.Drawing.Size(382, 25);
             this.cboRouteToAumphur.TabIndex = 13;
             // 
             // label10
@@ -645,7 +652,7 @@
             this.cboRouteToProvince.FormattingEnabled = true;
             this.cboRouteToProvince.Location = new System.Drawing.Point(9, 93);
             this.cboRouteToProvince.Name = "cboRouteToProvince";
-            this.cboRouteToProvince.Size = new System.Drawing.Size(373, 25);
+            this.cboRouteToProvince.Size = new System.Drawing.Size(382, 25);
             this.cboRouteToProvince.TabIndex = 11;
             // 
             // label9
@@ -704,12 +711,12 @@
             this.dgvRouteRate.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvRouteRate.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvRouteRate.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvRouteRate.Location = new System.Drawing.Point(403, 3);
+            this.dgvRouteRate.Location = new System.Drawing.Point(412, 3);
             this.dgvRouteRate.Name = "dgvRouteRate";
             this.dgvRouteRate.ReadOnly = true;
             this.dgvRouteRate.RowHeadersWidth = 51;
             this.dgvRouteRate.RowTemplate.Height = 24;
-            this.dgvRouteRate.Size = new System.Drawing.Size(412, 515);
+            this.dgvRouteRate.Size = new System.Drawing.Size(403, 515);
             this.dgvRouteRate.TabIndex = 2;
             // 
             // ShippingCostControl

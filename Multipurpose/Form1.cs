@@ -21,7 +21,11 @@ namespace Multipurpose
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.MinimumSize = new Size(800, 600);
+            // --- CHANGE START ---
+            // ปรับขนาดขั้นต่ำของฟอร์มเป็น 1024x768
+            this.MinimumSize = new Size(1024, 768);
+            this.Size = new Size(1024, 768);
+            // --- CHANGE END ---
 
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             lblVersion.Text = $"Version: {version.Major}.{version.Minor}.{version.Build}";
