@@ -73,7 +73,6 @@ namespace Multipurpose
             return "powershell.exe";
         }
 
-
         private async Task<string> RunProcessAsync(string fileName, string arguments)
         {
             var outputBuilder = new StringBuilder();
@@ -95,9 +94,17 @@ namespace Multipurpose
                     using (var process = new Process { StartInfo = startInfo })
                     {
                         process.Start();
-                        outputBuilder.Append(process.StandardOutput.ReadToEnd());
-                        outputBuilder.Append(process.StandardError.ReadToEnd());
-                        process.WaitForExit();
+
+                        if (!process.WaitForExit(120000))
+                        {
+                            process.Kill();
+                            outputBuilder.AppendLine("\n[FATAL] SCRIPT TIMEOUT: The process took too long to execute and was terminated.");
+                        }
+                        else
+                        {
+                            outputBuilder.Append(process.StandardOutput.ReadToEnd());
+                            outputBuilder.Append(process.StandardError.ReadToEnd());
+                        }
                     }
                 });
             }
@@ -108,12 +115,12 @@ namespace Multipurpose
             return outputBuilder.ToString();
         }
 
-        private async Task RunPowerShellScript(string script)
+        private async Task RunPowerShellScript(string script, string stepName)
         {
-            Log("--- Executing PowerShell Script ---");
+            Log($"\n--- {stepName} ---");
             string powerShellExePath = Get64BitPowerShellPath();
-            Log($"--- Executing with: {powerShellExePath} ---");
-            string result = await RunProcessAsync(powerShellExePath, $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
+            var encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+            string result = await RunProcessAsync(powerShellExePath, $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {encodedCommand}");
             Log(result);
         }
 
@@ -266,7 +273,7 @@ namespace Multipurpose
                 scriptBuilder.AppendLine("function New-OdbcDsnInRegistry { param ([string]$RegistryPath, [string]$DsnName, [string]$Driver, [string]$Server, [string]$Database, [string]$User) $dsnKeyPath = Join-Path -Path $RegistryPath -ChildPath $DsnName; $odbcDataSourcesPath = Join-Path -Path $RegistryPath -ChildPath 'ODBC Data Sources'; if (-not (Test-Path $odbcDataSourcesPath)) { New-Item -Path $odbcDataSourcesPath -Force | Out-Null; } if (-not (Test-Path $dsnKeyPath)) { New-Item -Path $dsnKeyPath -Force | Out-Null; } Set-ItemProperty -Path $dsnKeyPath -Name 'Driver' -Value $Driver; Set-ItemProperty -Path $dsnKeyPath -Name 'Server' -Value $Server; if ($Database) { Set-ItemProperty -Path $dsnKeyPath -Name 'Database' -Value $Database; } if ($User) { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'No'; Set-ItemProperty -Path $dsnKeyPath -Name 'LastUser' -Value $User; } else { Set-ItemProperty -Path $dsnKeyPath -Name 'Trusted_Connection' -Value 'Yes'; } Set-ItemProperty -Path $odbcDataSourcesPath -Name $DsnName -Value $Driver; }");
                 scriptBuilder.AppendLine("try { Write-Output '--- Creating 64-bit System DSN ---'; New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\ODBC\\ODBC.INI' -DsnName '" + dsnName + "' -Driver '" + driver + "' -Server '" + server + "' -Database '" + db + "' -User '" + user + "'; Write-Output '64-bit DSN created successfully.'; Write-Output '--- Creating 32-bit System DSN ---'; New-OdbcDsnInRegistry -RegistryPath 'HKLM:\\SOFTWARE\\WOW6432Node\\ODBC\\ODBC.INI' -DsnName '" + dsnName + "' -Driver '" + driver + "' -Server '" + server + "' -Database '" + db + "' -User '" + user + "'; Write-Output '32-bit DSN created successfully.'; Write-Output 'PowerShell: DSN creation process completed successfully!'; } catch { $errMsg = 'PowerShell Registry Error: ' + $_.Exception.Message; Write-Error -Message $errMsg; exit 1; }");
 
-                await RunPowerShellScript(scriptBuilder.ToString());
+                await RunPowerShellScript(scriptBuilder.ToString(), "Creating ODBC DSN");
             }
             finally
             {
@@ -277,37 +284,111 @@ namespace Multipurpose
         private async void btnSetLocalization_Click(object sender, EventArgs e)
         {
             txtStatus.Clear();
-            Log("--- Applying Localization Settings ---");
+            Log("--- Applying All Localization Settings ---");
             ToggleAllButtons(false);
 
             try
             {
                 string hotkey = radLangSwitchGrave.Checked ? "3" : "1";
 
-                var script = new StringBuilder();
-                script.AppendLine("$ErrorActionPreference = 'Stop';");
-                script.AppendLine("try {");
-                script.AppendLine("    Write-Output 'Setting Time Zone to (UTC+07:00) Bangkok...';");
-                script.AppendLine("    Set-TimeZone -Id 'SE Asia Standard Time';");
-                script.AppendLine("    Write-Output 'Enabling Windows Time service for automatic updates...';");
-                script.AppendLine("    Set-Service -Name w32time -StartupType Automatic;");
-                script.AppendLine("    Start-Service -Name w32time;");
-                script.AppendLine("    Write-Output 'Setting Region to Thailand and Language to en-US...';");
-                script.AppendLine("    Set-WinHomeLocation -GeoId 244;");
-                script.AppendLine("    $list = New-WinUserLanguageList -Language 'en-US';");
-                script.AppendLine("    $list.Add('th-TH');");
-                script.AppendLine("    Set-WinUserLanguageList -LanguageList $list -Force;");
-                script.AppendLine("    Write-Output 'Setting Regional Format to Thailand...';");
-                script.AppendLine("    Set-WinSystemLocale -SystemLocale 'th-TH';");
-                script.AppendLine($"    Write-Output 'Setting keyboard hotkey...';");
-                script.AppendLine("    $regPath = 'HKCU:\\Keyboard Layout\\Toggle';");
-                script.AppendLine("    if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null; }");
-                script.AppendLine($"    Set-ItemProperty -Path $regPath -Name 'Language Hotkey' -Value '{hotkey}';");
-                script.AppendLine("    Write-Output 'Localization settings applied successfully. A restart might be required for all changes to take effect.';");
-                script.AppendLine("} catch { $errMsg = 'PowerShell Localization Error: ' + $_.Exception.Message; Write-Error -Message $errMsg; exit 1; }");
+                // --- Step 1: System-Wide Settings ---
+                var script1 = new StringBuilder();
+                script1.AppendLine("$ErrorActionPreference = 'Stop'");
+                script1.AppendLine("Write-Output 'Setting Time Zone...'");
+                script1.AppendLine("Set-TimeZone -Id 'SE Asia Standard Time'");
+                script1.AppendLine("Write-Output 'Configuring Time Sync Service...'");
+                script1.AppendLine("if ((Get-CimInstance -ClassName Win32_ComputerSystem).PartOfDomain) {");
+                script1.AppendLine("    Write-Output '-> Skipping Time Sync on domain-joined machine.'");
+                script1.AppendLine("} else {");
+                script1.AppendLine("    Set-Service -Name w32time -StartupType Automatic; Start-Service -Name w32time");
+                script1.AppendLine("}");
+                script1.AppendLine("Write-Output 'Setting System Locale...'");
+                script1.AppendLine("Set-WinSystemLocale -SystemLocale 'th-TH'");
+                script1.AppendLine("Write-Output 'Setting Home Location...'");
+                script1.AppendLine("Set-WinHomeLocation -GeoId 244");
+                script1.AppendLine("Write-Output 'Setting Regional Format...'");
+                script1.AppendLine("Set-Culture -CultureInfo 'th-TH'");
+                script1.AppendLine("Write-Output 'Setting Display Language and Input Preferences...'");
+                script1.AppendLine("$LangList = New-WinUserLanguageList en-US");
+                script1.AppendLine("$LangList.Add('th-TH')");
+                script1.AppendLine("$LangList[0].InputMethodTips.Clear()");
+                script1.AppendLine("$LangList[0].InputMethodTips.Add('0409:00000409')");
+                script1.AppendLine("$LangList[1].InputMethodTips.Clear()");
+                script1.AppendLine("$LangList[1].InputMethodTips.Add('041e:0000041e')");
+                script1.AppendLine("Set-WinUserLanguageList $LangList -Force");
+                script1.AppendLine("Set-WinUILanguageOverride -Language 'en-US'");
+                await RunPowerShellScript(script1.ToString(), "Step 1/3: Applying System-Wide Settings");
 
-                await RunPowerShellScript(script.ToString());
-                MessageBox.Show("Localization settings have been applied. A restart is recommended for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // --- Step 2: Default User Settings (for new users) ---
+                var script2 = new StringBuilder();
+                script2.AppendLine("$ErrorActionPreference = 'Stop'");
+                script2.AppendLine($"$regContent = @\"");
+                script2.AppendLine("Windows Registry Editor Version 5.00`r`n");
+                script2.AppendLine("[HKEY_LOCAL_MACHINE\\DefaultUser\\Control Panel\\International]");
+                script2.AppendLine("\"\"sCountry\"\"=\"\"Thailand\"\"");
+                script2.AppendLine("\"\"LocaleName\"\"=\"\"th-TH\"\"`r`n");
+                script2.AppendLine("[HKEY_LOCAL_MACHINE\\DefaultUser\\Control Panel\\International\\Geo]");
+                script2.AppendLine("\"\"Nation\"\"=\"\"244\"\"`r`n");
+                script2.AppendLine("[HKEY_LOCAL_MACHINE\\DefaultUser\\Keyboard Layout\\Preload]");
+                script2.AppendLine("\"\"1\"\"=\"\"00000409\"\"");
+                script2.AppendLine("\"\"2\"\"=\"\"0000041e\"\"`r`n");
+                script2.AppendLine("[HKEY_LOCAL_MACHINE\\DefaultUser\\Control Panel\\International\\User Profile]");
+                script2.AppendLine("\"\"Languages\"\"=hex(7):65,00,6e,00,2d,00,55,00,53,00,00,00,74,00,68,00,2d,00,54,00,48,00,00,00,00,00`r`n");
+                script2.AppendLine("[HKEY_LOCAL_MACHINE\\DefaultUser\\Keyboard Layout\\Toggle]");
+                script2.AppendLine($"\"\"Language Hotkey\"\"=\"\"{hotkey}\"\"");
+                script2.AppendLine("\"\"Layout Hotkey\"\"=\"\"3\"\"");
+                script2.AppendLine("\"@");
+                script2.AppendLine("$regFile = Join-Path $env:TEMP 'default_user.reg'");
+                script2.AppendLine("$regContent | Out-File -FilePath $regFile -Encoding Unicode -Force");
+                script2.AppendLine("$regExeHivePath = 'HKLM\\DefaultUser'");
+                script2.AppendLine("try {");
+                script2.AppendLine("    Write-Output 'Loading Default User hive...'");
+                script2.AppendLine("    reg load $regExeHivePath 'C:\\Users\\Default\\NTUSER.DAT'");
+                script2.AppendLine("    Write-Output 'Importing settings...'");
+                script2.AppendLine("    reg import $regFile");
+                script2.AppendLine("}");
+                script2.AppendLine("finally {");
+                script2.AppendLine("    if (Test-Path 'HKLM:\\DefaultUser') {");
+                script2.AppendLine("        Write-Output 'Unloading Default User hive...'");
+                script2.AppendLine("        reg unload $regExeHivePath");
+                script2.AppendLine("    }");
+                script2.AppendLine("    Remove-Item $regFile -Force -ErrorAction SilentlyContinue");
+                script2.AppendLine("}");
+                await RunPowerShellScript(script2.ToString(), "Step 2/3: Applying Settings for New Users");
+
+                // --- Step 3: Existing User Settings ---
+                var script3 = new StringBuilder();
+                script3.AppendLine("$ErrorActionPreference = 'Stop'");
+                script3.AppendLine("Get-ChildItem 'Registry::HKEY_USERS' | Where-Object { $_.Name -match 'S-1-5-21-' } | ForEach-Object {");
+                script3.AppendLine("    $regHivePath = $_.Name.Replace('HKEY_USERS', 'HKEY_USERS')");
+                script3.AppendLine("    $sid = $_.PSChildName");
+                script3.AppendLine("    try { $userName = (New-Object System.Security.Principal.SecurityIdentifier($sid)).Translate([System.Security.Principal.NTAccount]).Value } catch { $userName = \"SID: $sid\" }");
+                script3.AppendLine("    Write-Output \"Processing user: $userName\"");
+                script3.AppendLine($"   $regContent = @\"");
+                script3.AppendLine("Windows Registry Editor Version 5.00`r`n");
+                script3.AppendLine("[$($regHivePath)\\Control Panel\\International]");
+                script3.AppendLine("\"\"sCountry\"\"=\"\"Thailand\"\"");
+                script3.AppendLine("\"\"LocaleName\"\"=\"\"th-TH\"\"`r`n");
+                script3.AppendLine("[$($regHivePath)\\Control Panel\\International\\Geo]");
+                script3.AppendLine("\"\"Nation\"\"=\"\"244\"\"`r`n");
+                script3.AppendLine("[$($regHivePath)\\Keyboard Layout\\Preload]");
+                script3.AppendLine("\"\"1\"\"=\"\"00000409\"\"");
+                script3.AppendLine("\"\"2\"\"=\"\"0000041e\"\"`r`n");
+                script3.AppendLine("[$($regHivePath)\\Control Panel\\International\\User Profile]");
+                script3.AppendLine("\"\"Languages\"\"=hex(7):65,00,6e,00,2d,00,55,00,53,00,00,00,74,00,68,00,2d,00,54,00,48,00,00,00,00,00`r`n");
+                script3.AppendLine("[$($regHivePath)\\Keyboard Layout\\Toggle]");
+                script3.AppendLine($"\"\"Language Hotkey\"\"=\"\"{hotkey}\"\"");
+                script3.AppendLine("\"\"Layout Hotkey\"\"=\"\"3\"\"");
+                script3.AppendLine("\"@");
+                script3.AppendLine("    $regFile = Join-Path $env:TEMP \"user_$($sid).reg\"");
+                script3.AppendLine("    $regContent | Out-File -FilePath $regFile -Encoding Unicode -Force");
+                script3.AppendLine("    reg import $regFile");
+                script3.AppendLine("    Remove-Item $regFile -Force -ErrorAction SilentlyContinue");
+                script3.AppendLine("}");
+                await RunPowerShellScript(script3.ToString(), "Step 3/3: Applying Settings for Existing Users");
+
+                Log("\n--- All Localization Steps Completed ---");
+                MessageBox.Show("Localization settings have been applied for all users. A restart is required for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -320,10 +401,11 @@ namespace Multipurpose
             }
         }
 
+
         private void btnInstallFonts_Click(object sender, EventArgs e)
         {
             txtStatus.Clear();
-            Log("--- Installing fonts ---");
+            Log("--- Installing fonts for All Users ---");
             ToggleAllButtons(false);
             try
             {
@@ -361,11 +443,14 @@ namespace Multipurpose
             }
 
             txtStatus.Clear();
-            Log($"--- Creating {shortcutsToCreate.Count} shortcuts on Desktop ---");
+
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+            Log($"--- Creating {shortcutsToCreate.Count} shortcuts on Public Desktop for All Users ---");
+            Log($"Target Path: {desktopPath}");
+
             ToggleAllButtons(false);
             try
             {
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 int successCount = 0;
 
                 foreach (var shortcutConfig in shortcutsToCreate)
@@ -376,7 +461,7 @@ namespace Multipurpose
                         WshShell shell = new WshShell();
                         IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutLocation);
                         shortcut.Description = shortcutConfig.Description;
-                        shortcut.TargetPath = shortcutConfig.TargetPath;
+                        shortcut.TargetPath = Environment.ExpandEnvironmentVariables(shortcutConfig.TargetPath);
                         shortcut.Save();
                         Log($"  - Created '{shortcutConfig.Name}.lnk'");
                         successCount++;
