@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,6 +18,7 @@ namespace Multipurpose
         private Dictionary<string, List<string>> _productKeys = new Dictionary<string, List<string>>();
         private string _currentWindowsEdition = "Unknown";
         private string _currentWindowsFamily = "Unknown";
+        private CancellationTokenSource _cancellationTokenSource;
 
         public WindowsUpgradeControl()
         {
@@ -32,114 +34,112 @@ namespace Multipurpose
 
         #region Core Logic: Two-Part Process
 
-        /// <summary>
-        /// Part 2: ทำงานหลัง Upgrade และ Restart สำเร็จแล้ว
-        /// จะทำการติดตั้ง License Key ของจริงและพยายาม Activate
-        /// </summary>
-        private async Task ActivateProductAsync(string productName)
+        private async Task ActivateProductAsync(string productName, CancellationToken token)
         {
             if (!_productKeys.ContainsKey(productName) || !_productKeys[productName].Any())
             {
-                MessageBox.Show($"ไม่พบ License Key สำหรับ '{productName}' ในไฟล์ CSV", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"No License Key found for '{productName}' in the CSV file.", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             LogClear();
-            Log($"--- PART 2: เริ่มการ Activate สำหรับ '{productName}' ---");
-            ToggleAllButtons(false);
+            Log($"--- PART 2: Starting Activation for '{productName}' ---");
+            ToggleAllButtons(false, true);
 
             List<string> keysToTry = _productKeys[productName];
             bool activationSuccess = false;
 
             foreach (var key in keysToTry)
             {
-                Log($"\n[7] กำลังติดตั้ง License Key: ...{key.Substring(key.Length - 5)}");
-                await RunSlmgrCommand($"/ipk {key}");
+                token.ThrowIfCancellationRequested();
+                Log($"\n[7] Installing License Key: ...{key.Substring(key.Length - 5)}");
+                await RunSlmgrCommand($"/ipk {key}", token);
 
-                Log("[8] กำลังพยายาม Activate Windows (Online)...");
-                await RunSlmgrCommand("/ato");
+                token.ThrowIfCancellationRequested();
+                Log("[8] Attempting to Activate Windows (Online)...");
+                await RunSlmgrCommand("/ato", token);
 
-                if (await IsWindowsActivatedAsync())
+                if (await IsWindowsActivatedAsync(token))
                 {
-                    Log($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
+                    Log($"\nSUCCESS! Activation successful with key: {key}");
                     activationSuccess = true;
                     break;
                 }
                 else
                 {
-                    Log($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป (ถ้ามี)...");
+                    Log($"Key ...{key.Substring(key.Length - 5)} failed. Trying next key (if available)...");
                 }
             }
 
             if (!activationSuccess)
             {
-                Log("\n--- การ ACTIVATE ล้มเหลว ---");
-                Log($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
+                Log("\n--- ACTIVATION FAILED ---");
+                Log($"Tried all keys for '{productName}' without success.");
             }
 
-            Log("\n[9] กำลังตรวจสอบวันหมดอายุ...");
-            await RunSlmgrCommand("/xpr");
+            token.ThrowIfCancellationRequested();
+            Log("\n[9] Checking expiration date...");
+            await RunSlmgrCommand("/xpr", token);
 
-            Log("\n[10] กำลังแสดงข้อมูล License โดยละเอียด...");
-            await RunSlmgrCommand("/dli");
+            token.ThrowIfCancellationRequested();
+            Log("\n[10] Displaying detailed license information...");
+            await RunSlmgrCommand("/dli", token);
 
-            Log("\n--- กระบวนการทั้งหมดเสร็จสิ้น ---");
+            Log("\n--- All processes complete ---");
 
             await RefreshCurrentStatusAsync();
-            ToggleAllButtons(true);
+            ToggleAllButtons(true, false);
         }
 
-        /// <summary>
-        /// Part 1: เริ่มกระบวนการ Upgrade Edition
-        /// จะเตรียมระบบและเริ่มการอัปเกรด ซึ่งจะทำให้เครื่อง Restart
-        /// </summary>
-        private async Task UpgradeEditionAsync(string targetProduct)
+        private async Task UpgradeEditionAsync(string targetProduct, CancellationToken token)
         {
             string genericKey = ConfigurationManager.AppSettings[$"GenericKey:{targetProduct}"];
             if (string.IsNullOrEmpty(genericKey))
             {
-                MessageBox.Show($"ไม่พบ Generic Key สำหรับการอัปเกรดเป็น '{targetProduct}' ใน App.config", "Config Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Generic Key for upgrading to '{targetProduct}' not found in App.config.", "Config Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             var confirmResult = MessageBox.Show(
-                $"คุณกำลังจะอัปเกรด Windows เป็น '{targetProduct}'.\n\nขั้นตอนนี้จะทำให้เครื่องคอมพิวเตอร์ Restart อัตโนมัติ\n**หลังจาก Restart เสร็จสิ้น ให้เปิดโปรแกรมนี้อีกครั้งแล้วกด 'Activate'**\n\nดำเนินการต่อหรือไม่?",
-                "ยืนยันการ Upgrade Edition",
+                $"You are about to upgrade Windows to '{targetProduct}'.\n\nThis process will automatically restart your computer.\n**After restarting, open this program again and click 'Activate'**\n\nContinue?",
+                "Confirm Edition Upgrade",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
             if (confirmResult == DialogResult.No) return;
 
             LogClear();
-            Log($"--- PART 1: เริ่มการ Upgrade Edition เป็น '{targetProduct}' ---");
-            ToggleAllButtons(false);
+            Log($"--- PART 1: Starting Edition Upgrade to '{targetProduct}' ---");
+            ToggleAllButtons(false, true);
 
-            Log("[1] กำลังล้าง Product Key เก่า (ถ้ามี)...");
-            await RunSlmgrCommand("/upk");
+            token.ThrowIfCancellationRequested();
+            Log("[1] Clearing old Product Key (if any)...");
+            await RunSlmgrCommand("/upk", token);
 
-            Log("[2] กำลังล้าง Product Key จาก Registry...");
-            await RunSlmgrCommand("/cpky");
+            token.ThrowIfCancellationRequested();
+            Log("[2] Clearing Product Key from Registry...");
+            await RunSlmgrCommand("/cpky", token);
 
-            Log("[3] กำลังตรวจสอบและเริ่ม Service 'License Manager'...");
-            await RunProcessAsync("sc.exe", "config LicenseManager start= auto");
-            await RunProcessAsync("net.exe", "start LicenseManager");
+            token.ThrowIfCancellationRequested();
+            Log("[3] Checking and starting 'License Manager' Service...");
+            await RunProcessAsync("sc.exe", "config LicenseManager start= auto", token);
+            await RunProcessAsync("net.exe", "start LicenseManager", token);
 
-            Log("[4] กำลังตรวจสอบและเริ่ม Service 'Windows Update'...");
-            await RunProcessAsync("sc.exe", "config wuauserv start= auto");
-            await RunProcessAsync("net.exe", "start wuauserv");
+            token.ThrowIfCancellationRequested();
+            Log("[4] Checking and starting 'Windows Update' Service...");
+            await RunProcessAsync("sc.exe", "config wuauserv start= auto", token);
+            await RunProcessAsync("net.exe", "start wuauserv", token);
 
-            // --- CHANGE START ---
-            // เปลี่ยนมาใช้ changepk.exe ที่มีความเสถียรและเข้ากันได้มากกว่า
-            Log("\n[5] กำลังเริ่มการอัปเกรดด้วย 'changepk.exe'...");
+            token.ThrowIfCancellationRequested();
+            Log("\n[5] Starting upgrade with 'changepk.exe'...");
             Log($"   - Generic Product Key: {genericKey}");
-            Log("--- จะมีหน้าต่างของ Windows แสดงขึ้นมาเพื่อดำเนินการต่อ ---");
-            string changepkResult = await RunProcessAsync("changepk.exe", $"/ProductKey {genericKey}");
+            Log("--- A Windows dialog will appear to continue the process ---");
+            string changepkResult = await RunProcessAsync("changepk.exe", $"/ProductKey {genericKey}", token);
             Log(changepkResult);
-            // --- CHANGE END ---
 
-            Log("\n--- กระบวนการอัปเกรดเริ่มต้นแล้ว ---");
-            Log("เครื่องจะทำการอัปเกรดและ Restart ในไม่ช้า");
-            Log("!!! สำคัญ: หลังจากเครื่องเปิดขึ้นมาใหม่ ให้เปิดโปรแกรมนี้อีกครั้งและกดปุ่ม 'Activate' เพื่อทำการ Activate ด้วย License Key ของคุณ !!!");
+            Log("\n--- Upgrade process initiated ---");
+            Log("The computer will upgrade and restart shortly.");
+            Log("!!! IMPORTANT: After the computer restarts, open this program again and click the 'Activate' button to activate with your license key !!!");
         }
 
         #endregion
@@ -153,24 +153,45 @@ namespace Multipurpose
 
         private async void btnStartProcess_Click(object sender, EventArgs e)
         {
-            if (cboProducts.SelectedItem == null)
+            if (_cancellationTokenSource != null) // Is processing
             {
-                MessageBox.Show("กรุณาเลือกผลิตภัณฑ์เป้าหมาย", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _cancellationTokenSource.Cancel();
                 return;
             }
 
+            if (cboProducts.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a target product.", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
             string targetProduct = cboProducts.SelectedItem.ToString();
 
-            // ตรวจสอบว่า Edition ปัจจุบันตรงกับเป้าหมายหรือไม่
-            if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
+            try
             {
-                // ถ้าตรงกัน แสดงว่าเป็นการ Activate
-                await ActivateProductAsync(targetProduct);
+                if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    await ActivateProductAsync(targetProduct, _cancellationTokenSource.Token);
+                }
+                else
+                {
+                    await UpgradeEditionAsync(targetProduct, _cancellationTokenSource.Token);
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                // ถ้าไม่ตรง แสดงว่าเป็นการ Upgrade
-                await UpgradeEditionAsync(targetProduct);
+                Log("\n--- Process cancelled by user. ---");
+            }
+            catch (Exception ex)
+            {
+                Log($"\n--- An unexpected error occurred: {ex.Message} ---");
+            }
+            finally
+            {
+                ToggleAllButtons(true, false);
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
             }
         }
 
@@ -178,7 +199,7 @@ namespace Multipurpose
         {
             if (cboProducts.SelectedItem == null)
             {
-                lblProcessDescription.Text = "เลือกผลิตภัณฑ์เป้าหมายเพื่อดูขั้นตอนต่อไป";
+                lblProcessDescription.Text = "Select a target product to see the next step.";
                 btnStartProcess.Enabled = false;
                 return;
             }
@@ -186,15 +207,14 @@ namespace Multipurpose
             btnStartProcess.Enabled = true;
             string targetProduct = cboProducts.SelectedItem.ToString();
 
-            // ตรรกะใหม่สำหรับปุ่มและคำอธิบาย
             if (_currentWindowsEdition.IndexOf(targetProduct, StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                lblProcessDescription.Text = $"Edition ปัจจุบันตรงกับเป้าหมายแล้ว\nกดปุ่มด้านล่างเพื่อเริ่มการ Activate ด้วย License Key ของคุณ";
+                lblProcessDescription.Text = $"Current edition matches the target.\nClick the button below to start activation with your license key.";
                 btnStartProcess.Text = "Activate Windows";
             }
             else
             {
-                lblProcessDescription.Text = $"Edition ปัจจุบัน ('{_currentWindowsEdition}') ไม่ตรงกับเป้าหมาย\nกดปุ่มด้านล่างเพื่อเริ่มการ Upgrade Edition (จำเป็นต้อง Restart)";
+                lblProcessDescription.Text = $"Current edition ('{_currentWindowsEdition}') does not match the target.\nClick the button below to start the Edition Upgrade (requires restart).";
                 btnStartProcess.Text = "Upgrade Edition";
             }
         }
@@ -226,13 +246,6 @@ namespace Multipurpose
             }
         }
 
-        private async Task<string> RunPowerShellScriptAsync(string script)
-        {
-            string powerShellExe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WindowsPowerShell\\v1.0\\powershell.exe");
-            return await RunProcessAsync(powerShellExe, $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
-        }
-
-
         private string Get64BitPowerShellPath()
         {
             if (Environment.Is64BitProcess) return "powershell.exe";
@@ -247,16 +260,16 @@ namespace Multipurpose
         private async Task RefreshCurrentStatusAsync()
         {
             LogClear();
-            Log("--- กำลังตรวจสอบสถานะเครื่องปัจจุบัน ---");
+            Log("--- Checking current machine status ---");
             lblCurrentEdition.Text = "Loading...";
             lblCurrentStatus.Text = "Loading...";
-            ToggleAllButtons(false);
+            ToggleAllButtons(false, false);
 
             try
             {
                 string powerShellExe = Get64BitPowerShellPath();
                 string psCommand = "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption";
-                string osCaptionResult = await RunProcessAsync(powerShellExe, $"-Command \"{psCommand}\"");
+                string osCaptionResult = await RunProcessAsync(powerShellExe, $"-Command \"{psCommand}\"", CancellationToken.None);
 
                 _currentWindowsEdition = osCaptionResult.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim().Replace("Microsoft ", "");
 
@@ -269,7 +282,7 @@ namespace Multipurpose
                 _currentWindowsFamily = GetWindowsFamily(_currentWindowsEdition);
                 UpdateProductComboBox();
 
-                string slmgrResult = await RunSlmgrCommand("/dli", false);
+                string slmgrResult = await RunSlmgrCommand("/dli", CancellationToken.None, false);
                 Match statusMatch = Regex.Match(slmgrResult, @"License Status: (.*)", RegexOptions.IgnoreCase);
                 string status = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
 
@@ -278,7 +291,7 @@ namespace Multipurpose
                 Log($"OS Family: {_currentWindowsFamily}");
                 Log($"OS Edition: {_currentWindowsEdition}");
                 Log($"License Status: {status}");
-                Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
+                Log("--- Status check complete ---");
             }
             catch (Exception ex)
             {
@@ -288,7 +301,7 @@ namespace Multipurpose
             }
             finally
             {
-                ToggleAllButtons(true);
+                ToggleAllButtons(true, false);
                 cboProducts_SelectedIndexChanged(null, null);
             }
         }
@@ -321,19 +334,19 @@ namespace Multipurpose
 
             if (!filteredProducts.Any())
             {
-                Log($"[Warning] ไม่พบ License Key สำหรับ '{_currentWindowsFamily}' ในไฟล์ {LicenseCsvFileName}");
+                Log($"[Warning] No License Key found for '{_currentWindowsFamily}' in {LicenseCsvFileName}");
             }
         }
 
-        private async Task<bool> IsWindowsActivatedAsync()
+        private async Task<bool> IsWindowsActivatedAsync(CancellationToken token)
         {
-            string result = await RunSlmgrCommand("/dli", false);
+            string result = await RunSlmgrCommand("/dli", token, false);
             return result.IndexOf("Licensed", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private async Task<string> RunSlmgrCommand(string arguments, bool logToUi = true)
+        private async Task<string> RunSlmgrCommand(string arguments, CancellationToken token, bool logToUi = true)
         {
-            string result = await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs {arguments}");
+            string result = await RunProcessAsync("cscript.exe", $"//Nologo C:\\Windows\\System32\\slmgr.vbs {arguments}", token);
             if (logToUi)
             {
                 Log(result);
@@ -341,7 +354,7 @@ namespace Multipurpose
             return result;
         }
 
-        private async Task<string> RunProcessAsync(string fileName, string arguments)
+        private async Task<string> RunProcessAsync(string fileName, string arguments, CancellationToken token)
         {
             var outputBuilder = new StringBuilder();
             try
@@ -362,14 +375,29 @@ namespace Multipurpose
                     using (var process = new Process { StartInfo = startInfo })
                     {
                         process.Start();
-                        string output = process.StandardOutput.ReadToEnd();
-                        string error = process.StandardError.ReadToEnd();
-                        process.WaitForExit();
 
-                        if (!string.IsNullOrWhiteSpace(output)) outputBuilder.Append(output);
-                        if (!string.IsNullOrWhiteSpace(error)) outputBuilder.Append(error);
+                        var outputTask = process.StandardOutput.ReadToEndAsync();
+                        var errorTask = process.StandardError.ReadToEndAsync();
+
+                        while (!process.WaitForExit(100))
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                process.Kill();
+                                token.ThrowIfCancellationRequested();
+                            }
+                        }
+
+                        Task.WaitAll(new Task[] { outputTask, errorTask }, token);
+
+                        if (!string.IsNullOrWhiteSpace(outputTask.Result)) outputBuilder.Append(outputTask.Result);
+                        if (!string.IsNullOrWhiteSpace(errorTask.Result)) outputBuilder.Append(errorTask.Result);
                     }
-                });
+                }, token);
+            }
+            catch (OperationCanceledException)
+            {
+                outputBuilder.AppendLine("\n[CANCELLED] The operation was cancelled by the user.");
             }
             catch (Exception ex)
             {
@@ -378,11 +406,20 @@ namespace Multipurpose
             return outputBuilder.ToString();
         }
 
-        private void ToggleAllButtons(bool isEnabled)
+        private void ToggleAllButtons(bool isEnabled, bool isProcessing)
         {
-            btnRefreshStatus.Enabled = isEnabled;
-            btnStartProcess.Enabled = isEnabled && cboProducts.Items.Count > 0;
-            cboProducts.Enabled = isEnabled && cboProducts.Items.Count > 0;
+            btnRefreshStatus.Enabled = isEnabled && !isProcessing;
+            cboProducts.Enabled = isEnabled && !isProcessing;
+            btnStartProcess.Enabled = isEnabled;
+
+            if (isProcessing)
+            {
+                btnStartProcess.Text = "Cancel";
+            }
+            else
+            {
+                cboProducts_SelectedIndexChanged(null, null); // This will set the correct text
+            }
         }
 
         private void LoadLicenseKeysFromCsv()
@@ -390,7 +427,7 @@ namespace Multipurpose
             string csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LicenseCsvFileName);
             if (!File.Exists(csvPath))
             {
-                MessageBox.Show($"ไม่พบไฟล์ License: '{csvPath}'", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"License file not found: '{csvPath}'", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 

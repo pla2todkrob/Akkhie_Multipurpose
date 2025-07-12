@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,6 +16,7 @@ namespace Multipurpose
         private const string LicenseCsvFileName = @"Licenses\LicenseOffice.csv";
         private readonly Dictionary<string, List<string>> _officeProductKeys = new Dictionary<string, List<string>>();
         private string _osppPath = "";
+        private CancellationTokenSource _cancellationTokenSource;
 
         public OfficeToolsControl()
         {
@@ -25,89 +27,94 @@ namespace Multipurpose
         {
             if (this.DesignMode) return;
 
-            ToggleAllButtons(false);
+            ToggleAllButtons(false, false);
             _osppPath = FindOsppScriptPath();
             if (string.IsNullOrEmpty(_osppPath))
             {
-                Log("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้");
-                Log("ฟังก์ชันในหน้านี้อาจไม่สามารถใช้งานได้");
+                Log("OSPP.VBS script for Microsoft Office not found on this machine.");
+                Log("Functions on this page may not be available.");
             }
 
             LoadLicenseKeysFromCsv();
             await RefreshCurrentStatusAsync();
-            ToggleAllButtons(true);
+            ToggleAllButtons(true, false);
         }
 
         #region Core Logic
 
-        private async Task ActivateOfficeProductAsync(string productName)
+        private async Task ActivateOfficeProductAsync(string productName, CancellationToken token)
         {
             if (string.IsNullOrEmpty(_osppPath))
             {
-                MessageBox.Show("ไม่พบสคริปต์ OSPP.VBS ของ Microsoft Office ในเครื่องนี้", "Activation Script Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("OSPP.VBS script for Microsoft Office not found on this machine.", "Activation Script Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             if (!_officeProductKeys.ContainsKey(productName) || !_officeProductKeys[productName].Any())
             {
-                MessageBox.Show($"ไม่พบ License Key สำหรับ '{productName}' ในไฟล์ CSV", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"No License Key found for '{productName}' in the CSV file.", "No Keys Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             LogClear();
-            Log($"--- เริ่มการ Activate: '{productName}' ---");
-            ToggleAllButtons(false);
+            Log($"--- Starting Activation: '{productName}' ---");
+            ToggleAllButtons(false, true);
 
-            await UninstallAllRetailKeys();
+            await UninstallAllRetailKeys(token);
+            token.ThrowIfCancellationRequested();
 
             List<string> keysToTry = _officeProductKeys[productName];
             bool activationSuccess = false;
 
             foreach (var key in keysToTry)
             {
-                Log($"\n--- ลองใช้คีย์: ...{key.Substring(key.Length - 5)} ---");
+                token.ThrowIfCancellationRequested();
+                Log($"\n--- Trying key: ...{key.Substring(key.Length - 5)} ---");
 
-                await RunOsppCommand($"/inpkey:{key}");
-                await RunOsppCommand("/act");
+                await RunOsppCommand($"/inpkey:{key}", token);
+                token.ThrowIfCancellationRequested();
+                await RunOsppCommand("/act", token);
+                token.ThrowIfCancellationRequested();
 
-                if (await IsOfficeActivatedAsync())
+                if (await IsOfficeActivatedAsync(token))
                 {
-                    Log($"\nSUCCESS! Activate สำเร็จด้วยคีย์: {key}");
+                    Log($"\nSUCCESS! Activation successful with key: {key}");
                     activationSuccess = true;
                     break;
                 }
                 else
                 {
-                    Log($"คีย์ ...{key.Substring(key.Length - 5)} ล้มเหลว. ลองคีย์ถัดไป...");
+                    Log($"Key ...{key.Substring(key.Length - 5)} failed. Trying next key...");
                 }
             }
 
             if (!activationSuccess)
             {
-                Log("\n--- การ ACTIVATE ล้มเหลว ---");
-                Log($"ลองใช้คีย์ทั้งหมดสำหรับ '{productName}' แล้ว แต่ไม่สำเร็จ");
+                Log("\n--- ACTIVATION FAILED ---");
+                Log($"Tried all keys for '{productName}' without success.");
             }
 
             await RefreshCurrentStatusAsync();
-            ToggleAllButtons(true);
+            ToggleAllButtons(true, false);
         }
 
-        private async Task UninstallAllRetailKeys()
+        private async Task UninstallAllRetailKeys(CancellationToken token)
         {
-            Log("--- กำลังถอนการติดตั้ง Retail keys ที่มีอยู่ (ถ้ามี) ---");
-            string statusResult = await RunOsppCommand("/dstatus");
+            Log("--- Uninstalling existing Retail keys (if any) ---");
+            string statusResult = await RunOsppCommand("/dstatus", token);
             var matches = Regex.Matches(statusResult, @"Last 5 characters of installed product key: ([\w\d]{5})");
             if (matches.Count == 0)
             {
-                Log("ไม่พบ Retail key ที่ติดตั้งไว้");
+                Log("No installed Retail key found.");
                 return;
             }
 
             foreach (Match match in matches)
             {
+                token.ThrowIfCancellationRequested();
                 string last5 = match.Groups[1].Value;
-                Log($"กำลังถอนการติดตั้งคีย์ที่ลงท้ายด้วย: {last5}");
-                await RunOsppCommand($"/unpkey:{last5}");
+                Log($"Uninstalling key ending with: {last5}");
+                await RunOsppCommand($"/unpkey:{last5}", token);
             }
         }
 
@@ -118,10 +125,29 @@ namespace Multipurpose
         {
             if (cboOfficeProducts.SelectedItem == null)
             {
-                MessageBox.Show("กรุณาเลือกผลิตภัณฑ์ Office ที่ต้องการ", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select an Office product to activate.", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            await ActivateOfficeProductAsync(cboOfficeProducts.SelectedItem.ToString());
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await ActivateOfficeProductAsync(cboOfficeProducts.SelectedItem.ToString(), _cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Log("\n--- Activation process cancelled by user. ---");
+            }
+            catch (Exception ex)
+            {
+                Log($"\n--- An unexpected error occurred: {ex.Message} ---");
+            }
+            finally
+            {
+                ToggleAllButtons(true, false);
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
+            }
         }
 
         private async void btnRefreshStatus_Click(object sender, EventArgs e)
@@ -162,13 +188,13 @@ namespace Multipurpose
                 return;
             }
             LogClear();
-            Log("--- กำลังตรวจสอบสถานะ Office ---");
+            Log("--- Checking Office status ---");
             lblCurrentProductNameValue.Text = "Loading...";
             lblCurrentStatusValue.Text = "Loading...";
-            ToggleAllButtons(false);
+            ToggleAllButtons(false, false);
 
-            string statusResult = await RunOsppCommand("/dstatus");
-            Log(statusResult); // Log the full output for debugging
+            string statusResult = await RunOsppCommand("/dstatus", CancellationToken.None);
+            Log(statusResult);
 
             Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME:.*?(Office.*?)[\s,]*$|LICENSE NAME: (.*)", RegexOptions.Multiline);
             lblCurrentProductNameValue.Text = nameMatch.Success ? (nameMatch.Groups[1].Success ? nameMatch.Groups[1].Value.Trim() : nameMatch.Groups[2].Value.Trim()) : "No License Found";
@@ -176,8 +202,8 @@ namespace Multipurpose
             Match statusMatch = Regex.Match(statusResult, @"LICENSE STATUS:\s*---(.*?)---");
             lblCurrentStatusValue.Text = statusMatch.Success ? statusMatch.Groups[1].Value.Trim() : "Unknown";
 
-            Log("--- ตรวจสอบสถานะเสร็จสิ้น ---");
-            ToggleAllButtons(true);
+            Log("--- Status check complete ---");
+            ToggleAllButtons(true, false);
         }
 
         private string FindOsppScriptPath()
@@ -195,7 +221,7 @@ namespace Multipurpose
                     string potentialPath = Path.Combine(pfPath, "Microsoft Office", officeFolder, "OSPP.VBS");
                     if (File.Exists(potentialPath))
                     {
-                        Log($"พบ OSPP.VBS ที่: {potentialPath}");
+                        Log($"Found OSPP.VBS at: {potentialPath}");
                         return potentialPath;
                     }
                 }
@@ -203,18 +229,18 @@ namespace Multipurpose
             return null;
         }
 
-        private async Task<string> RunOsppCommand(string arguments)
+        private async Task<string> RunOsppCommand(string arguments, CancellationToken token)
         {
-            return await RunProcessAsync("cscript.exe", $"\"{_osppPath}\" {arguments}");
+            return await RunProcessAsync("cscript.exe", $"\"{_osppPath}\" {arguments}", token);
         }
 
-        private async Task<bool> IsOfficeActivatedAsync()
+        private async Task<bool> IsOfficeActivatedAsync(CancellationToken token)
         {
-            string result = await RunOsppCommand("/dstatus");
+            string result = await RunOsppCommand("/dstatus", token);
             return result.Contains("---LICENSED---");
         }
 
-        private async Task<string> RunProcessAsync(string fileName, string arguments)
+        private async Task<string> RunProcessAsync(string fileName, string arguments, CancellationToken token)
         {
             var outputBuilder = new StringBuilder();
             try
@@ -229,17 +255,34 @@ namespace Multipurpose
                         RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
-                        // Verb = "runas", // Consider if admin rights are needed for every call
                         StandardOutputEncoding = Encoding.UTF8
                     };
                     using (var process = new Process { StartInfo = startInfo })
                     {
                         process.Start();
-                        outputBuilder.Append(process.StandardOutput.ReadToEnd());
-                        outputBuilder.Append(process.StandardError.ReadToEnd());
-                        process.WaitForExit();
+
+                        var outputTask = process.StandardOutput.ReadToEndAsync();
+                        var errorTask = process.StandardError.ReadToEndAsync();
+
+                        while (!process.WaitForExit(100))
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                process.Kill();
+                                token.ThrowIfCancellationRequested();
+                            }
+                        }
+
+                        Task.WaitAll(new Task[] { outputTask, errorTask }, token);
+
+                        outputBuilder.Append(outputTask.Result);
+                        outputBuilder.Append(errorTask.Result);
                     }
-                });
+                }, token);
+            }
+            catch (OperationCanceledException)
+            {
+                outputBuilder.AppendLine("\n[CANCELLED] The operation was cancelled by the user.");
             }
             catch (Exception ex)
             {
@@ -248,17 +291,26 @@ namespace Multipurpose
             return outputBuilder.ToString();
         }
 
-        private void ToggleAllButtons(bool isEnabled)
+        private void ToggleAllButtons(bool isEnabled, bool isProcessing)
         {
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => ToggleAllButtons(isEnabled)));
+                this.Invoke(new Action(() => ToggleAllButtons(isEnabled, isProcessing)));
             }
             else
             {
-                btnRefreshStatus.Enabled = isEnabled;
-                btnActivateOffice.Enabled = isEnabled;
-                cboOfficeProducts.Enabled = isEnabled;
+                btnRefreshStatus.Enabled = isEnabled && !isProcessing;
+                btnActivateOffice.Enabled = isEnabled && !isProcessing;
+                cboOfficeProducts.Enabled = isEnabled && !isProcessing;
+
+                if (isProcessing)
+                {
+                    btnActivateOffice.Text = "Cancel";
+                }
+                else
+                {
+                    btnActivateOffice.Text = "Activate";
+                }
             }
         }
 
@@ -267,7 +319,7 @@ namespace Multipurpose
             string csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LicenseCsvFileName);
             if (!File.Exists(csvPath))
             {
-                MessageBox.Show($"ไม่พบไฟล์ License: '{csvPath}'", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"License file not found: '{csvPath}'", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
