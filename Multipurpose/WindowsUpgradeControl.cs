@@ -128,14 +128,14 @@ namespace Multipurpose
             await RunProcessAsync("sc.exe", "config wuauserv start= auto");
             await RunProcessAsync("net.exe", "start wuauserv");
 
-            // *** MODIFIED: Use the modern WindowsUpdateAdministrator COM object for the most reliable upgrade ***
-            Log("\n[5] กำลังเริ่มการอัปเกรดด้วย Windows Update Administrator API...");
+            // --- CHANGE START ---
+            // เปลี่ยนมาใช้ changepk.exe ที่มีความเสถียรและเข้ากันได้มากกว่า
+            Log("\n[5] กำลังเริ่มการอัปเกรดด้วย 'changepk.exe'...");
             Log($"   - Generic Product Key: {genericKey}");
             Log("--- จะมีหน้าต่างของ Windows แสดงขึ้นมาเพื่อดำเนินการต่อ ---");
-
-            string powerShellScript = $"try {{ $updater = New-Object -ComObject 'Windows.System.Update.WindowsUpdateAdministrator'; $updater.UpgradeEdition('{genericKey}'); Write-Output 'Upgrade process initiated successfully.'; }} catch {{ Write-Error -Message $_.Exception.Message; exit 1; }}";
-            string psOutput = await RunPowerShellScriptAsync(powerShellScript);
-            Log(psOutput);
+            string changepkResult = await RunProcessAsync("changepk.exe", $"/ProductKey {genericKey}");
+            Log(changepkResult);
+            // --- CHANGE END ---
 
             Log("\n--- กระบวนการอัปเกรดเริ่มต้นแล้ว ---");
             Log("เครื่องจะทำการอัปเกรดและ Restart ในไม่ช้า");
