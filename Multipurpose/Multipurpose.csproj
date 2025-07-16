@@ -87,6 +87,7 @@
       <DependentUpon>ShippingCostControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Tools\DeleteAllBoxesTool.cs" />
+    <Compile Include="Tools\FixShippingCostTypeTool.cs" />
     <Compile Include="Tools\ITroubleshooterTool.cs" />
     <Compile Include="Tools\NewWasteAddTool.cs" />
     <Compile Include="Tools\NewWasteTool.cs" />
