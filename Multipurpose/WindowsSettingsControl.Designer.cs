@@ -28,567 +28,395 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.tlpMain = new System.Windows.Forms.TableLayoutPanel();
-            this.headerPanel = new System.Windows.Forms.Panel();
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.tlpContent = new System.Windows.Forms.TableLayoutPanel();
-            this.gboxOdbc = new System.Windows.Forms.GroupBox();
-            this.tlpOdbc = new System.Windows.Forms.TableLayoutPanel();
-            this.label1 = new System.Windows.Forms.Label();
+            this.components = new System.ComponentModel.Container();
+            this.grpOdbc = new System.Windows.Forms.GroupBox();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.lblOdbcDsnName = new System.Windows.Forms.Label();
             this.txtOdbcDsnName = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lblOdbcServer = new System.Windows.Forms.Label();
             this.txtOdbcServer = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lblOdbcDb = new System.Windows.Forms.Label();
             this.txtOdbcDb = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
+            this.lblOdbcUid = new System.Windows.Forms.Label();
             this.txtOdbcUid = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
+            this.lblOdbcPwd = new System.Windows.Forms.Label();
             this.txtOdbcPwd = new System.Windows.Forms.TextBox();
             this.btnCreateOdbc = new System.Windows.Forms.Button();
-            this.gboxLocalization = new System.Windows.Forms.GroupBox();
-            this.tlpLocalization = new System.Windows.Forms.TableLayoutPanel();
-            this.lblLocalizationDesc = new System.Windows.Forms.Label();
-            this.radLangSwitchGrave = new System.Windows.Forms.RadioButton();
+            this.grpLocalization = new System.Windows.Forms.GroupBox();
             this.radLangSwitchAltShift = new System.Windows.Forms.RadioButton();
+            this.radLangSwitchGrave = new System.Windows.Forms.RadioButton();
             this.btnSetLocalization = new System.Windows.Forms.Button();
-            this.gboxFonts = new System.Windows.Forms.GroupBox();
-            this.btnInstallFonts = new System.Windows.Forms.Button();
+            this.grpFonts = new System.Windows.Forms.GroupBox();
             this.listViewFonts = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.gboxShortcuts = new System.Windows.Forms.GroupBox();
-            this.btnCreateAllShortcuts = new System.Windows.Forms.Button();
+            this.btnInstallFonts = new System.Windows.Forms.Button();
+            this.grpShortcuts = new System.Windows.Forms.GroupBox();
             this.listViewShortcuts = new System.Windows.Forms.ListView();
-            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colTarget = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.logPanel = new System.Windows.Forms.Panel();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.btnCreateAllShortcuts = new System.Windows.Forms.Button();
             this.txtStatus = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.tlpMain.SuspendLayout();
-            this.headerPanel.SuspendLayout();
-            this.tlpContent.SuspendLayout();
-            this.gboxOdbc.SuspendLayout();
-            this.tlpOdbc.SuspendLayout();
-            this.gboxLocalization.SuspendLayout();
-            this.tlpLocalization.SuspendLayout();
-            this.gboxFonts.SuspendLayout();
-            this.gboxShortcuts.SuspendLayout();
-            this.logPanel.SuspendLayout();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.grpOdbc.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
+            this.grpLocalization.SuspendLayout();
+            this.grpFonts.SuspendLayout();
+            this.grpShortcuts.SuspendLayout();
             this.SuspendLayout();
             // 
-            // tlpMain
+            // grpOdbc
             // 
-            this.tlpMain.ColumnCount = 1;
-            this.tlpMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpMain.Controls.Add(this.headerPanel, 0, 0);
-            this.tlpMain.Controls.Add(this.tlpContent, 0, 1);
-            this.tlpMain.Controls.Add(this.logPanel, 0, 2);
-            this.tlpMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpMain.Location = new System.Drawing.Point(0, 0);
-            this.tlpMain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.tlpMain.Name = "tlpMain";
-            this.tlpMain.Padding = new System.Windows.Forms.Padding(13, 12, 13, 12);
-            this.tlpMain.RowCount = 3;
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 62F));
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpMain.Size = new System.Drawing.Size(1179, 814);
-            this.tlpMain.TabIndex = 0;
+            this.grpOdbc.Controls.Add(this.tableLayoutPanel1);
+            this.grpOdbc.Location = new System.Drawing.Point(15, 15);
+            this.grpOdbc.Name = "grpOdbc";
+            this.grpOdbc.Padding = new System.Windows.Forms.Padding(10);
+            this.grpOdbc.Size = new System.Drawing.Size(460, 220);
+            this.grpOdbc.TabIndex = 0;
+            this.grpOdbc.TabStop = false;
+            this.grpOdbc.Text = "ODBC Settings (System DSN)";
             // 
-            // headerPanel
+            // tableLayoutPanel1
             // 
-            this.headerPanel.Controls.Add(this.lblTitle);
-            this.headerPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.headerPanel.Location = new System.Drawing.Point(17, 16);
-            this.headerPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.headerPanel.Name = "headerPanel";
-            this.headerPanel.Size = new System.Drawing.Size(1145, 54);
-            this.headerPanel.TabIndex = 0;
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.lblOdbcDsnName, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.txtOdbcDsnName, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.lblOdbcServer, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.txtOdbcServer, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.lblOdbcDb, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.txtOdbcDb, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.lblOdbcUid, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.txtOdbcUid, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.lblOdbcPwd, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.txtOdbcPwd, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.btnCreateOdbc, 1, 5);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(10, 25);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 6;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(440, 185);
+            this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // lblTitle
+            // lblOdbcDsnName
             // 
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblTitle.Location = new System.Drawing.Point(4, 9);
-            this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(359, 37);
-            this.lblTitle.TabIndex = 1;
-            this.lblTitle.Text = "Windows Settings && Setup";
-            // 
-            // tlpContent
-            // 
-            this.tlpContent.AutoSize = true;
-            this.tlpContent.ColumnCount = 2;
-            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlpContent.Controls.Add(this.gboxOdbc, 0, 0);
-            this.tlpContent.Controls.Add(this.gboxLocalization, 1, 0);
-            this.tlpContent.Controls.Add(this.gboxFonts, 0, 1);
-            this.tlpContent.Controls.Add(this.gboxShortcuts, 1, 1);
-            this.tlpContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpContent.Location = new System.Drawing.Point(17, 78);
-            this.tlpContent.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.tlpContent.Name = "tlpContent";
-            this.tlpContent.RowCount = 2;
-            this.tlpContent.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpContent.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpContent.Size = new System.Drawing.Size(1145, 546);
-            this.tlpContent.TabIndex = 1;
-            // 
-            // gboxOdbc
-            // 
-            this.gboxOdbc.Controls.Add(this.tlpOdbc);
-            this.gboxOdbc.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gboxOdbc.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gboxOdbc.Location = new System.Drawing.Point(4, 4);
-            this.gboxOdbc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxOdbc.MinimumSize = new System.Drawing.Size(0, 265);
-            this.gboxOdbc.Name = "gboxOdbc";
-            this.gboxOdbc.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxOdbc.Size = new System.Drawing.Size(564, 265);
-            this.gboxOdbc.TabIndex = 0;
-            this.gboxOdbc.TabStop = false;
-            this.gboxOdbc.Text = "ODBC Settings";
-            // 
-            // tlpOdbc
-            // 
-            this.tlpOdbc.ColumnCount = 2;
-            this.tlpOdbc.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tlpOdbc.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpOdbc.Controls.Add(this.label1, 0, 0);
-            this.tlpOdbc.Controls.Add(this.txtOdbcDsnName, 1, 0);
-            this.tlpOdbc.Controls.Add(this.label2, 0, 1);
-            this.tlpOdbc.Controls.Add(this.txtOdbcServer, 1, 1);
-            this.tlpOdbc.Controls.Add(this.label3, 0, 2);
-            this.tlpOdbc.Controls.Add(this.txtOdbcDb, 1, 2);
-            this.tlpOdbc.Controls.Add(this.label4, 0, 3);
-            this.tlpOdbc.Controls.Add(this.txtOdbcUid, 1, 3);
-            this.tlpOdbc.Controls.Add(this.label5, 0, 4);
-            this.tlpOdbc.Controls.Add(this.txtOdbcPwd, 1, 4);
-            this.tlpOdbc.Controls.Add(this.btnCreateOdbc, 1, 5);
-            this.tlpOdbc.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpOdbc.Location = new System.Drawing.Point(4, 26);
-            this.tlpOdbc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.tlpOdbc.Name = "tlpOdbc";
-            this.tlpOdbc.RowCount = 6;
-            this.tlpOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpOdbc.Size = new System.Drawing.Size(556, 235);
-            this.tlpOdbc.TabIndex = 11;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(4, 7);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(99, 23);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "DSN Name:";
+            this.lblOdbcDsnName.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblOdbcDsnName.AutoSize = true;
+            this.lblOdbcDsnName.Location = new System.Drawing.Point(3, 7);
+            this.lblOdbcDsnName.Name = "lblOdbcDsnName";
+            this.lblOdbcDsnName.Size = new System.Drawing.Size(78, 16);
+            this.lblOdbcDsnName.TabIndex = 0;
+            this.lblOdbcDsnName.Text = "DSN Name:";
             // 
             // txtOdbcDsnName
             // 
             this.txtOdbcDsnName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOdbcDsnName.Location = new System.Drawing.Point(111, 4);
-            this.txtOdbcDsnName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOdbcDsnName.Location = new System.Drawing.Point(87, 4);
             this.txtOdbcDsnName.Name = "txtOdbcDsnName";
-            this.txtOdbcDsnName.Size = new System.Drawing.Size(441, 29);
+            this.txtOdbcDsnName.Size = new System.Drawing.Size(350, 22);
             this.txtOdbcDsnName.TabIndex = 1;
             // 
-            // label2
+            // lblOdbcServer
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(42, 44);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(61, 23);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Server:";
+            this.lblOdbcServer.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblOdbcServer.AutoSize = true;
+            this.lblOdbcServer.Location = new System.Drawing.Point(32, 37);
+            this.lblOdbcServer.Name = "lblOdbcServer";
+            this.lblOdbcServer.Size = new System.Drawing.Size(49, 16);
+            this.lblOdbcServer.TabIndex = 2;
+            this.lblOdbcServer.Text = "Server:";
             // 
             // txtOdbcServer
             // 
             this.txtOdbcServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOdbcServer.Location = new System.Drawing.Point(111, 41);
-            this.txtOdbcServer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOdbcServer.Location = new System.Drawing.Point(87, 34);
             this.txtOdbcServer.Name = "txtOdbcServer";
-            this.txtOdbcServer.Size = new System.Drawing.Size(441, 29);
+            this.txtOdbcServer.Size = new System.Drawing.Size(350, 22);
             this.txtOdbcServer.TabIndex = 3;
             // 
-            // label3
+            // lblOdbcDb
             // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(18, 81);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(85, 23);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "Database:";
+            this.lblOdbcDb.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblOdbcDb.AutoSize = true;
+            this.lblOdbcDb.Location = new System.Drawing.Point(13, 67);
+            this.lblOdbcDb.Name = "lblOdbcDb";
+            this.lblOdbcDb.Size = new System.Drawing.Size(68, 16);
+            this.lblOdbcDb.TabIndex = 4;
+            this.lblOdbcDb.Text = "Database:";
             // 
             // txtOdbcDb
             // 
             this.txtOdbcDb.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOdbcDb.Location = new System.Drawing.Point(111, 78);
-            this.txtOdbcDb.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOdbcDb.Location = new System.Drawing.Point(87, 64);
             this.txtOdbcDb.Name = "txtOdbcDb";
-            this.txtOdbcDb.Size = new System.Drawing.Size(441, 29);
+            this.txtOdbcDb.Size = new System.Drawing.Size(350, 22);
             this.txtOdbcDb.TabIndex = 5;
             // 
-            // label4
+            // lblOdbcUid
             // 
-            this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(33, 118);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(70, 23);
-            this.label4.TabIndex = 6;
-            this.label4.Text = "User ID:";
+            this.lblOdbcUid.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblOdbcUid.AutoSize = true;
+            this.lblOdbcUid.Location = new System.Drawing.Point(48, 97);
+            this.lblOdbcUid.Name = "lblOdbcUid";
+            this.lblOdbcUid.Size = new System.Drawing.Size(33, 16);
+            this.lblOdbcUid.TabIndex = 6;
+            this.lblOdbcUid.Text = "UID:";
             // 
             // txtOdbcUid
             // 
             this.txtOdbcUid.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOdbcUid.Location = new System.Drawing.Point(111, 115);
-            this.txtOdbcUid.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOdbcUid.Location = new System.Drawing.Point(87, 94);
             this.txtOdbcUid.Name = "txtOdbcUid";
-            this.txtOdbcUid.Size = new System.Drawing.Size(441, 29);
+            this.txtOdbcUid.Size = new System.Drawing.Size(350, 22);
             this.txtOdbcUid.TabIndex = 7;
             // 
-            // label5
+            // lblOdbcPwd
             // 
-            this.label5.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(19, 155);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(84, 23);
-            this.label5.TabIndex = 8;
-            this.label5.Text = "Password:";
+            this.lblOdbcPwd.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblOdbcPwd.AutoSize = true;
+            this.lblOdbcPwd.Location = new System.Drawing.Point(41, 127);
+            this.lblOdbcPwd.Name = "lblOdbcPwd";
+            this.lblOdbcPwd.Size = new System.Drawing.Size(40, 16);
+            this.lblOdbcPwd.TabIndex = 8;
+            this.lblOdbcPwd.Text = "PWD:";
             // 
             // txtOdbcPwd
             // 
             this.txtOdbcPwd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOdbcPwd.Location = new System.Drawing.Point(111, 152);
-            this.txtOdbcPwd.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtOdbcPwd.Location = new System.Drawing.Point(87, 124);
             this.txtOdbcPwd.Name = "txtOdbcPwd";
-            this.txtOdbcPwd.PasswordChar = '●';
-            this.txtOdbcPwd.Size = new System.Drawing.Size(441, 29);
+            this.txtOdbcPwd.PasswordChar = '*';
+            this.txtOdbcPwd.Size = new System.Drawing.Size(350, 22);
             this.txtOdbcPwd.TabIndex = 9;
             // 
             // btnCreateOdbc
             // 
-            this.btnCreateOdbc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateOdbc.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCreateOdbc.Location = new System.Drawing.Point(352, 224);
-            this.btnCreateOdbc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCreateOdbc.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnCreateOdbc.Location = new System.Drawing.Point(262, 153);
             this.btnCreateOdbc.Name = "btnCreateOdbc";
-            this.btnCreateOdbc.Size = new System.Drawing.Size(200, 7);
+            this.btnCreateOdbc.Size = new System.Drawing.Size(175, 29);
             this.btnCreateOdbc.TabIndex = 10;
-            this.btnCreateOdbc.Text = "Create ODBC DSN";
+            this.btnCreateOdbc.Text = "Create / Update DSN";
             this.btnCreateOdbc.UseVisualStyleBackColor = true;
             this.btnCreateOdbc.Click += new System.EventHandler(this.btnCreateOdbc_Click);
             // 
-            // gboxLocalization
+            // grpLocalization
             // 
-            this.gboxLocalization.Controls.Add(this.tlpLocalization);
-            this.gboxLocalization.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gboxLocalization.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gboxLocalization.Location = new System.Drawing.Point(576, 4);
-            this.gboxLocalization.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxLocalization.MinimumSize = new System.Drawing.Size(0, 265);
-            this.gboxLocalization.Name = "gboxLocalization";
-            this.gboxLocalization.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxLocalization.Size = new System.Drawing.Size(565, 265);
-            this.gboxLocalization.TabIndex = 1;
-            this.gboxLocalization.TabStop = false;
-            this.gboxLocalization.Text = "Localization Settings";
+            this.grpLocalization.Controls.Add(this.radLangSwitchAltShift);
+            this.grpLocalization.Controls.Add(this.radLangSwitchGrave);
+            this.grpLocalization.Controls.Add(this.btnSetLocalization);
+            this.grpLocalization.Location = new System.Drawing.Point(15, 241);
+            this.grpLocalization.Name = "grpLocalization";
+            this.grpLocalization.Size = new System.Drawing.Size(460, 70);
+            this.grpLocalization.TabIndex = 1;
+            this.grpLocalization.TabStop = false;
+            this.grpLocalization.Text = "Localization (TH/EN)";
             // 
-            // tlpLocalization
+            // radLangSwitchAltShift
             // 
-            this.tlpLocalization.ColumnCount = 1;
-            this.tlpLocalization.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpLocalization.Controls.Add(this.lblLocalizationDesc, 0, 0);
-            this.tlpLocalization.Controls.Add(this.radLangSwitchGrave, 0, 1);
-            this.tlpLocalization.Controls.Add(this.radLangSwitchAltShift, 0, 2);
-            this.tlpLocalization.Controls.Add(this.btnSetLocalization, 0, 3);
-            this.tlpLocalization.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpLocalization.Location = new System.Drawing.Point(4, 26);
-            this.tlpLocalization.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.tlpLocalization.Name = "tlpLocalization";
-            this.tlpLocalization.RowCount = 4;
-            this.tlpLocalization.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpLocalization.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpLocalization.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpLocalization.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpLocalization.Size = new System.Drawing.Size(557, 235);
-            this.tlpLocalization.TabIndex = 3;
-            // 
-            // lblLocalizationDesc
-            // 
-            this.lblLocalizationDesc.AutoSize = true;
-            this.lblLocalizationDesc.Location = new System.Drawing.Point(4, 0);
-            this.lblLocalizationDesc.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblLocalizationDesc.Name = "lblLocalizationDesc";
-            this.lblLocalizationDesc.Padding = new System.Windows.Forms.Padding(13, 6, 13, 12);
-            this.lblLocalizationDesc.Size = new System.Drawing.Size(336, 87);
-            this.lblLocalizationDesc.TabIndex = 3;
-            this.lblLocalizationDesc.Text = "ตั้งค่าระบบให้เหมาะกับการใช้งานในประเทศไทย:\r\n- โซนเวลา, ภาษา, รูปแบบตัวเลข/วันที่" +
-    "\r\n- เพิ่มภาษาไทย/อังกฤษ และตั้งค่าปุ่มสลับภาษา";
+            this.radLangSwitchAltShift.AutoSize = true;
+            this.radLangSwitchAltShift.Location = new System.Drawing.Point(130, 32);
+            this.radLangSwitchAltShift.Name = "radLangSwitchAltShift";
+            this.radLangSwitchAltShift.Size = new System.Drawing.Size(117, 20);
+            this.radLangSwitchAltShift.TabIndex = 1;
+            this.radLangSwitchAltShift.Text = "Alt + Shift (ปกติ)";
+            this.radLangSwitchAltShift.UseVisualStyleBackColor = true;
             // 
             // radLangSwitchGrave
             // 
             this.radLangSwitchGrave.AutoSize = true;
             this.radLangSwitchGrave.Checked = true;
-            this.radLangSwitchGrave.Location = new System.Drawing.Point(20, 118);
-            this.radLangSwitchGrave.Margin = new System.Windows.Forms.Padding(20, 4, 4, 4);
+            this.radLangSwitchGrave.Location = new System.Drawing.Point(20, 32);
             this.radLangSwitchGrave.Name = "radLangSwitchGrave";
-            this.radLangSwitchGrave.Size = new System.Drawing.Size(231, 27);
+            this.radLangSwitchGrave.Size = new System.Drawing.Size(100, 20);
             this.radLangSwitchGrave.TabIndex = 0;
             this.radLangSwitchGrave.TabStop = true;
-            this.radLangSwitchGrave.Text = "Hotkey: Grave Accent ( ~ )";
+            this.radLangSwitchGrave.Text = "~ (ตัวหนอน)";
             this.radLangSwitchGrave.UseVisualStyleBackColor = true;
-            // 
-            // radLangSwitchAltShift
-            // 
-            this.radLangSwitchAltShift.AutoSize = true;
-            this.radLangSwitchAltShift.Location = new System.Drawing.Point(20, 153);
-            this.radLangSwitchAltShift.Margin = new System.Windows.Forms.Padding(20, 4, 4, 4);
-            this.radLangSwitchAltShift.Name = "radLangSwitchAltShift";
-            this.radLangSwitchAltShift.Size = new System.Drawing.Size(170, 27);
-            this.radLangSwitchAltShift.TabIndex = 1;
-            this.radLangSwitchAltShift.Text = "Hotkey: Alt + Shift";
-            this.radLangSwitchAltShift.UseVisualStyleBackColor = true;
             // 
             // btnSetLocalization
             // 
-            this.btnSetLocalization.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSetLocalization.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSetLocalization.Location = new System.Drawing.Point(353, 188);
-            this.btnSetLocalization.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSetLocalization.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSetLocalization.Location = new System.Drawing.Point(275, 26);
             this.btnSetLocalization.Name = "btnSetLocalization";
-            this.btnSetLocalization.Size = new System.Drawing.Size(200, 43);
+            this.btnSetLocalization.Size = new System.Drawing.Size(175, 30);
             this.btnSetLocalization.TabIndex = 2;
-            this.btnSetLocalization.Text = "Set All Localization";
+            this.btnSetLocalization.Text = "Apply Localization";
             this.btnSetLocalization.UseVisualStyleBackColor = true;
             this.btnSetLocalization.Click += new System.EventHandler(this.btnSetLocalization_Click);
             // 
-            // gboxFonts
+            // grpFonts
             // 
-            this.gboxFonts.Controls.Add(this.btnInstallFonts);
-            this.gboxFonts.Controls.Add(this.listViewFonts);
-            this.gboxFonts.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gboxFonts.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gboxFonts.Location = new System.Drawing.Point(4, 277);
-            this.gboxFonts.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxFonts.MinimumSize = new System.Drawing.Size(0, 265);
-            this.gboxFonts.Name = "gboxFonts";
-            this.gboxFonts.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxFonts.Size = new System.Drawing.Size(564, 265);
-            this.gboxFonts.TabIndex = 2;
-            this.gboxFonts.TabStop = false;
-            this.gboxFonts.Text = "Font Management";
+            this.grpFonts.Controls.Add(this.listViewFonts);
+            this.grpFonts.Controls.Add(this.btnInstallFonts);
+            this.grpFonts.Location = new System.Drawing.Point(490, 15);
+            this.grpFonts.Name = "grpFonts";
+            this.grpFonts.Size = new System.Drawing.Size(470, 145);
+            this.grpFonts.TabIndex = 2;
+            this.grpFonts.TabStop = false;
+            this.grpFonts.Text = "Install Fonts";
+            // 
+            // listViewFonts
+            // 
+            this.listViewFonts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listViewFonts.HideSelection = false;
+            this.listViewFonts.Location = new System.Drawing.Point(15, 25);
+            this.listViewFonts.Name = "listViewFonts";
+            this.listViewFonts.Size = new System.Drawing.Size(260, 105);
+            this.listViewFonts.TabIndex = 0;
+            this.listViewFonts.UseCompatibleStateImageBehavior = false;
+            this.listViewFonts.View = System.Windows.Forms.View.List;
             // 
             // btnInstallFonts
             // 
-            this.btnInstallFonts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnInstallFonts.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnInstallFonts.Location = new System.Drawing.Point(356, 214);
-            this.btnInstallFonts.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnInstallFonts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnInstallFonts.Location = new System.Drawing.Point(285, 25);
             this.btnInstallFonts.Name = "btnInstallFonts";
-            this.btnInstallFonts.Size = new System.Drawing.Size(200, 43);
+            this.btnInstallFonts.Size = new System.Drawing.Size(175, 30);
             this.btnInstallFonts.TabIndex = 1;
             this.btnInstallFonts.Text = "Install All Fonts";
             this.btnInstallFonts.UseVisualStyleBackColor = true;
             this.btnInstallFonts.Click += new System.EventHandler(this.btnInstallFonts_Click);
             // 
-            // listViewFonts
+            // grpShortcuts
             // 
-            this.listViewFonts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.grpShortcuts.Controls.Add(this.listViewShortcuts);
+            this.grpShortcuts.Controls.Add(this.btnCreateAllShortcuts);
+            this.grpShortcuts.Location = new System.Drawing.Point(490, 166);
+            this.grpShortcuts.Name = "grpShortcuts";
+            this.grpShortcuts.Size = new System.Drawing.Size(470, 145);
+            this.grpShortcuts.TabIndex = 3;
+            this.grpShortcuts.TabStop = false;
+            this.grpShortcuts.Text = "Create Shortcuts (Public Desktop)";
+            // 
+            // listViewShortcuts
+            // 
+            this.listViewShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listViewFonts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1});
-            this.listViewFonts.HideSelection = false;
-            this.listViewFonts.Location = new System.Drawing.Point(8, 30);
-            this.listViewFonts.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.listViewFonts.Name = "listViewFonts";
-            this.listViewFonts.Size = new System.Drawing.Size(547, 176);
-            this.listViewFonts.TabIndex = 0;
-            this.listViewFonts.UseCompatibleStateImageBehavior = false;
-            this.listViewFonts.View = System.Windows.Forms.View.Details;
+            this.listViewShortcuts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2});
+            this.listViewShortcuts.HideSelection = false;
+            this.listViewShortcuts.Location = new System.Drawing.Point(15, 25);
+            this.listViewShortcuts.Name = "listViewShortcuts";
+            this.listViewShortcuts.Size = new System.Drawing.Size(260, 105);
+            this.listViewShortcuts.TabIndex = 0;
+            this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
+            this.listViewShortcuts.View = System.Windows.Forms.View.Details;
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "Font File Name";
-            this.columnHeader1.Width = 350;
+            this.columnHeader1.Text = "Name";
+            this.columnHeader1.Width = 100;
             // 
-            // gboxShortcuts
+            // columnHeader2
             // 
-            this.gboxShortcuts.Controls.Add(this.btnCreateAllShortcuts);
-            this.gboxShortcuts.Controls.Add(this.listViewShortcuts);
-            this.gboxShortcuts.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gboxShortcuts.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gboxShortcuts.Location = new System.Drawing.Point(576, 277);
-            this.gboxShortcuts.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxShortcuts.MinimumSize = new System.Drawing.Size(0, 265);
-            this.gboxShortcuts.Name = "gboxShortcuts";
-            this.gboxShortcuts.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.gboxShortcuts.Size = new System.Drawing.Size(565, 265);
-            this.gboxShortcuts.TabIndex = 3;
-            this.gboxShortcuts.TabStop = false;
-            this.gboxShortcuts.Text = "Desktop Shortcuts";
+            this.columnHeader2.Text = "Target";
+            this.columnHeader2.Width = 150;
             // 
             // btnCreateAllShortcuts
             // 
-            this.btnCreateAllShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateAllShortcuts.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(357, 214);
-            this.btnCreateAllShortcuts.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCreateAllShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(285, 25);
             this.btnCreateAllShortcuts.Name = "btnCreateAllShortcuts";
-            this.btnCreateAllShortcuts.Size = new System.Drawing.Size(200, 43);
+            this.btnCreateAllShortcuts.Size = new System.Drawing.Size(175, 30);
             this.btnCreateAllShortcuts.TabIndex = 1;
             this.btnCreateAllShortcuts.Text = "Create All Shortcuts";
             this.btnCreateAllShortcuts.UseVisualStyleBackColor = true;
             this.btnCreateAllShortcuts.Click += new System.EventHandler(this.btnCreateAllShortcuts_Click);
             // 
-            // listViewShortcuts
-            // 
-            this.listViewShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.listViewShortcuts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.colName,
-            this.colTarget});
-            this.listViewShortcuts.HideSelection = false;
-            this.listViewShortcuts.Location = new System.Drawing.Point(8, 30);
-            this.listViewShortcuts.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.listViewShortcuts.Name = "listViewShortcuts";
-            this.listViewShortcuts.Size = new System.Drawing.Size(548, 176);
-            this.listViewShortcuts.TabIndex = 0;
-            this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
-            this.listViewShortcuts.View = System.Windows.Forms.View.Details;
-            // 
-            // colName
-            // 
-            this.colName.Text = "Shortcut Name";
-            this.colName.Width = 150;
-            // 
-            // colTarget
-            // 
-            this.colTarget.Text = "Target Path";
-            this.colTarget.Width = 200;
-            // 
-            // logPanel
-            // 
-            this.logPanel.Controls.Add(this.txtStatus);
-            this.logPanel.Controls.Add(this.label6);
-            this.logPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.logPanel.Location = new System.Drawing.Point(17, 632);
-            this.logPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.logPanel.Name = "logPanel";
-            this.logPanel.Size = new System.Drawing.Size(1145, 166);
-            this.logPanel.TabIndex = 2;
-            // 
             // txtStatus
             // 
-            this.txtStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.txtStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtStatus.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtStatus.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
-            this.txtStatus.Location = new System.Drawing.Point(0, 27);
-            this.txtStatus.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtStatus.BackColor = System.Drawing.SystemColors.InfoText;
+            this.txtStatus.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtStatus.ForeColor = System.Drawing.Color.LimeGreen;
+            this.txtStatus.Location = new System.Drawing.Point(15, 325);
             this.txtStatus.Multiline = true;
             this.txtStatus.Name = "txtStatus";
             this.txtStatus.ReadOnly = true;
             this.txtStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStatus.Size = new System.Drawing.Size(1145, 139);
-            this.txtStatus.TabIndex = 1;
+            this.txtStatus.Size = new System.Drawing.Size(945, 241);
+            this.txtStatus.TabIndex = 4;
             // 
-            // label6
+            // btnCancel
             // 
-            this.label6.AutoSize = true;
-            this.label6.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(0, 0);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Padding = new System.Windows.Forms.Padding(0, 0, 0, 4);
-            this.label6.Size = new System.Drawing.Size(113, 27);
-            this.label6.TabIndex = 2;
-            this.label6.Text = "Status / Log:";
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Location = new System.Drawing.Point(865, 572);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(95, 30);
+            this.btnCancel.TabIndex = 5;
+            this.btnCancel.Text = "Cancel";
+            this.toolTip1.SetToolTip(this.btnCancel, "Cancel any running operation");
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Visible = false;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // WindowsSettingsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
-            this.Controls.Add(this.tlpMain);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.txtStatus);
+            this.Controls.Add(this.grpShortcuts);
+            this.Controls.Add(this.grpFonts);
+            this.Controls.Add(this.grpLocalization);
+            this.Controls.Add(this.grpOdbc);
             this.Name = "WindowsSettingsControl";
-            this.Size = new System.Drawing.Size(1179, 814);
-            this.tlpMain.ResumeLayout(false);
-            this.tlpMain.PerformLayout();
-            this.headerPanel.ResumeLayout(false);
-            this.headerPanel.PerformLayout();
-            this.tlpContent.ResumeLayout(false);
-            this.gboxOdbc.ResumeLayout(false);
-            this.tlpOdbc.ResumeLayout(false);
-            this.tlpOdbc.PerformLayout();
-            this.gboxLocalization.ResumeLayout(false);
-            this.tlpLocalization.ResumeLayout(false);
-            this.tlpLocalization.PerformLayout();
-            this.gboxFonts.ResumeLayout(false);
-            this.gboxShortcuts.ResumeLayout(false);
-            this.logPanel.ResumeLayout(false);
-            this.logPanel.PerformLayout();
+            this.Padding = new System.Windows.Forms.Padding(12);
+            this.Size = new System.Drawing.Size(975, 615);
+            this.grpOdbc.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
+            this.grpLocalization.ResumeLayout(false);
+            this.grpLocalization.PerformLayout();
+            this.grpFonts.ResumeLayout(false);
+            this.grpShortcuts.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.TableLayoutPanel tlpMain;
-        private System.Windows.Forms.Panel headerPanel;
-        private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.TableLayoutPanel tlpContent;
-        private System.Windows.Forms.GroupBox gboxOdbc;
-        private System.Windows.Forms.Button btnCreateOdbc;
-        private System.Windows.Forms.TextBox txtOdbcPwd;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox txtOdbcUid;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox txtOdbcDb;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox txtOdbcServer;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.GroupBox grpOdbc;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.Label lblOdbcDsnName;
         private System.Windows.Forms.TextBox txtOdbcDsnName;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.GroupBox gboxLocalization;
-        private System.Windows.Forms.Button btnSetLocalization;
+        private System.Windows.Forms.Label lblOdbcServer;
+        private System.Windows.Forms.TextBox txtOdbcServer;
+        private System.Windows.Forms.Label lblOdbcDb;
+        private System.Windows.Forms.TextBox txtOdbcDb;
+        private System.Windows.Forms.Label lblOdbcUid;
+        private System.Windows.Forms.TextBox txtOdbcUid;
+        private System.Windows.Forms.Label lblOdbcPwd;
+        private System.Windows.Forms.TextBox txtOdbcPwd;
+        private System.Windows.Forms.Button btnCreateOdbc;
+        private System.Windows.Forms.GroupBox grpLocalization;
         private System.Windows.Forms.RadioButton radLangSwitchAltShift;
         private System.Windows.Forms.RadioButton radLangSwitchGrave;
-        private System.Windows.Forms.GroupBox gboxFonts;
-        private System.Windows.Forms.Button btnInstallFonts;
+        private System.Windows.Forms.Button btnSetLocalization;
+        private System.Windows.Forms.GroupBox grpFonts;
         private System.Windows.Forms.ListView listViewFonts;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.GroupBox gboxShortcuts;
-        private System.Windows.Forms.Button btnCreateAllShortcuts;
+        private System.Windows.Forms.Button btnInstallFonts;
+        private System.Windows.Forms.GroupBox grpShortcuts;
         private System.Windows.Forms.ListView listViewShortcuts;
-        private System.Windows.Forms.ColumnHeader colName;
-        private System.Windows.Forms.ColumnHeader colTarget;
-        private System.Windows.Forms.Panel logPanel;
+        private System.Windows.Forms.Button btnCreateAllShortcuts;
         private System.Windows.Forms.TextBox txtStatus;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TableLayoutPanel tlpOdbc;
-        private System.Windows.Forms.TableLayoutPanel tlpLocalization;
-        private System.Windows.Forms.Label lblLocalizationDesc;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

@@ -8,7 +8,7 @@
         public string ManifestDocNo { get; set; }
         public string QuotationSource { get; set; }
         public string QuotationDestination { get; set; }
-        // สามารถเพิ่ม Filter อื่นๆ จากหน้าจอได้ที่นี่ในอนาคต
+        public string JobNo { get; set; }
     }
 
     /// <summary>

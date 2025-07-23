@@ -88,7 +88,6 @@ namespace Multipurpose
             Log("\n--- All processes complete ---");
 
             await RefreshCurrentStatusAsync();
-            ToggleAllButtons(true, false);
         }
 
         private async Task UpgradeEditionAsync(string targetProduct, CancellationToken token)
@@ -189,14 +188,18 @@ namespace Multipurpose
             }
             finally
             {
-                ToggleAllButtons(true, false);
-                _cancellationTokenSource.Dispose();
-                _cancellationTokenSource = null;
+                if (!this.IsDisposed)
+                {
+                    ToggleAllButtons(true, false);
+                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource = null;
+                }
             }
         }
 
         private void cboProducts_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (this.IsDisposed) return;
             if (cboProducts.SelectedItem == null)
             {
                 lblProcessDescription.Text = "Select a target product to see the next step.";
@@ -224,9 +227,18 @@ namespace Multipurpose
         private void Log(string message)
         {
             if (string.IsNullOrEmpty(message)) return;
+            // *** FIX: Check if control is disposed before accessing it from an async method ***
+            if (this.IsDisposed || (txtStatus != null && txtStatus.IsDisposed))
+            {
+                return;
+            }
             if (txtStatus.InvokeRequired)
             {
-                txtStatus.Invoke(new Action(() => Log(message)));
+                try
+                {
+                    txtStatus.Invoke(new Action(() => Log(message.Trim())));
+                }
+                catch (ObjectDisposedException) { /* Ignore */ }
             }
             else
             {
@@ -236,9 +248,14 @@ namespace Multipurpose
 
         private void LogClear()
         {
+            if (this.IsDisposed || (txtStatus != null && txtStatus.IsDisposed)) return;
             if (txtStatus.InvokeRequired)
             {
-                txtStatus.Invoke(new Action(LogClear));
+                try
+                {
+                    txtStatus.Invoke(new Action(LogClear));
+                }
+                catch (ObjectDisposedException) { /* Ignore */ }
             }
             else
             {
@@ -261,15 +278,22 @@ namespace Multipurpose
         {
             LogClear();
             Log("--- Checking current machine status ---");
-            lblCurrentEdition.Text = "Loading...";
-            lblCurrentStatus.Text = "Loading...";
-            ToggleAllButtons(false, false);
+
+            // *** FIX: Check IsDisposed before updating UI ***
+            if (!this.IsDisposed)
+            {
+                lblCurrentEdition.Text = "Loading...";
+                lblCurrentStatus.Text = "Loading...";
+                ToggleAllButtons(false, false);
+            }
 
             try
             {
                 string powerShellExe = Get64BitPowerShellPath();
                 string psCommand = "(Get-CimInstance -ClassName Win32_OperatingSystem).Caption";
                 string osCaptionResult = await RunProcessAsync(powerShellExe, $"-Command \"{psCommand}\"", CancellationToken.None);
+
+                if (this.IsDisposed) return;
 
                 _currentWindowsEdition = osCaptionResult.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim().Replace("Microsoft ", "");
 
@@ -296,13 +320,19 @@ namespace Multipurpose
             catch (Exception ex)
             {
                 Log($"[FATAL] An error occurred during status refresh: {ex.Message}");
-                lblCurrentEdition.Text = "Error";
-                lblCurrentStatus.Text = "Error";
+                if (!this.IsDisposed)
+                {
+                    lblCurrentEdition.Text = "Error";
+                    lblCurrentStatus.Text = "Error";
+                }
             }
             finally
             {
-                ToggleAllButtons(true, false);
-                cboProducts_SelectedIndexChanged(null, null);
+                if (!this.IsDisposed)
+                {
+                    ToggleAllButtons(true, false);
+                    cboProducts_SelectedIndexChanged(null, null);
+                }
             }
         }
 
@@ -361,6 +391,7 @@ namespace Multipurpose
             {
                 await Task.Run(() =>
                 {
+                    if (token.IsCancellationRequested) return;
                     var startInfo = new ProcessStartInfo
                     {
                         FileName = fileName,
@@ -383,7 +414,7 @@ namespace Multipurpose
                         {
                             if (token.IsCancellationRequested)
                             {
-                                process.Kill();
+                                try { process.Kill(); } catch { /* Ignore */ }
                                 token.ThrowIfCancellationRequested();
                             }
                         }
@@ -408,17 +439,30 @@ namespace Multipurpose
 
         private void ToggleAllButtons(bool isEnabled, bool isProcessing)
         {
-            btnRefreshStatus.Enabled = isEnabled && !isProcessing;
-            cboProducts.Enabled = isEnabled && !isProcessing;
-            btnStartProcess.Enabled = isEnabled;
-
-            if (isProcessing)
+            // *** FIX: Check IsDisposed before invoking ***
+            if (this.IsDisposed) return;
+            if (this.InvokeRequired)
             {
-                btnStartProcess.Text = "Cancel";
+                try
+                {
+                    this.Invoke(new Action(() => ToggleAllButtons(isEnabled, isProcessing)));
+                }
+                catch (ObjectDisposedException) { /* Ignore */ }
             }
             else
             {
-                cboProducts_SelectedIndexChanged(null, null); // This will set the correct text
+                btnRefreshStatus.Enabled = isEnabled && !isProcessing;
+                cboProducts.Enabled = isEnabled && !isProcessing;
+                btnStartProcess.Enabled = isEnabled;
+
+                if (isProcessing)
+                {
+                    btnStartProcess.Text = "Cancel";
+                }
+                else
+                {
+                    cboProducts_SelectedIndexChanged(null, null); // This will set the correct text
+                }
             }
         }
 

@@ -95,7 +95,6 @@ namespace Multipurpose
             }
 
             await RefreshCurrentStatusAsync();
-            ToggleAllButtons(true, false);
         }
 
         private async Task UninstallAllRetailKeys(CancellationToken token)
@@ -123,6 +122,12 @@ namespace Multipurpose
         #region UI Event Handlers
         private async void btnActivateOffice_Click(object sender, EventArgs e)
         {
+            if (_cancellationTokenSource != null) // Is processing
+            {
+                _cancellationTokenSource.Cancel();
+                return;
+            }
+
             if (cboOfficeProducts.SelectedItem == null)
             {
                 MessageBox.Show("Please select an Office product to activate.", "No Product Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -159,9 +164,19 @@ namespace Multipurpose
         #region Helper Methods
         private void Log(string message)
         {
+            // *** FIX: Check if control is disposed before accessing it from an async method ***
+            if (this.IsDisposed || (txtStatus != null && txtStatus.IsDisposed))
+            {
+                return;
+            }
+
             if (txtStatus.InvokeRequired)
             {
-                txtStatus.Invoke(new Action(() => Log(message)));
+                try
+                {
+                    txtStatus.Invoke(new Action(() => Log(message)));
+                }
+                catch (ObjectDisposedException) { /* Ignore error if control is disposed during invoke */ }
             }
             else
             {
@@ -170,9 +185,14 @@ namespace Multipurpose
         }
         private void LogClear()
         {
+            if (this.IsDisposed || (txtStatus != null && txtStatus.IsDisposed)) return;
             if (txtStatus.InvokeRequired)
             {
-                txtStatus.Invoke(new Action(LogClear));
+                try
+                {
+                    txtStatus.Invoke(new Action(LogClear));
+                }
+                catch (ObjectDisposedException) { /* Ignore */ }
             }
             else
             {
@@ -189,12 +209,20 @@ namespace Multipurpose
             }
             LogClear();
             Log("--- Checking Office status ---");
-            lblCurrentProductNameValue.Text = "Loading...";
-            lblCurrentStatusValue.Text = "Loading...";
-            ToggleAllButtons(false, false);
+
+            // *** FIX: Check IsDisposed before updating UI ***
+            if (!this.IsDisposed)
+            {
+                lblCurrentProductNameValue.Text = "Loading...";
+                lblCurrentStatusValue.Text = "Loading...";
+                ToggleAllButtons(false, false);
+            }
 
             string statusResult = await RunOsppCommand("/dstatus", CancellationToken.None);
             Log(statusResult);
+
+            // *** FIX: Check IsDisposed before updating UI ***
+            if (this.IsDisposed) return;
 
             Match nameMatch = Regex.Match(statusResult, @"LICENSE NAME:.*?(Office.*?)[\s,]*$|LICENSE NAME: (.*)", RegexOptions.Multiline);
             lblCurrentProductNameValue.Text = nameMatch.Success ? (nameMatch.Groups[1].Success ? nameMatch.Groups[1].Value.Trim() : nameMatch.Groups[2].Value.Trim()) : "No License Found";
@@ -247,6 +275,7 @@ namespace Multipurpose
             {
                 await Task.Run(() =>
                 {
+                    if (token.IsCancellationRequested) return;
                     var startInfo = new ProcessStartInfo
                     {
                         FileName = fileName,
@@ -268,7 +297,7 @@ namespace Multipurpose
                         {
                             if (token.IsCancellationRequested)
                             {
-                                process.Kill();
+                                try { process.Kill(); } catch { /* Ignore */ }
                                 token.ThrowIfCancellationRequested();
                             }
                         }
@@ -293,14 +322,20 @@ namespace Multipurpose
 
         private void ToggleAllButtons(bool isEnabled, bool isProcessing)
         {
+            // *** FIX: Check IsDisposed before invoking ***
+            if (this.IsDisposed) return;
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => ToggleAllButtons(isEnabled, isProcessing)));
+                try
+                {
+                    this.Invoke(new Action(() => ToggleAllButtons(isEnabled, isProcessing)));
+                }
+                catch (ObjectDisposedException) { /* Ignore */ }
             }
             else
             {
                 btnRefreshStatus.Enabled = isEnabled && !isProcessing;
-                btnActivateOffice.Enabled = isEnabled && !isProcessing;
+                btnActivateOffice.Enabled = isEnabled;
                 cboOfficeProducts.Enabled = isEnabled && !isProcessing;
 
                 if (isProcessing)

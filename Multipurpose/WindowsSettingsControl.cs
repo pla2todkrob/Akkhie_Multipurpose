@@ -49,9 +49,19 @@ namespace Multipurpose
 
         private void Log(string message)
         {
+            // *** FIX: Check if control is disposed before accessing it from an async method ***
+            if (this.IsDisposed || (txtStatus != null && txtStatus.IsDisposed))
+            {
+                return;
+            }
+
             if (txtStatus.InvokeRequired)
             {
-                txtStatus.Invoke(new Action(() => Log(message)));
+                try
+                {
+                    txtStatus.Invoke(new Action(() => Log(message)));
+                }
+                catch (ObjectDisposedException) { /* Ignore error if control is disposed during invoke */ }
             }
             else
             {
@@ -83,6 +93,7 @@ namespace Multipurpose
             {
                 await Task.Run(() =>
                 {
+                    if (token.IsCancellationRequested) return;
                     var startInfo = new ProcessStartInfo
                     {
                         FileName = fileName,
@@ -98,21 +109,18 @@ namespace Multipurpose
                     {
                         process.Start();
 
-                        // Asynchronously read the output
                         var outputTask = process.StandardOutput.ReadToEndAsync();
                         var errorTask = process.StandardError.ReadToEndAsync();
 
-                        // Wait for the process to exit or for cancellation
                         while (!process.WaitForExit(100))
                         {
                             if (token.IsCancellationRequested)
                             {
-                                process.Kill();
+                                try { process.Kill(); } catch { /* Ignore */ }
                                 token.ThrowIfCancellationRequested();
                             }
                         }
 
-                        // Wait for the output reading to complete
                         Task.WaitAll(new Task[] { outputTask, errorTask }, token);
 
                         outputBuilder.Append(outputTask.Result);
@@ -145,7 +153,6 @@ namespace Multipurpose
             string powerShellExePath = Get64BitPowerShellPath();
             string scriptContent = System.IO.File.ReadAllText(scriptPath);
 
-            // Inject environment variables if any
             var scriptBuilder = new StringBuilder();
             if (environmentVariables != null)
             {
@@ -164,6 +171,18 @@ namespace Multipurpose
 
         private void ToggleAllButtons(bool isEnabled)
         {
+            // *** FIX: Check IsDisposed before invoking ***
+            if (this.IsDisposed) return;
+            if (this.InvokeRequired)
+            {
+                try
+                {
+                    this.Invoke(new Action(() => ToggleAllButtons(isEnabled)));
+                }
+                catch (ObjectDisposedException) { /* Ignore */ }
+                return;
+            }
+
             btnCreateOdbc.Enabled = isEnabled;
             btnSetLocalization.Enabled = isEnabled;
             btnInstallFonts.Enabled = isEnabled;
@@ -171,9 +190,7 @@ namespace Multipurpose
             radLangSwitchGrave.Enabled = isEnabled;
             radLangSwitchAltShift.Enabled = isEnabled;
 
-            // Add a cancel button or modify an existing one
-            // For this example, we'll assume a btnCancel exists and is only visible during an operation.
-            // btnCancel.Visible = !isEnabled;
+            btnCancel.Visible = !isEnabled;
         }
 
         private void LoadOdbcSettingsToForm()
@@ -322,7 +339,12 @@ namespace Multipurpose
 
                 string powerShellExePath = Get64BitPowerShellPath();
                 var encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(scriptBuilder.ToString()));
-                await RunProcessAsync(powerShellExePath, $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {encodedCommand}", _cancellationTokenSource.Token);
+                string result = await RunProcessAsync(powerShellExePath, $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {encodedCommand}", _cancellationTokenSource.Token);
+                Log(result);
+            }
+            catch (OperationCanceledException)
+            {
+                Log("ODBC creation cancelled.");
             }
             finally
             {
@@ -350,6 +372,10 @@ namespace Multipurpose
                     Log("\n--- All Localization Steps Completed ---");
                     MessageBox.Show("Localization settings have been applied for all users. A restart is required for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log("Localization cancelled.");
             }
             catch (Exception ex)
             {
@@ -438,6 +464,14 @@ namespace Multipurpose
             finally
             {
                 ToggleAllButtons(true);
+            }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
             }
         }
         #endregion

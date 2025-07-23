@@ -86,13 +86,18 @@
     <Compile Include="ShippingCostControl.Designer.cs">
       <DependentUpon>ShippingCostControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tools\ChangeQuotationTool.cs" />
+    <Compile Include="Tools\ChangeToNewCustomerTool.cs" />
     <Compile Include="Tools\DeleteAllBoxesTool.cs" />
+    <Compile Include="Tools\FixShippingCostTool.cs" />
     <Compile Include="Tools\FixShippingCostTypeTool.cs" />
+    <Compile Include="Tools\FixShippingLocationTool.cs" />
     <Compile Include="Tools\ITroubleshooterTool.cs" />
     <Compile Include="Tools\NewWasteAddTool.cs" />
     <Compile Include="Tools\NewWasteTool.cs" />
     <Compile Include="Tools\ToolHelpers.cs" />
     <Compile Include="Tools\UnlockQuotationTool.cs" />
+    <Compile Include="Tools\UpdateAddressTool.cs" />
     <Compile Include="TroubleshooterControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

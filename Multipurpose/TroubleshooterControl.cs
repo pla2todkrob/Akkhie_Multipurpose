@@ -30,7 +30,7 @@ namespace Multipurpose
                         UserID = settings["OdbcUid"],
                         Password = settings["OdbcPwd"],
                         ConnectTimeout = 15,
-                        Pooling = true // Ensure pooling is enabled
+                        Pooling = true
                     };
                     ConnectionString = builder.ConnectionString;
                 }
@@ -108,37 +108,66 @@ namespace Multipurpose
                 return;
             }
 
-            RegisterTools();
+            RegisterAndOrderTools();
             SetupInitialState();
             AssignEventHandlers();
         }
 
-        private void RegisterTools()
+        /// <summary>
+        /// Registers tools based on a predefined order and maps them to buttons.
+        /// </summary>
+        private void RegisterAndOrderTools()
         {
             _tools.Clear();
-            var toolTypes = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => typeof(ITroubleshooterTool).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 
-            foreach (var type in toolTypes)
+            // Define the exact order of tools.
+            var orderedToolTypes = new List<Type>
             {
-                var tool = (ITroubleshooterTool)Activator.CreateInstance(type);
-                // Find button by convention: btnUnlockQuotation -> UnlockQuotationTool
-                var buttonName = $"btn{type.Name.Replace("Tool", "")}";
-                var button = flpVerticalActions.Controls.Find(buttonName, true).FirstOrDefault() as Button;
+                typeof(UnlockQuotationTool),
+                typeof(FixShippingCostTypeTool),
+                typeof(NewWasteTool),
+                typeof(NewWasteAddTool),
+                typeof(ChangeQuotationTool),
+                typeof(DeleteAllBoxesTool),
+                typeof(FixShippingLocationTool),
+                typeof(FixShippingCostTool),
+                typeof(UpdateAddressTool),
+                typeof(ChangeToNewCustomerTool)
+            };
 
-                if (button != null)
+            // Get all buttons from the panel, assuming they are in the correct visual order.
+            var buttons = flpVerticalActions.Controls.OfType<Button>().ToList();
+
+            // Create instances of all available tools in the assembly.
+            var availableTools = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => typeof(ITroubleshooterTool).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+                .Select(t => (ITroubleshooterTool)Activator.CreateInstance(t))
+                .ToDictionary(t => t.GetType());
+
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                var button = buttons[i];
+                if (i < orderedToolTypes.Count)
                 {
-                    _tools.Add(button.Name, tool);
-                    button.Text = tool.ToolName; // Set button text from tool
+                    var toolType = orderedToolTypes[i];
+                    if (availableTools.TryGetValue(toolType, out ITroubleshooterTool toolInstance))
+                    {
+                        // Map the button to its tool instance and set its text.
+                        _tools.Add(button.Name, toolInstance);
+                        button.Text = toolInstance.ToolName;
+                    }
+                    else
+                    {
+                        // Disable the button if the corresponding tool class is not found.
+                        button.Enabled = false;
+                        button.Text += " (Not Found)";
+                    }
                 }
-            }
-        }
-
-        private void UpdateToolButtonStates()
-        {
-            foreach (Button btn in flpVerticalActions.Controls.OfType<Button>())
-            {
-                btn.Enabled = _tools.ContainsKey(btn.Name);
+                else
+                {
+                    // Disable any extra buttons that don't have a tool defined in the order.
+                    button.Enabled = false;
+                }
             }
         }
 
@@ -148,14 +177,9 @@ namespace Multipurpose
             txtQuotationSource.Clear();
             txtQuotationDest.Clear();
             txtManifest.Clear();
-            chkUseDateRange.Checked = false;
-            dtpFrom.Value = DateTime.Now;
-            dtpTo.Value = DateTime.Now;
-            panelDateRange.Enabled = false;
+            txtJobNo.Clear(); // Clear the new Job No textbox
 
             flpVerticalActions.Enabled = true;
-
-            UpdateToolButtonStates();
 
             dgvResults.DataSource = null;
             dgvResults.Columns.Clear();
@@ -164,18 +188,20 @@ namespace Multipurpose
             btnCancel.Enabled = true;
             btnProcess.Enabled = false;
 
-            btnProcess.Text = "Process";
+            btnProcess.Text = "ดำเนินการ";
 
             _activeTool = null;
         }
 
         private void AssignEventHandlers()
         {
-            chkUseDateRange.CheckedChanged += chkUseDateRange_CheckedChanged;
-
             foreach (Button btn in flpVerticalActions.Controls.OfType<Button>())
             {
-                btn.Click += ActionButton_Click;
+                // Only add click handlers for buttons that have a registered tool.
+                if (_tools.ContainsKey(btn.Name))
+                {
+                    btn.Click += ActionButton_Click;
+                }
             }
 
             btnProcess.Click += btnProcess_Click;
@@ -198,9 +224,11 @@ namespace Multipurpose
             panelProcess.Visible = true;
             btnProcess.Text = _activeTool.ToolName;
 
+            // Pass all required parameters to the tool.
             var parameters = new ToolParameters
             {
                 ManifestDocNo = txtManifest.Text.Trim(),
+                JobNo = txtJobNo.Text.Trim(), // Pass the new Job No value
                 QuotationSource = txtQuotationSource.Text.Trim(),
                 QuotationDestination = txtQuotationDest.Text.Trim()
             };
@@ -211,6 +239,7 @@ namespace Multipurpose
                 dgvResults.DataSource = dt;
                 FormatGrid();
 
+                // Special handling for tools that don't require item selection.
                 if (_activeTool is DeleteAllBoxesTool)
                 {
                     btnProcess.Enabled = true;
@@ -226,66 +255,65 @@ namespace Multipurpose
         private void FormatGrid()
         {
             if (dgvResults.DataSource == null) return;
+            dgvResults.SuspendLayout(); // Suspend layout for performance
 
+            // Apply formatting based on column names.
             if (dgvResults.Columns.Contains("Select"))
             {
-                dgvResults.Columns["Select"].HeaderText = "Select";
+                dgvResults.Columns["Select"].HeaderText = "เลือก";
                 dgvResults.Columns["Select"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             }
-            if (dgvResults.Columns.Contains("DocNo"))
+            if (dgvResults.Columns.Contains("JobNo")) dgvResults.Columns["JobNo"].HeaderText = "Job No";
+            if (dgvResults.Columns.Contains("DocNo")) dgvResults.Columns["DocNo"].HeaderText = "Manifest No";
+            if (dgvResults.Columns.Contains("CustomerCode")) dgvResults.Columns["CustomerCode"].HeaderText = "รหัสลูกค้า";
+            if (dgvResults.Columns.Contains("CompanyName"))
             {
-                dgvResults.Columns["DocNo"].HeaderText = "Document No.";
+                dgvResults.Columns["CompanyName"].HeaderText = "ชื่อลูกค้า";
+                dgvResults.Columns["CompanyName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
+            if (dgvResults.Columns.Contains("WasteNo")) dgvResults.Columns["WasteNo"].HeaderText = "รหัสของเสีย";
             if (dgvResults.Columns.Contains("WasteName"))
             {
-                dgvResults.Columns["WasteName"].HeaderText = "Waste Name";
+                dgvResults.Columns["WasteName"].HeaderText = "ชื่อของเสีย";
                 dgvResults.Columns["WasteName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
-            if (dgvResults.Columns.Contains("WasteDataID")) dgvResults.Columns["WasteDataID"].Visible = false;
-            if (dgvResults.Columns.Contains("MenifestID")) dgvResults.Columns["MenifestID"].Visible = false;
+            if (dgvResults.Columns.Contains("QuotationNo")) dgvResults.Columns["QuotationNo"].HeaderText = "ใบเสนอราคา";
+            if (dgvResults.Columns.Contains("TruckTypeDesc")) dgvResults.Columns["TruckTypeDesc"].HeaderText = "ประเภทรถ";
+            if (dgvResults.Columns.Contains("TransportFee")) dgvResults.Columns["TransportFee"].HeaderText = "ค่าขนส่ง";
+            if (dgvResults.Columns.Contains("WorkDate")) dgvResults.Columns["WorkDate"].HeaderText = "วันที่เข้าหน้างาน";
 
-            if (dgvResults.Columns.Contains("QuotationNo"))
-            {
-                dgvResults.Columns["QuotationNo"].HeaderText = "Quotation No.";
-                dgvResults.Columns["QuotationNo"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            }
-            if (dgvResults.Columns.Contains("isApproved"))
-            {
-                dgvResults.Columns["isApproved"].HeaderText = "Approved Status";
-            }
-            if (dgvResults.Columns.Contains("QuotationID")) dgvResults.Columns["QuotationID"].Visible = false;
+            if (dgvResults.Columns.Contains("CurrentTruckTypeDesc")) dgvResults.Columns["CurrentTruckTypeDesc"].HeaderText = "ประเภทรถ (ปัจจุบัน)";
+            if (dgvResults.Columns.Contains("CurrentTransportFee")) dgvResults.Columns["CurrentTransportFee"].HeaderText = "ค่าขนส่ง (ปัจจุบัน)";
+            if (dgvResults.Columns.Contains("CorrectRate")) dgvResults.Columns["CorrectRate"].HeaderText = "ค่าขนส่ง (ถูกต้อง)";
 
-            if (dgvResults.Columns.Contains("JobDataCarID"))
+            // Hide ID columns
+            foreach (DataGridViewColumn col in dgvResults.Columns)
             {
-                dgvResults.Columns["JobDataCarID"].HeaderText = "Job Data Car ID";
-                dgvResults.Columns["JobDataCarID"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                if (col.Name.EndsWith("ID", StringComparison.OrdinalIgnoreCase))
+                {
+                    col.Visible = false;
+                }
             }
-            if (dgvResults.Columns.Contains("BoxReservNumber"))
-            {
-                dgvResults.Columns["BoxReservNumber"].HeaderText = "Box Reserve Number";
-                dgvResults.Columns["BoxReservNumber"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            }
+
+            dgvResults.ResumeLayout();
         }
 
         private async void btnProcess_Click(object sender, EventArgs e)
         {
             if (_activeTool == null) return;
 
-            if (!(_activeTool is DeleteAllBoxesTool) && !dgvResults.Columns.Contains("Select"))
-            {
-                MessageBox.Show("The results table is not valid. The column for selecting items is missing.", "Internal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            // Check if the grid requires selection.
+            bool requiresSelection = dgvResults.Columns.Contains("Select");
 
             var selectedRows = dgvResults.Rows.Cast<DataGridViewRow>()
-                .Where(row => dgvResults.Columns.Contains("Select") && row.Cells["Select"].Value != null && Convert.ToBoolean(row.Cells["Select"].Value))
+                .Where(row => requiresSelection && row.Cells["Select"].Value != null && Convert.ToBoolean(row.Cells["Select"].Value))
                 .Select(row => (row.DataBoundItem as DataRowView)?.Row)
                 .Where(row => row != null)
                 .ToList();
 
-            if (!(_activeTool is DeleteAllBoxesTool) && !selectedRows.Any())
+            if (requiresSelection && !selectedRows.Any())
             {
-                MessageBox.Show("Please select at least one item to process.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("กรุณาเลือกอย่างน้อย 1 รายการเพื่อดำเนินการ", "ไม่ได้เลือกรายการ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -293,7 +321,9 @@ namespace Multipurpose
 
             try
             {
-                var result = await _activeTool.ProcessAsync(selectedRows);
+                // For tools like DeleteAllBoxes, pass an empty list.
+                var rowsToProcess = requiresSelection ? selectedRows : Enumerable.Empty<DataRow>();
+                var result = await _activeTool.ProcessAsync(rowsToProcess);
                 MessageBox.Show(result.Message, "Processing Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -311,11 +341,6 @@ namespace Multipurpose
             SetupInitialState();
         }
 
-        private void chkUseDateRange_CheckedChanged(object sender, EventArgs e)
-        {
-            panelDateRange.Enabled = chkUseDateRange.Checked;
-        }
-
         private void dgvResults_CurrentCellDirtyStateChanged(object sender, EventArgs e)
         {
             if (dgvResults.IsCurrentCellDirty)
@@ -326,8 +351,6 @@ namespace Multipurpose
 
         private void dgvResults_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (_activeTool is DeleteAllBoxesTool) return;
-
             if (dgvResults.Columns.Contains("Select") && e.ColumnIndex == dgvResults.Columns["Select"].Index)
             {
                 UpdateProcessButtonState();
