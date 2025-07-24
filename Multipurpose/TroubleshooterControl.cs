@@ -15,7 +15,6 @@ namespace Multipurpose
     public partial class TroubleshooterControl : UserControl
     {
         #region Data Access Helper Class
-        // ... (ส่วนของ DataAccess ไม่มีการเปลี่ยนแปลง)
         public static class DataAccess
         {
             private static readonly string ConnectionString;
@@ -50,7 +49,7 @@ namespace Multipurpose
                 return new SqlConnection(ConnectionString);
             }
 
-            public static async Task<DataTable> GetDataTableAsync(string query, params SqlParameter[] parameters)
+            public static async Task<DataTable> GetDataTableAsync(string query, string remark = "", params SqlParameter[] parameters)
             {
                 var dt = new DataTable();
                 if (!IsConnectionConfigured()) return dt;
@@ -68,6 +67,12 @@ namespace Multipurpose
                         adapter.Fill(dt);
                     }
                 }
+
+                if (!string.IsNullOrEmpty(remark) && dt.Rows.Count > 0)
+                {
+                    MessageBox.Show(remark, "Remark", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
                 return dt;
             }
 
@@ -91,8 +96,19 @@ namespace Multipurpose
 
         private readonly Dictionary<string, ITroubleshooterTool> _tools;
         private ITroubleshooterTool _activeTool = null;
-        private Button _activeButton = null; // Track the currently active button
+        private Button _activeButton = null;
         private ToolParameters _currentParameters;
+
+        private readonly Color _btnDefaultBackColor = Color.FromArgb(240, 242, 245);
+        private readonly Color _btnDefaultForeColor = Color.FromArgb(51, 65, 85);
+        private readonly Color _btnDefaultBorderColor = Color.FromArgb(203, 213, 225);
+
+        private readonly Color _btnHoverBackColor = Color.FromArgb(226, 232, 240);
+        private readonly Color _btnHoverBorderColor = Color.FromArgb(148, 163, 184);
+
+        private readonly Color _btnActiveBackColor = Color.FromArgb(37, 99, 235);
+        private readonly Color _btnActiveForeColor = Color.White;
+        private readonly Color _btnActiveBorderColor = Color.FromArgb(30, 64, 175);
 
         public TroubleshooterControl()
         {
@@ -113,7 +129,7 @@ namespace Multipurpose
             }
 
             RegisterAndOrderTools();
-            SetupInitialState();
+            ResetState(true); // เริ่มต้นแบบล้างค่าทั้งหมด
             AssignEventHandlers();
         }
 
@@ -137,7 +153,7 @@ namespace Multipurpose
             for (int i = 0; i < buttons.Count; i++)
             {
                 var button = buttons[i];
-                ApplyModernButtonStyle(button); // Apply new style to each button
+                ApplyModernButtonStyle(button);
 
                 if (i < orderedToolTypes.Count)
                 {
@@ -160,28 +176,35 @@ namespace Multipurpose
             }
         }
 
-        private void SetupInitialState()
+        /// <summary>
+        /// NEW: Centralized method to reset the UI state.
+        /// </summary>
+        /// <param name="clearFilters">If true, clears the filter textboxes. If false, preserves their content.</param>
+        private void ResetState(bool clearFilters)
         {
-            grpFilters.Enabled = true;
-            txtQuotationSource.Clear();
-            txtQuotationDest.Clear();
-            txtManifest.Clear();
-            txtJobNo.Clear();
+            if (clearFilters)
+            {
+                txtQuotationSource.Clear();
+                txtQuotationDest.Clear();
+                txtManifest.Clear();
+                txtJobNo.Clear();
+            }
 
+            grpFilters.Enabled = true;
             flpVerticalActions.Enabled = true;
-            ResetAllButtonStyles(); // Reset button styles to default
+            ResetAllButtonStyles();
 
             dgvResults.DataSource = null;
             dgvResults.Columns.Clear();
 
             panelProcess.Visible = false;
-            btnCancel.Enabled = true;
             btnProcess.Enabled = false;
             btnProcess.Text = "ดำเนินการ";
 
             _activeTool = null;
             _activeButton = null;
         }
+
 
         private void AssignEventHandlers()
         {
@@ -206,13 +229,6 @@ namespace Multipurpose
                 return;
             }
 
-            SetActiveButton(clickedButton); // Set the clicked button as active
-
-            grpFilters.Enabled = false;
-            flpVerticalActions.Enabled = false;
-            panelProcess.Visible = true;
-            btnProcess.Text = _activeTool.ToolName;
-
             _currentParameters = new ToolParameters
             {
                 ManifestDocNo = txtManifest.Text.Trim(),
@@ -221,20 +237,47 @@ namespace Multipurpose
                 QuotationDestination = txtQuotationDest.Text.Trim()
             };
 
+            // Lock UI for processing
+            SetActiveButton(clickedButton);
+            grpFilters.Enabled = false;
+            flpVerticalActions.Enabled = false;
+            panelProcess.Visible = true;
+            btnProcess.Text = _activeTool.ToolName;
+            btnProcess.Enabled = false;
+
             try
             {
                 DataTable dt = await _activeTool.SearchAsync(_currentParameters);
+
+                // --- MODIFIED: Check search result here ---
+                // If the tool returns null (e.g., from a validation message) or an empty table, reset automatically.
+                if (dt == null || dt.Rows.Count == 0)
+                {
+                    if (dt != null) // Only show this generic message if the tool didn't already show one by returning null.
+                    {
+                        MessageBox.Show("ไม่พบข้อมูลตามเงื่อนไขที่ระบุ", "ไม่พบข้อมูล", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    ResetState(false); // Reset UI but KEEP filter values.
+                    return; // Stop further execution.
+                }
+
+                // If search is successful, populate the grid
                 dgvResults.DataSource = dt;
                 FormatGrid();
-                if (_activeTool is DeleteAllBoxesTool)
+
+                if (_activeTool is DeleteAllBoxesTool || !dgvResults.Columns.Contains("Select"))
                 {
                     btnProcess.Enabled = true;
+                }
+                else
+                {
+                    UpdateProcessButtonState();
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error searching data: {ex.Message}", "Query Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                SetupInitialState();
+                ResetState(false); // On error, reset but keep filters for correction.
             }
         }
 
@@ -256,7 +299,6 @@ namespace Multipurpose
                 dgvResults.Columns["CompanyName"].HeaderText = "ชื่อลูกค้า";
                 dgvResults.Columns["CompanyName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
-            // ... (ส่วนที่เหลือของ FormatGrid ไม่มีการเปลี่ยนแปลง)
 
             dgvResults.ResumeLayout();
         }
@@ -290,13 +332,15 @@ namespace Multipurpose
             }
             finally
             {
-                SetupInitialState();
+                // After a process is complete, reset and clear filters for the next task.
+                ResetState(true);
             }
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            SetupInitialState();
+            // MODIFIED: Cancel now preserves filter text.
+            ResetState(false);
         }
 
         private void dgvResults_CurrentCellDirtyStateChanged(object sender, EventArgs e)
@@ -329,55 +373,82 @@ namespace Multipurpose
         #region UI Styling Methods
 
         /// <summary>
-        /// Applies a modern, flat style to a button.
+        /// MODIFIED: Applies an enhanced modern, flat style to a button.
         /// </summary>
         private void ApplyModernButtonStyle(Button btn)
         {
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 1;
-            btn.FlatAppearance.BorderColor = Color.Gainsboro;
-            btn.BackColor = Color.White;
-            btn.ForeColor = Color.FromArgb(64, 64, 64);
-            btn.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
-            btn.Size = new Size(200, 40);
-            btn.Margin = new Padding(3, 3, 3, 5);
+            btn.BackColor = _btnDefaultBackColor;
+            btn.ForeColor = _btnDefaultForeColor;
+            btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
+            btn.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
+            btn.Size = new Size(220, 45); // Increased size
+            btn.Margin = new Padding(3, 3, 3, 6);
             btn.TextAlign = ContentAlignment.MiddleLeft;
-            btn.Padding = new Padding(10, 0, 0, 0);
+            btn.Padding = new Padding(15, 0, 0, 0);
+            btn.Cursor = Cursors.Hand;
+
+            // Add hover effects
+            btn.MouseEnter += Button_MouseEnter;
+            btn.MouseLeave += Button_MouseLeave;
+        }
+
+        // --- NEW: Event handler for mouse enter (hover) ---
+        private void Button_MouseEnter(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn != null && btn != _activeButton) // Only change if it's not the currently active button
+            {
+                btn.BackColor = _btnHoverBackColor;
+                btn.FlatAppearance.BorderColor = _btnHoverBorderColor;
+            }
+        }
+
+        // --- NEW: Event handler for mouse leave (hover) ---
+        private void Button_MouseLeave(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn != null && btn != _activeButton) // Only change if it's not the currently active button
+            {
+                btn.BackColor = _btnDefaultBackColor;
+                btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
+            }
         }
 
         /// <summary>
-        /// Resets all action buttons to their default, inactive style.
+        /// MODIFIED: Resets all action buttons to the new default, inactive style.
         /// </summary>
         private void ResetAllButtonStyles()
         {
             foreach (Button btn in flpVerticalActions.Controls.OfType<Button>())
             {
-                btn.BackColor = Color.White;
-                btn.ForeColor = Color.FromArgb(64, 64, 64);
-                btn.FlatAppearance.BorderColor = Color.Gainsboro;
+                btn.BackColor = _btnDefaultBackColor;
+                btn.ForeColor = _btnDefaultForeColor;
+                btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             }
         }
 
         /// <summary>
-        /// Sets the visual state for the active button and resets the previous one.
+        /// MODIFIED: Sets the visual state for the active button using the new styles.
         /// </summary>
         private void SetActiveButton(Button clickedButton)
         {
             // Reset the previously active button
             if (_activeButton != null)
             {
-                _activeButton.BackColor = Color.White;
-                _activeButton.ForeColor = Color.FromArgb(64, 64, 64);
-                _activeButton.FlatAppearance.BorderColor = Color.Gainsboro;
+                _activeButton.BackColor = _btnDefaultBackColor;
+                _activeButton.ForeColor = _btnDefaultForeColor;
+                _activeButton.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             }
 
             // Set the new active button
             _activeButton = clickedButton;
             if (_activeButton != null)
             {
-                _activeButton.BackColor = Color.FromArgb(0, 123, 255); // A modern blue
-                _activeButton.ForeColor = Color.White;
-                _activeButton.FlatAppearance.BorderColor = Color.FromArgb(0, 123, 255);
+                _activeButton.BackColor = _btnActiveBackColor;
+                _activeButton.ForeColor = _btnActiveForeColor;
+                _activeButton.FlatAppearance.BorderColor = _btnActiveBorderColor;
             }
         }
 

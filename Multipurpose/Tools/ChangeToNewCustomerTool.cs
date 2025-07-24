@@ -43,7 +43,7 @@ namespace Multipurpose.Troubleshooter.Tools
                 sqlParams.Add(new SqlParameter("@DocNo", parameters.ManifestDocNo));
             }
 
-            return await TroubleshooterControl.DataAccess.GetDataTableAsync(queryBuilder.ToString(), sqlParams.ToArray());
+            return await TroubleshooterControl.DataAccess.GetDataTableAsync(queryBuilder.ToString(),"กรุณาเลือกรายการที่ต้องการติ๊กลูกค้าใหม่", sqlParams.ToArray());
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace Multipurpose.Troubleshooter.Tools
                 FROM tbQuotationHeader
                 WHERE QuotationNo = @QuotationNo";
 
-            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, new SqlParameter("@QuotationNo", parameters.QuotationSource));
+            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, "กรุณาเลือกรายการทั้งหมดที่ต้องการปลดล็อคใบเสนอราคา", new SqlParameter("@QuotationNo", parameters.QuotationSource));
         }
 
         public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)

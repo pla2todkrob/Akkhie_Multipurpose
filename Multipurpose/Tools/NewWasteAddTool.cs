@@ -33,7 +33,7 @@ namespace Multipurpose.Troubleshooter.Tools
                 FROM Com_vwManifestWastAdd
                 WHERE DocNo = @DocNo";
 
-            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, new SqlParameter("@DocNo", parameters.ManifestDocNo));
+            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query,"กรุณาเลือกรายการทั้งหมดที่ต้องการติ๊ก New Waste", new SqlParameter("@DocNo", parameters.ManifestDocNo));
         }
 
         public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)

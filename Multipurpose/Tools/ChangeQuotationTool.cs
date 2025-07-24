@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -11,19 +10,31 @@ namespace Multipurpose.Troubleshooter.Tools
 {
     public class ChangeQuotationTool : ITroubleshooterTool
     {
-        public string ToolName => "เปลี่ยนใบเสนอราคา";
+        public string ToolName => "เปลี่ยนใบเสนอราคาในใบนำส่ง";
 
         public async Task<DataTable> SearchAsync(ToolParameters parameters)
         {
+            if (string.IsNullOrWhiteSpace(parameters.QuotationSource))
+            {
+                MessageBox.Show("กรุณาระบุเลขที่ใบเสนอราคา (Quotation (ต้นทาง))", "ข้อมูลไม่ครบถ้วน", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return new DataTable();
+            }
+
+            if (string.IsNullOrWhiteSpace(parameters.QuotationDestination))
+            {
+                MessageBox.Show("กรุณาระบุเลขที่ใบเสนอราคา (Quotation (ปลายทาง))", "ข้อมูลไม่ครบถ้วน", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return new DataTable();
+            }
+
             if (string.IsNullOrWhiteSpace(parameters.ManifestDocNo))
             {
-                MessageBox.Show("กรุณาระบุ Manifest No.", "ข้อมูลไม่ครบถ้วน", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("กรุณาระบุเลขที่ใบนำส่ง (Manifest No.)", "ข้อมูลไม่ครบถ้วน", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return new DataTable();
             }
 
             string query = @"
                 SELECT 
-                    CAST(0 AS BIT) AS Select, 
+                    CAST(0 AS BIT) AS [Select], 
                     DocNo, 
                     WorkDate, 
                     QuotationID, 
@@ -36,53 +47,44 @@ namespace Multipurpose.Troubleshooter.Tools
                 WHERE DocNo = @DocNo";
 
             var sqlParams = new SqlParameter("@DocNo", SqlDbType.NVarChar) { Value = parameters.ManifestDocNo };
-            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, sqlParams);
+            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query,"กรุณาเลือกรายการทั้งหมดที่ต้องการเปลี่ยนใบเสนอราคา", sqlParams);
         }
 
         public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)
         {
-            // --- Validation ---
+            // --- 1. ตรวจสอบ Input ---
+            var jobDetailIds = selectedRows?.Select(r => r.Field<string>("JobDetID")).ToList();
+            if (jobDetailIds == null || !jobDetailIds.Any())
+            {
+                return new ProcessResult { Message = "กรุณาเลือกรายการที่ต้องการเปลี่ยนใบเสนอราคา" };
+            }
             if (string.IsNullOrWhiteSpace(parameters.QuotationSource))
-                return new ProcessResult(false, "กรุณาระบุ Quotation (ต้นทาง)");
+            {
+                return new ProcessResult { Message = "กรุณาระบุ Quotation (ต้นทาง)" };
+            }
             if (string.IsNullOrWhiteSpace(parameters.QuotationDestination))
-                return new ProcessResult(false, "กรุณาระบุ Quotation (ปลายทาง)");
-
-            var jobDetailIds = selectedRows.Select(r => r.Field<int>("JobDetID")).ToList();
-            if (!jobDetailIds.Any())
-                return new ProcessResult(false, "กรุณาเลือกรายการที่ต้องการเปลี่ยนใบเสนอราคา");
+            {
+                return new ProcessResult { Message = "กรุณาระบุ Quotation (ปลายทาง)" };
+            }
+            if (string.IsNullOrWhiteSpace(parameters.ManifestDocNo))
+            {
+                return new ProcessResult { Message = "ไม่พบเลขที่ใบนำส่ง (Manifest No.)" };
+            }
 
             try
             {
-                // --- Get Source Quotation ID ---
-                var srcIdTable = await TroubleshooterControl.DataAccess.GetDataTableAsync("SELECT QuotationID FROM tbQuotationHeader WHERE QuotationNo = @QuotationNo", new SqlParameter("@QuotationNo", parameters.QuotationSource));
-                if (srcIdTable.Rows.Count == 0)
-                    return new ProcessResult(false, $"ไม่พบ Quotation ต้นทาง: {parameters.QuotationSource}");
+                // --- 2. ดึงข้อมูล Quotation ID ---
+                var srcIdTable = await TroubleshooterControl.DataAccess.GetDataTableAsync("SELECT QuotationID FROM tbQuotationHeader WHERE QuotationNo = @QuotationNo","", new SqlParameter("@QuotationNo", parameters.QuotationSource));
+                if (srcIdTable.Rows.Count == 0) throw new DataException($"ไม่พบ Quotation ต้นทาง: {parameters.QuotationSource}");
                 var sourceQuotationId = srcIdTable.Rows[0]["QuotationID"].ToString();
 
-                // --- Get Destination Quotation Header and Details ---
-                var destQuotationQuery = @"
-                    SELECT 
-                        h.QuotationID, 
-                        d.TreatmentRate AS QTreatmentRate,
-                        d.TreatmentUnitID AS QTreatmentUnitID,
-                        d.MinWeight AS QMinWeight,
-                        d.TransportFee AS QTransportFee,
-                        d.TrasnferUnitID AS QTrasnferUnitID,
-                        d.isPriceIncTransport AS QisPriceIncTransport
-                    FROM tbQuotationHeader h
-                    JOIN tbQuotationDetail d ON h.QuotationID = d.QuotationID
-                    WHERE h.QuotationNo = @QuotationNo";
+                var destIdTable = await TroubleshooterControl.DataAccess.GetDataTableAsync("SELECT QuotationID FROM tbQuotationHeader WHERE QuotationNo = @QuotationNo","", new SqlParameter("@QuotationNo", parameters.QuotationDestination));
+                if (destIdTable.Rows.Count == 0) throw new DataException($"ไม่พบ Quotation ปลายทาง: {parameters.QuotationDestination}");
+                var destinationQuotationId = destIdTable.Rows[0]["QuotationID"].ToString();
 
-                var destQuotationTable = await TroubleshooterControl.DataAccess.GetDataTableAsync(destQuotationQuery, new SqlParameter("@QuotationNo", parameters.QuotationDestination));
-                if (destQuotationTable.Rows.Count == 0)
-                    return new ProcessResult(false, $"ไม่พบข้อมูล Detail ใน Quotation ปลายทาง: {parameters.QuotationDestination}");
-
-                var destinationQuotationId = destQuotationTable.Rows[0]["QuotationID"].ToString();
-                var destQuotationDetails = destQuotationTable.Rows[0];
-
-                // --- Step 1: Update tbJobDataDetail (Single command) ---
-                var idPlaceholders = string.Join(",", jobDetailIds.Select((_, i) => $"@id{i}"));
-                var updateJobDetailQuery = $"UPDATE tbJobDataDetail SET QuotationID = @DestinationQuotationID WHERE JobDetID IN ({idPlaceholders}) AND QuotationID = @SourceQuotationID";
+                // --- 3. อัปเดต tbJobDataDetail ---
+                string jobDetIdParams = string.Join(",", jobDetailIds.Select((id, i) => $"@id{i}"));
+                var updateJobDetailQuery = $"UPDATE tbJobDataDetail SET QuotationID = @DestinationQuotationID WHERE JobDetID IN ({jobDetIdParams}) AND QuotationID = @SourceQuotationID";
 
                 var jobDetailParams = new List<SqlParameter>
                 {
@@ -95,59 +97,40 @@ namespace Multipurpose.Troubleshooter.Tools
                 }
                 int updatedRows = await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(updateJobDetailQuery, jobDetailParams.ToArray());
 
-                // --- Step 2: Update Com_vwUpdate_Manifest_Quotation_Minweight_Price (9 separate commands) ---
+                if (updatedRows != jobDetailIds.Count)
+                {
+                    throw new DataException($"อัปเดต Job Details ได้เพียง {updatedRows} จาก {jobDetailIds.Count} รายการที่เลือก อาจมีบางรายการถูกแก้ไขไปแล้ว การทำงานหยุดลง");
+                }
 
-                // Command 1: TreatmentRate
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET TreatmentRate = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTreatmentRate"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
+                // --- 4. อัปเดต View Com_vwUpdate_Manifest_Quotation_Minweight_Price ---
+                // *** แก้ไขตาม Logic ที่ถูกต้อง คือนำคอลัมน์ใน View มาอัปเดตซึ่งกันและกัน ***
+                async Task UpdateManifestField(string destinationField, string sourceField)
+                {
+                    // หมายเหตุ: การสร้าง Query แบบนี้ปลอดภัยเมื่อชื่อคอลัมน์เป็นค่าคงที่และไม่ได้รับมาจาก User Input
+                    string query = $"UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET {destinationField} = {sourceField} WHERE DocNo = @DocNo";
+                    await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(query, new SqlParameter("@DocNo", parameters.ManifestDocNo));
+                }
 
-                // Command 2: TreatmentUnitID
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET TreatmentUnitID = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTreatmentUnitID"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
+                await UpdateManifestField("TreatmentRate", "QTreatmentRate");
+                await UpdateManifestField("TreatmentUnitID", "QTreatmentUnitID");
+                await UpdateManifestField("TreatmentCharge", "QTreatmentRate");
+                await UpdateManifestField("ManifestFee", "QTreatmentRate");
+                await UpdateManifestField("MinWeightPerCar", "QMinWeight");
+                await UpdateManifestField("TransportFee", "QTransportFee");
+                await UpdateManifestField("TransferUnitID", "QTrasnferUnitID");
+                await UpdateManifestField("TripTranFee", "QTransportFee");
+                await UpdateManifestField("isPriceIncTrans", "QisPriceIncTransport");
 
-                // Command 3: TreatmentCharge
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET TreatmentCharge = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTreatmentRate"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-                // Command 4: ManifestFee
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET ManifestFee = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTreatmentRate"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-                // Command 5: MinWeightPerCar
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET MinWeightPerCar = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QMinWeight"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-                // Command 6: TransportFee
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET TransportFee = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTransportFee"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-                // Command 7: TransferUnitID
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET TransferUnitID = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTrasnferUnitID"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-                // Command 8: TripTranFee
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET TripTranFee = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QTransportFee"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-                // Command 9: isPriceIncTrans
-                await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(
-                    "UPDATE Com_vwUpdate_Manifest_Quotation_Minweight_Price SET isPriceIncTrans = @Value WHERE DocNo = @DocNo",
-                    new SqlParameter("@Value", destQuotationDetails["QisPriceIncTransport"]), new SqlParameter("@DocNo", parameters.ManifestDocNo));
-
-
-                return new ProcessResult(true, $"ดำเนินการเปลี่ยนใบเสนอราคาสำเร็จ {updatedRows} รายการ และอัปเดตข้อมูลราคาใน Manifest เรียบร้อยแล้ว");
+                // --- 5. คืนค่าผลลัพธ์ ---
+                return new ProcessResult
+                {
+                    SuccessCount = updatedRows,
+                    Message = $"ดำเนินการสำเร็จ! เปลี่ยนใบเสนอราคาใน {updatedRows} รายการ และอัปเดตราคาในใบนำส่ง '{parameters.ManifestDocNo}' เรียบร้อยแล้ว"
+                };
             }
             catch (Exception ex)
             {
-                return new ProcessResult(false, $"เกิดข้อผิดพลาดระหว่างดำเนินการ: {ex.Message}");
+                return new ProcessResult { ErrorCount = jobDetailIds.Count, Message = $"เกิดข้อผิดพลาด: {ex.Message}" };
             }
         }
     }

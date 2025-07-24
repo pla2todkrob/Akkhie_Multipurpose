@@ -70,9 +70,9 @@
             this.grpFilters.Dock = System.Windows.Forms.DockStyle.Top;
             this.grpFilters.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grpFilters.Location = new System.Drawing.Point(6, 6);
-            this.grpFilters.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.grpFilters.Margin = new System.Windows.Forms.Padding(2);
             this.grpFilters.Name = "grpFilters";
-            this.grpFilters.Padding = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.grpFilters.Padding = new System.Windows.Forms.Padding(8);
             this.grpFilters.Size = new System.Drawing.Size(726, 81);
             this.grpFilters.TabIndex = 0;
             this.grpFilters.TabStop = false;
@@ -95,7 +95,7 @@
             this.tableLayoutPanel1.Controls.Add(this.txtJobNo, 3, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(8, 24);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -118,7 +118,7 @@
             // 
             this.txtQuotationSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtQuotationSource.Location = new System.Drawing.Point(112, 2);
-            this.txtQuotationSource.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtQuotationSource.Margin = new System.Windows.Forms.Padding(2);
             this.txtQuotationSource.Name = "txtQuotationSource";
             this.txtQuotationSource.Size = new System.Drawing.Size(236, 23);
             this.txtQuotationSource.TabIndex = 1;
@@ -138,7 +138,7 @@
             // 
             this.txtQuotationDest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtQuotationDest.Location = new System.Drawing.Point(472, 2);
-            this.txtQuotationDest.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtQuotationDest.Margin = new System.Windows.Forms.Padding(2);
             this.txtQuotationDest.Name = "txtQuotationDest";
             this.txtQuotationDest.Size = new System.Drawing.Size(236, 23);
             this.txtQuotationDest.TabIndex = 3;
@@ -158,7 +158,7 @@
             // 
             this.txtManifest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtManifest.Location = new System.Drawing.Point(112, 26);
-            this.txtManifest.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtManifest.Margin = new System.Windows.Forms.Padding(2);
             this.txtManifest.Name = "txtManifest";
             this.txtManifest.Size = new System.Drawing.Size(236, 23);
             this.txtManifest.TabIndex = 5;
@@ -178,7 +178,7 @@
             // 
             this.txtJobNo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtJobNo.Location = new System.Drawing.Point(472, 26);
-            this.txtJobNo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtJobNo.Margin = new System.Windows.Forms.Padding(2);
             this.txtJobNo.Name = "txtJobNo";
             this.txtJobNo.Size = new System.Drawing.Size(236, 23);
             this.txtJobNo.TabIndex = 7;
@@ -198,7 +198,7 @@
             this.flpVerticalActions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flpVerticalActions.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flpVerticalActions.Location = new System.Drawing.Point(557, 2);
-            this.flpVerticalActions.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.flpVerticalActions.Margin = new System.Windows.Forms.Padding(2);
             this.flpVerticalActions.Name = "flpVerticalActions";
             this.flpVerticalActions.Size = new System.Drawing.Size(167, 375);
             this.flpVerticalActions.TabIndex = 1;
@@ -207,7 +207,7 @@
             // btnUnlockQuotation
             // 
             this.btnUnlockQuotation.Location = new System.Drawing.Point(2, 2);
-            this.btnUnlockQuotation.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnUnlockQuotation.Margin = new System.Windows.Forms.Padding(2);
             this.btnUnlockQuotation.Name = "btnUnlockQuotation";
             this.btnUnlockQuotation.Size = new System.Drawing.Size(150, 28);
             this.btnUnlockQuotation.TabIndex = 0;
@@ -217,7 +217,7 @@
             // btnFixShippingCostType
             // 
             this.btnFixShippingCostType.Location = new System.Drawing.Point(2, 34);
-            this.btnFixShippingCostType.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnFixShippingCostType.Margin = new System.Windows.Forms.Padding(2);
             this.btnFixShippingCostType.Name = "btnFixShippingCostType";
             this.btnFixShippingCostType.Size = new System.Drawing.Size(150, 28);
             this.btnFixShippingCostType.TabIndex = 1;
@@ -227,7 +227,7 @@
             // btnNewWaste
             // 
             this.btnNewWaste.Location = new System.Drawing.Point(2, 66);
-            this.btnNewWaste.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnNewWaste.Margin = new System.Windows.Forms.Padding(2);
             this.btnNewWaste.Name = "btnNewWaste";
             this.btnNewWaste.Size = new System.Drawing.Size(150, 28);
             this.btnNewWaste.TabIndex = 2;
@@ -237,7 +237,7 @@
             // btnNewWasteAdd
             // 
             this.btnNewWasteAdd.Location = new System.Drawing.Point(2, 98);
-            this.btnNewWasteAdd.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnNewWasteAdd.Margin = new System.Windows.Forms.Padding(2);
             this.btnNewWasteAdd.Name = "btnNewWasteAdd";
             this.btnNewWasteAdd.Size = new System.Drawing.Size(150, 28);
             this.btnNewWasteAdd.TabIndex = 3;
@@ -247,7 +247,7 @@
             // btnChangeQuotation
             // 
             this.btnChangeQuotation.Location = new System.Drawing.Point(2, 130);
-            this.btnChangeQuotation.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnChangeQuotation.Margin = new System.Windows.Forms.Padding(2);
             this.btnChangeQuotation.Name = "btnChangeQuotation";
             this.btnChangeQuotation.Size = new System.Drawing.Size(150, 28);
             this.btnChangeQuotation.TabIndex = 4;
@@ -257,7 +257,7 @@
             // btnDeleteAllBoxes
             // 
             this.btnDeleteAllBoxes.Location = new System.Drawing.Point(2, 162);
-            this.btnDeleteAllBoxes.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnDeleteAllBoxes.Margin = new System.Windows.Forms.Padding(2);
             this.btnDeleteAllBoxes.Name = "btnDeleteAllBoxes";
             this.btnDeleteAllBoxes.Size = new System.Drawing.Size(150, 28);
             this.btnDeleteAllBoxes.TabIndex = 5;
@@ -267,7 +267,7 @@
             // btnFixShippingLocation
             // 
             this.btnFixShippingLocation.Location = new System.Drawing.Point(2, 194);
-            this.btnFixShippingLocation.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnFixShippingLocation.Margin = new System.Windows.Forms.Padding(2);
             this.btnFixShippingLocation.Name = "btnFixShippingLocation";
             this.btnFixShippingLocation.Size = new System.Drawing.Size(150, 28);
             this.btnFixShippingLocation.TabIndex = 6;
@@ -277,7 +277,7 @@
             // btnFixShippingCost
             // 
             this.btnFixShippingCost.Location = new System.Drawing.Point(2, 226);
-            this.btnFixShippingCost.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnFixShippingCost.Margin = new System.Windows.Forms.Padding(2);
             this.btnFixShippingCost.Name = "btnFixShippingCost";
             this.btnFixShippingCost.Size = new System.Drawing.Size(150, 28);
             this.btnFixShippingCost.TabIndex = 7;
@@ -287,7 +287,7 @@
             // btnUpdateAddress
             // 
             this.btnUpdateAddress.Location = new System.Drawing.Point(2, 258);
-            this.btnUpdateAddress.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnUpdateAddress.Margin = new System.Windows.Forms.Padding(2);
             this.btnUpdateAddress.Name = "btnUpdateAddress";
             this.btnUpdateAddress.Size = new System.Drawing.Size(150, 28);
             this.btnUpdateAddress.TabIndex = 8;
@@ -297,7 +297,7 @@
             // btnChangeToNewCustomer
             // 
             this.btnChangeToNewCustomer.Location = new System.Drawing.Point(2, 290);
-            this.btnChangeToNewCustomer.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnChangeToNewCustomer.Margin = new System.Windows.Forms.Padding(2);
             this.btnChangeToNewCustomer.Name = "btnChangeToNewCustomer";
             this.btnChangeToNewCustomer.Size = new System.Drawing.Size(150, 28);
             this.btnChangeToNewCustomer.TabIndex = 9;
@@ -311,7 +311,7 @@
             this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvResults.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvResults.Location = new System.Drawing.Point(0, 0);
-            this.dgvResults.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.dgvResults.Margin = new System.Windows.Forms.Padding(2);
             this.dgvResults.Name = "dgvResults";
             this.dgvResults.RowHeadersWidth = 51;
             this.dgvResults.Size = new System.Drawing.Size(551, 334);
@@ -323,7 +323,7 @@
             this.panelProcess.Controls.Add(this.btnProcess);
             this.panelProcess.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelProcess.Location = new System.Drawing.Point(0, 334);
-            this.panelProcess.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelProcess.Margin = new System.Windows.Forms.Padding(2);
             this.panelProcess.Name = "panelProcess";
             this.panelProcess.Size = new System.Drawing.Size(551, 41);
             this.panelProcess.TabIndex = 3;
@@ -332,7 +332,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.Location = new System.Drawing.Point(409, 7);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(2);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(64, 24);
             this.btnCancel.TabIndex = 1;
@@ -343,7 +343,7 @@
             // 
             this.btnProcess.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnProcess.Location = new System.Drawing.Point(477, 7);
-            this.btnProcess.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnProcess.Margin = new System.Windows.Forms.Padding(2);
             this.btnProcess.Name = "btnProcess";
             this.btnProcess.Size = new System.Drawing.Size(64, 24);
             this.btnProcess.TabIndex = 0;
@@ -359,7 +359,7 @@
             this.tlpMainLayout.Controls.Add(this.pnlMainContent, 0, 0);
             this.tlpMainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tlpMainLayout.Location = new System.Drawing.Point(6, 87);
-            this.tlpMainLayout.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tlpMainLayout.Margin = new System.Windows.Forms.Padding(2);
             this.tlpMainLayout.Name = "tlpMainLayout";
             this.tlpMainLayout.RowCount = 1;
             this.tlpMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -372,7 +372,7 @@
             this.pnlMainContent.Controls.Add(this.panelProcess);
             this.pnlMainContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlMainContent.Location = new System.Drawing.Point(2, 2);
-            this.pnlMainContent.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.pnlMainContent.Margin = new System.Windows.Forms.Padding(2);
             this.pnlMainContent.Name = "pnlMainContent";
             this.pnlMainContent.Size = new System.Drawing.Size(551, 375);
             this.pnlMainContent.TabIndex = 2;
@@ -384,9 +384,9 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.Controls.Add(this.tlpMainLayout);
             this.Controls.Add(this.grpFilters);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "TroubleshooterControl";
-            this.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Padding = new System.Windows.Forms.Padding(6);
             this.Size = new System.Drawing.Size(738, 472);
             this.grpFilters.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);

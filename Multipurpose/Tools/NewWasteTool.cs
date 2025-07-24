@@ -33,7 +33,7 @@ namespace Multipurpose.Troubleshooter.Tools
 
             // Note: This assumes a static DataAccess class exists in the parent scope.
             // For better design, consider injecting it via the constructor (Dependency Injection).
-            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, new SqlParameter("@DocNo", parameters.ManifestDocNo));
+            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, "กรุณาเลือกรายการทั้งหมดที่ต้องการติ๊ก New Waste", new SqlParameter("@DocNo", parameters.ManifestDocNo));
         }
 
         public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)

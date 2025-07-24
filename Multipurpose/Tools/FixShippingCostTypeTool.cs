@@ -46,7 +46,7 @@ namespace Multipurpose.Troubleshooter.Tools
                 JOIN vw_QuotationTruckRateSearch e ON b.QuotationID = e.QuotationID AND d.TruckTypeID = e.TruckTypeID
                 WHERE a.DocNo = @DocNo";
 
-            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, new SqlParameter("@DocNo", parameters.ManifestDocNo));
+            return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, "กรุณาเลือก 1 รายการ(เท่านั้น)ที่มีค่า CorrectRate ที่ถูกต้อง", new SqlParameter("@DocNo", parameters.ManifestDocNo));
         }
 
         /// <summary>
