@@ -18,7 +18,7 @@ namespace Multipurpose.Troubleshooter.Tools
             return Task.FromResult(new DataTable());
         }
 
-        public Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows)
+        public Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)
         {
             MessageBox.Show("ฟังก์ชัน 'อัปเดตที่อยู่' ยังไม่ถูกพัฒนา", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return Task.FromResult(new ProcessResult { Message = "ยังไม่ถูกพัฒนา" });

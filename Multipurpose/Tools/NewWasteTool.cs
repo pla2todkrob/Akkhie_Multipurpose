@@ -36,7 +36,7 @@ namespace Multipurpose.Troubleshooter.Tools
             return await TroubleshooterControl.DataAccess.GetDataTableAsync(query, new SqlParameter("@DocNo", parameters.ManifestDocNo));
         }
 
-        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows)
+        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)
         {
             var result = new ProcessResult();
 
@@ -52,13 +52,13 @@ namespace Multipurpose.Troubleshooter.Tools
                         SET IsNewWaste = 'New'
                         WHERE DocNo = @DocNo AND WasteDataID = @WasteDataID";
 
-                    var parameters = new[]
+                    var sqlParameters = new[]
                     {
                         new SqlParameter("@DocNo", docNo),
                         new SqlParameter("@WasteDataID", wasteDataId)
                     };
 
-                    int rowsAffected = await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(query, parameters);
+                    int rowsAffected = await TroubleshooterControl.DataAccess.ExecuteNonQueryAsync(query, sqlParameters);
                     if (rowsAffected > 0)
                     {
                         result.SuccessCount++;

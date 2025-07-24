@@ -27,6 +27,6 @@ namespace Multipurpose.Troubleshooter.Tools
         /// </summary>
         /// <param name="selectedRows">A collection of DataRow objects that the user has selected in the grid.</param>
         /// <returns>A ProcessResult object summarizing the outcome of the operation.</returns>
-        Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows);
+        Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters);
     }
 }

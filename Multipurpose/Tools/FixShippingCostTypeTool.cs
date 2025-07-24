@@ -52,7 +52,7 @@ namespace Multipurpose.Troubleshooter.Tools
         /// <summary>
         /// Processes the selected rows to update all items in the manifest with the correct fee and truck type.
         /// </summary>
-        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows)
+        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)
         {
             var result = new ProcessResult();
 

@@ -49,7 +49,7 @@ namespace Multipurpose.Troubleshooter.Tools
         /// <summary>
         /// Processes the selected rows to update the NewCustJob flag.
         /// </summary>
-        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows)
+        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)
         {
             var result = new ProcessResult();
             var jobIdsToUpdate = selectedRows.Select(r => r["JobID"].ToString()).Distinct().ToList();

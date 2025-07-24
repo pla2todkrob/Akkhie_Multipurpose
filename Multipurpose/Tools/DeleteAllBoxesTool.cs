@@ -102,7 +102,7 @@ namespace Multipurpose.Troubleshooter.Tools
             return await BoxDataAccess.GetDataTableAsync(query);
         }
 
-        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows)
+        public async Task<ProcessResult> ProcessAsync(IEnumerable<DataRow> selectedRows, ToolParameters parameters)
         {
             var result = new ProcessResult();
             var selectedIds = selectedRows.Select(r => r["JobDataCarID"].ToString()).ToList();
@@ -134,19 +134,19 @@ namespace Multipurpose.Troubleshooter.Tools
             else
             {
                 var deleteQuery = new StringBuilder("DELETE FROM [Box_BoxReserve] WHERE [JobDataCarID] IN (");
-                var parameters = new List<SqlParameter>();
+                var sqlParameters = new List<SqlParameter>();
                 for (int i = 0; i < selectedIds.Count; i++)
                 {
                     string paramName = $"@ID{i}";
                     deleteQuery.Append(paramName + ",");
-                    parameters.Add(new SqlParameter(paramName, selectedIds[i]));
+                    sqlParameters.Add(new SqlParameter(paramName, selectedIds[i]));
                 }
                 deleteQuery.Length--; // Remove trailing comma
                 deleteQuery.Append(")");
 
                 try
                 {
-                    int rowsAffected = await BoxDataAccess.ExecuteNonQueryAsync(deleteQuery.ToString(), parameters.ToArray());
+                    int rowsAffected = await BoxDataAccess.ExecuteNonQueryAsync(deleteQuery.ToString(), sqlParameters.ToArray());
                     result.SuccessCount = rowsAffected;
                     result.ErrorCount = selectedIds.Count - rowsAffected;
                 }
