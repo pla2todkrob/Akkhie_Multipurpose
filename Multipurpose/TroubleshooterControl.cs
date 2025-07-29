@@ -129,7 +129,7 @@ namespace Multipurpose
             }
 
             RegisterAndOrderTools();
-            ResetState(true); // เริ่มต้นแบบล้างค่าทั้งหมด
+            ResetState(true);
             AssignEventHandlers();
         }
 
@@ -176,10 +176,6 @@ namespace Multipurpose
             }
         }
 
-        /// <summary>
-        /// NEW: Centralized method to reset the UI state.
-        /// </summary>
-        /// <param name="clearFilters">If true, clears the filter textboxes. If false, preserves their content.</param>
         private void ResetState(bool clearFilters)
         {
             if (clearFilters)
@@ -219,7 +215,51 @@ namespace Multipurpose
             btnCancel.Click += btnCancel_Click;
             dgvResults.CellValueChanged += dgvResults_CellValueChanged;
             dgvResults.CurrentCellDirtyStateChanged += dgvResults_CurrentCellDirtyStateChanged;
+
+            // --- NEW: Assign click event for the new find button ---
+            btnFindManifest.Click += btnFindManifest_Click;
         }
+
+        // --- NEW: Event handler for the find manifest button ---
+        private async void btnFindManifest_Click(object sender, EventArgs e)
+        {
+            string quotationSource = txtQuotationSource.Text.Trim();
+            if (string.IsNullOrWhiteSpace(quotationSource))
+            {
+                MessageBox.Show("กรุณาระบุ Quotation (ต้นทาง) เพื่อใช้ค้นหา Manifest", "ข้อมูลไม่ครบถ้วน", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtQuotationSource.Focus();
+                return;
+            }
+
+            try
+            {
+                string query = @"
+                    SELECT DocNo, CompanyName, WorkDate, JobNo, WasteNo, WasteName, TruckTypeDesc 
+                    FROM vw_MenifestQuotation
+                    WHERE QuotationNo = @QuotationNo";
+
+                DataTable manifestData = await DataAccess.GetDataTableAsync(query, "", new SqlParameter("@QuotationNo", quotationSource));
+
+                if (manifestData.Rows.Count == 0)
+                {
+                    MessageBox.Show($"ไม่พบ Manifest ที่ใช้ Quotation No: '{quotationSource}'", "ไม่พบข้อมูล", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                using (var selectionForm = new ManifestSelectionForm(manifestData))
+                {
+                    if (selectionForm.ShowDialog() == DialogResult.OK)
+                    {
+                        txtManifest.Text = selectionForm.SelectedDocNo;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"เกิดข้อผิดพลาดในการค้นหา Manifest: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
 
         private async void ActionButton_Click(object sender, EventArgs e)
         {
@@ -237,7 +277,6 @@ namespace Multipurpose
                 QuotationDestination = txtQuotationDest.Text.Trim()
             };
 
-            // Lock UI for processing
             SetActiveButton(clickedButton);
             grpFilters.Enabled = false;
             flpVerticalActions.Enabled = false;
@@ -249,19 +288,16 @@ namespace Multipurpose
             {
                 DataTable dt = await _activeTool.SearchAsync(_currentParameters);
 
-                // --- MODIFIED: Check search result here ---
-                // If the tool returns null (e.g., from a validation message) or an empty table, reset automatically.
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    if (dt != null) // Only show this generic message if the tool didn't already show one by returning null.
+                    if (dt != null)
                     {
                         MessageBox.Show("ไม่พบข้อมูลตามเงื่อนไขที่ระบุ", "ไม่พบข้อมูล", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
-                    ResetState(false); // Reset UI but KEEP filter values.
-                    return; // Stop further execution.
+                    ResetState(false);
+                    return;
                 }
 
-                // If search is successful, populate the grid
                 dgvResults.DataSource = dt;
                 FormatGrid();
 
@@ -277,7 +313,7 @@ namespace Multipurpose
             catch (Exception ex)
             {
                 MessageBox.Show($"Error searching data: {ex.Message}", "Query Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ResetState(false); // On error, reset but keep filters for correction.
+                ResetState(false);
             }
         }
 
@@ -332,14 +368,12 @@ namespace Multipurpose
             }
             finally
             {
-                // After a process is complete, reset and clear filters for the next task.
                 ResetState(true);
             }
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            // MODIFIED: Cancel now preserves filter text.
             ResetState(false);
         }
 
@@ -372,9 +406,6 @@ namespace Multipurpose
 
         #region UI Styling Methods
 
-        /// <summary>
-        /// MODIFIED: Applies an enhanced modern, flat style to a button.
-        /// </summary>
         private void ApplyModernButtonStyle(Button btn)
         {
             btn.FlatStyle = FlatStyle.Flat;
@@ -383,42 +414,36 @@ namespace Multipurpose
             btn.ForeColor = _btnDefaultForeColor;
             btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             btn.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-            btn.Size = new Size(220, 45); // Increased size
+            btn.Size = new Size(220, 45);
             btn.Margin = new Padding(3, 3, 3, 6);
             btn.TextAlign = ContentAlignment.MiddleLeft;
             btn.Padding = new Padding(15, 0, 0, 0);
             btn.Cursor = Cursors.Hand;
 
-            // Add hover effects
             btn.MouseEnter += Button_MouseEnter;
             btn.MouseLeave += Button_MouseLeave;
         }
 
-        // --- NEW: Event handler for mouse enter (hover) ---
         private void Button_MouseEnter(object sender, EventArgs e)
         {
             Button btn = sender as Button;
-            if (btn != null && btn != _activeButton) // Only change if it's not the currently active button
+            if (btn != null && btn != _activeButton)
             {
                 btn.BackColor = _btnHoverBackColor;
                 btn.FlatAppearance.BorderColor = _btnHoverBorderColor;
             }
         }
 
-        // --- NEW: Event handler for mouse leave (hover) ---
         private void Button_MouseLeave(object sender, EventArgs e)
         {
             Button btn = sender as Button;
-            if (btn != null && btn != _activeButton) // Only change if it's not the currently active button
+            if (btn != null && btn != _activeButton)
             {
                 btn.BackColor = _btnDefaultBackColor;
                 btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             }
         }
 
-        /// <summary>
-        /// MODIFIED: Resets all action buttons to the new default, inactive style.
-        /// </summary>
         private void ResetAllButtonStyles()
         {
             foreach (Button btn in flpVerticalActions.Controls.OfType<Button>())
@@ -429,12 +454,8 @@ namespace Multipurpose
             }
         }
 
-        /// <summary>
-        /// MODIFIED: Sets the visual state for the active button using the new styles.
-        /// </summary>
         private void SetActiveButton(Button clickedButton)
         {
-            // Reset the previously active button
             if (_activeButton != null)
             {
                 _activeButton.BackColor = _btnDefaultBackColor;
@@ -442,7 +463,6 @@ namespace Multipurpose
                 _activeButton.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             }
 
-            // Set the new active button
             _activeButton = clickedButton;
             if (_activeButton != null)
             {

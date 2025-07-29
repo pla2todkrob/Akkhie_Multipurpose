@@ -35,9 +35,11 @@
             this.lblQuotationDest = new System.Windows.Forms.Label();
             this.txtQuotationDest = new System.Windows.Forms.TextBox();
             this.lblManifest = new System.Windows.Forms.Label();
-            this.txtManifest = new System.Windows.Forms.TextBox();
             this.lblJobNo = new System.Windows.Forms.Label();
             this.txtJobNo = new System.Windows.Forms.TextBox();
+            this.panelManifest = new System.Windows.Forms.Panel();
+            this.txtManifest = new System.Windows.Forms.TextBox();
+            this.btnFindManifest = new System.Windows.Forms.Button();
             this.flpVerticalActions = new System.Windows.Forms.FlowLayoutPanel();
             this.btnUnlockQuotation = new System.Windows.Forms.Button();
             this.btnFixShippingCostType = new System.Windows.Forms.Button();
@@ -57,6 +59,7 @@
             this.pnlMainContent = new System.Windows.Forms.Panel();
             this.grpFilters.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.panelManifest.SuspendLayout();
             this.flpVerticalActions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
             this.panelProcess.SuspendLayout();
@@ -90,9 +93,9 @@
             this.tableLayoutPanel1.Controls.Add(this.lblQuotationDest, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.txtQuotationDest, 3, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblManifest, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.txtManifest, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.lblJobNo, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.txtJobNo, 3, 1);
+            this.tableLayoutPanel1.Controls.Add(this.panelManifest, 1, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(8, 24);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2);
@@ -154,15 +157,6 @@
             this.lblManifest.TabIndex = 4;
             this.lblManifest.Text = "Manifest No:";
             // 
-            // txtManifest
-            // 
-            this.txtManifest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtManifest.Location = new System.Drawing.Point(112, 26);
-            this.txtManifest.Margin = new System.Windows.Forms.Padding(2);
-            this.txtManifest.Name = "txtManifest";
-            this.txtManifest.Size = new System.Drawing.Size(236, 23);
-            this.txtManifest.TabIndex = 5;
-            // 
             // lblJobNo
             // 
             this.lblJobNo.Anchor = System.Windows.Forms.AnchorStyles.Right;
@@ -182,6 +176,41 @@
             this.txtJobNo.Name = "txtJobNo";
             this.txtJobNo.Size = new System.Drawing.Size(236, 23);
             this.txtJobNo.TabIndex = 7;
+            // 
+            // panelManifest
+            // 
+            this.panelManifest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelManifest.Controls.Add(this.txtManifest);
+            this.panelManifest.Controls.Add(this.btnFindManifest);
+            this.panelManifest.Location = new System.Drawing.Point(110, 24);
+            this.panelManifest.Margin = new System.Windows.Forms.Padding(0);
+            this.panelManifest.Name = "panelManifest";
+            this.panelManifest.Size = new System.Drawing.Size(240, 25);
+            this.panelManifest.TabIndex = 8;
+            // 
+            // txtManifest
+            // 
+            this.txtManifest.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtManifest.Location = new System.Drawing.Point(0, 0);
+            this.txtManifest.Margin = new System.Windows.Forms.Padding(2);
+            this.txtManifest.Name = "txtManifest";
+            this.txtManifest.Size = new System.Drawing.Size(212, 23);
+            this.txtManifest.TabIndex = 0;
+            // 
+            // btnFindManifest
+            // 
+            this.btnFindManifest.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnFindManifest.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnFindManifest.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.btnFindManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFindManifest.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnFindManifest.Location = new System.Drawing.Point(212, 0);
+            this.btnFindManifest.Margin = new System.Windows.Forms.Padding(0);
+            this.btnFindManifest.Name = "btnFindManifest";
+            this.btnFindManifest.Size = new System.Drawing.Size(28, 25);
+            this.btnFindManifest.TabIndex = 1;
+            this.btnFindManifest.Text = "...";
+            this.btnFindManifest.UseVisualStyleBackColor = true;
             // 
             // flpVerticalActions
             // 
@@ -391,6 +420,8 @@
             this.grpFilters.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.panelManifest.ResumeLayout(false);
+            this.panelManifest.PerformLayout();
             this.flpVerticalActions.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.panelProcess.ResumeLayout(false);
@@ -424,10 +455,12 @@
         private System.Windows.Forms.Label lblQuotationDest;
         private System.Windows.Forms.TextBox txtQuotationDest;
         private System.Windows.Forms.Label lblManifest;
-        private System.Windows.Forms.TextBox txtManifest;
         private System.Windows.Forms.Label lblJobNo;
         private System.Windows.Forms.TextBox txtJobNo;
         private System.Windows.Forms.TableLayoutPanel tlpMainLayout;
         private System.Windows.Forms.Panel pnlMainContent;
+        private System.Windows.Forms.Panel panelManifest;
+        private System.Windows.Forms.TextBox txtManifest;
+        private System.Windows.Forms.Button btnFindManifest;
     }
 }

@@ -72,6 +72,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="ManifestSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ManifestSelectionForm.Designer.cs">
+      <DependentUpon>ManifestSelectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="OfficeToolsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
