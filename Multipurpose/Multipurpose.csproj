@@ -149,6 +149,9 @@
     <EmbeddedResource Include="WindowsSettingsControl.resx">
       <DependentUpon>WindowsSettingsControl.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="Document\คู่มือสำหรับนักพัฒนา.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Fonts\THSarabunNew Bold.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

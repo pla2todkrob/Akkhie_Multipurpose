@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.grpOdbc = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanelOdbc = new System.Windows.Forms.TableLayoutPanel();
             this.lblOdbcDsnName = new System.Windows.Forms.Label();
             this.txtOdbcDsnName = new System.Windows.Forms.TextBox();
             this.lblOdbcServer = new System.Windows.Forms.Label();
@@ -43,6 +43,7 @@
             this.txtOdbcPwd = new System.Windows.Forms.TextBox();
             this.btnCreateOdbc = new System.Windows.Forms.Button();
             this.grpLocalization = new System.Windows.Forms.GroupBox();
+            this.lblLocalizationInfo = new System.Windows.Forms.Label();
             this.radLangSwitchAltShift = new System.Windows.Forms.RadioButton();
             this.radLangSwitchGrave = new System.Windows.Forms.RadioButton();
             this.btnSetLocalization = new System.Windows.Forms.Button();
@@ -57,52 +58,56 @@
             this.txtStatus = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.mainTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.grpOdbc.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanelOdbc.SuspendLayout();
             this.grpLocalization.SuspendLayout();
             this.grpFonts.SuspendLayout();
             this.grpShortcuts.SuspendLayout();
+            this.mainTableLayoutPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpOdbc
             // 
-            this.grpOdbc.Controls.Add(this.tableLayoutPanel1);
-            this.grpOdbc.Location = new System.Drawing.Point(15, 15);
+            this.grpOdbc.Controls.Add(this.tableLayoutPanelOdbc);
+            this.grpOdbc.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpOdbc.Location = new System.Drawing.Point(3, 3);
             this.grpOdbc.Name = "grpOdbc";
             this.grpOdbc.Padding = new System.Windows.Forms.Padding(10);
-            this.grpOdbc.Size = new System.Drawing.Size(460, 220);
+            this.mainTableLayoutPanel.SetRowSpan(this.grpOdbc, 2);
+            this.grpOdbc.Size = new System.Drawing.Size(479, 224);
             this.grpOdbc.TabIndex = 0;
             this.grpOdbc.TabStop = false;
             this.grpOdbc.Text = "ODBC Settings (System DSN)";
             // 
-            // tableLayoutPanel1
+            // tableLayoutPanelOdbc
             // 
-            this.tableLayoutPanel1.ColumnCount = 2;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.lblOdbcDsnName, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.txtOdbcDsnName, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblOdbcServer, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.txtOdbcServer, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.lblOdbcDb, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.txtOdbcDb, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.lblOdbcUid, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.txtOdbcUid, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.lblOdbcPwd, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.txtOdbcPwd, 1, 4);
-            this.tableLayoutPanel1.Controls.Add(this.btnCreateOdbc, 1, 5);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(10, 25);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 6;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(440, 185);
-            this.tableLayoutPanel1.TabIndex = 0;
+            this.tableLayoutPanelOdbc.ColumnCount = 2;
+            this.tableLayoutPanelOdbc.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelOdbc.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanelOdbc.Controls.Add(this.lblOdbcDsnName, 0, 0);
+            this.tableLayoutPanelOdbc.Controls.Add(this.txtOdbcDsnName, 1, 0);
+            this.tableLayoutPanelOdbc.Controls.Add(this.lblOdbcServer, 0, 1);
+            this.tableLayoutPanelOdbc.Controls.Add(this.txtOdbcServer, 1, 1);
+            this.tableLayoutPanelOdbc.Controls.Add(this.lblOdbcDb, 0, 2);
+            this.tableLayoutPanelOdbc.Controls.Add(this.txtOdbcDb, 1, 2);
+            this.tableLayoutPanelOdbc.Controls.Add(this.lblOdbcUid, 0, 3);
+            this.tableLayoutPanelOdbc.Controls.Add(this.txtOdbcUid, 1, 3);
+            this.tableLayoutPanelOdbc.Controls.Add(this.lblOdbcPwd, 0, 4);
+            this.tableLayoutPanelOdbc.Controls.Add(this.txtOdbcPwd, 1, 4);
+            this.tableLayoutPanelOdbc.Controls.Add(this.btnCreateOdbc, 1, 5);
+            this.tableLayoutPanelOdbc.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanelOdbc.Location = new System.Drawing.Point(10, 25);
+            this.tableLayoutPanelOdbc.Name = "tableLayoutPanelOdbc";
+            this.tableLayoutPanelOdbc.RowCount = 6;
+            this.tableLayoutPanelOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanelOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanelOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanelOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanelOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanelOdbc.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanelOdbc.Size = new System.Drawing.Size(459, 189);
+            this.tableLayoutPanelOdbc.TabIndex = 0;
             // 
             // lblOdbcDsnName
             // 
@@ -119,7 +124,7 @@
             this.txtOdbcDsnName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOdbcDsnName.Location = new System.Drawing.Point(87, 4);
             this.txtOdbcDsnName.Name = "txtOdbcDsnName";
-            this.txtOdbcDsnName.Size = new System.Drawing.Size(350, 22);
+            this.txtOdbcDsnName.Size = new System.Drawing.Size(369, 22);
             this.txtOdbcDsnName.TabIndex = 1;
             // 
             // lblOdbcServer
@@ -137,7 +142,7 @@
             this.txtOdbcServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOdbcServer.Location = new System.Drawing.Point(87, 34);
             this.txtOdbcServer.Name = "txtOdbcServer";
-            this.txtOdbcServer.Size = new System.Drawing.Size(350, 22);
+            this.txtOdbcServer.Size = new System.Drawing.Size(369, 22);
             this.txtOdbcServer.TabIndex = 3;
             // 
             // lblOdbcDb
@@ -155,7 +160,7 @@
             this.txtOdbcDb.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOdbcDb.Location = new System.Drawing.Point(87, 64);
             this.txtOdbcDb.Name = "txtOdbcDb";
-            this.txtOdbcDb.Size = new System.Drawing.Size(350, 22);
+            this.txtOdbcDb.Size = new System.Drawing.Size(369, 22);
             this.txtOdbcDb.TabIndex = 5;
             // 
             // lblOdbcUid
@@ -173,7 +178,7 @@
             this.txtOdbcUid.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOdbcUid.Location = new System.Drawing.Point(87, 94);
             this.txtOdbcUid.Name = "txtOdbcUid";
-            this.txtOdbcUid.Size = new System.Drawing.Size(350, 22);
+            this.txtOdbcUid.Size = new System.Drawing.Size(369, 22);
             this.txtOdbcUid.TabIndex = 7;
             // 
             // lblOdbcPwd
@@ -192,13 +197,13 @@
             this.txtOdbcPwd.Location = new System.Drawing.Point(87, 124);
             this.txtOdbcPwd.Name = "txtOdbcPwd";
             this.txtOdbcPwd.PasswordChar = '*';
-            this.txtOdbcPwd.Size = new System.Drawing.Size(350, 22);
+            this.txtOdbcPwd.Size = new System.Drawing.Size(369, 22);
             this.txtOdbcPwd.TabIndex = 9;
             // 
             // btnCreateOdbc
             // 
             this.btnCreateOdbc.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnCreateOdbc.Location = new System.Drawing.Point(262, 153);
+            this.btnCreateOdbc.Location = new System.Drawing.Point(281, 154);
             this.btnCreateOdbc.Name = "btnCreateOdbc";
             this.btnCreateOdbc.Size = new System.Drawing.Size(175, 29);
             this.btnCreateOdbc.TabIndex = 10;
@@ -208,20 +213,33 @@
             // 
             // grpLocalization
             // 
+            this.grpLocalization.Controls.Add(this.lblLocalizationInfo);
             this.grpLocalization.Controls.Add(this.radLangSwitchAltShift);
             this.grpLocalization.Controls.Add(this.radLangSwitchGrave);
             this.grpLocalization.Controls.Add(this.btnSetLocalization);
-            this.grpLocalization.Location = new System.Drawing.Point(15, 241);
+            this.grpLocalization.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpLocalization.Location = new System.Drawing.Point(3, 233);
             this.grpLocalization.Name = "grpLocalization";
-            this.grpLocalization.Size = new System.Drawing.Size(460, 70);
+            this.grpLocalization.Size = new System.Drawing.Size(479, 104);
             this.grpLocalization.TabIndex = 1;
             this.grpLocalization.TabStop = false;
             this.grpLocalization.Text = "Localization (TH/EN)";
             // 
+            // lblLocalizationInfo
+            // 
+            this.lblLocalizationInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblLocalizationInfo.Location = new System.Drawing.Point(17, 22);
+            this.lblLocalizationInfo.Name = "lblLocalizationInfo";
+            this.lblLocalizationInfo.Size = new System.Drawing.Size(271, 41);
+            this.lblLocalizationInfo.TabIndex = 3;
+            this.lblLocalizationInfo.Text = "ตั้งค่ารูปแบบของระบบ (Region Format) และปุ่มสลับภาษา เพื่อให้การแสดงผลตัวเลข, วันท" +
+    "ี่, และการพิมพ์ถูกต้องสำหรับโปรแกรมต่างๆ";
+            // 
             // radLangSwitchAltShift
             // 
             this.radLangSwitchAltShift.AutoSize = true;
-            this.radLangSwitchAltShift.Location = new System.Drawing.Point(130, 32);
+            this.radLangSwitchAltShift.Location = new System.Drawing.Point(130, 71);
             this.radLangSwitchAltShift.Name = "radLangSwitchAltShift";
             this.radLangSwitchAltShift.Size = new System.Drawing.Size(117, 20);
             this.radLangSwitchAltShift.TabIndex = 1;
@@ -232,7 +250,7 @@
             // 
             this.radLangSwitchGrave.AutoSize = true;
             this.radLangSwitchGrave.Checked = true;
-            this.radLangSwitchGrave.Location = new System.Drawing.Point(20, 32);
+            this.radLangSwitchGrave.Location = new System.Drawing.Point(20, 71);
             this.radLangSwitchGrave.Name = "radLangSwitchGrave";
             this.radLangSwitchGrave.Size = new System.Drawing.Size(100, 20);
             this.radLangSwitchGrave.TabIndex = 0;
@@ -243,9 +261,9 @@
             // btnSetLocalization
             // 
             this.btnSetLocalization.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSetLocalization.Location = new System.Drawing.Point(275, 26);
+            this.btnSetLocalization.Location = new System.Drawing.Point(294, 33);
             this.btnSetLocalization.Name = "btnSetLocalization";
-            this.btnSetLocalization.Size = new System.Drawing.Size(175, 30);
+            this.btnSetLocalization.Size = new System.Drawing.Size(175, 48);
             this.btnSetLocalization.TabIndex = 2;
             this.btnSetLocalization.Text = "Apply Localization";
             this.btnSetLocalization.UseVisualStyleBackColor = true;
@@ -255,9 +273,10 @@
             // 
             this.grpFonts.Controls.Add(this.listViewFonts);
             this.grpFonts.Controls.Add(this.btnInstallFonts);
-            this.grpFonts.Location = new System.Drawing.Point(490, 15);
+            this.grpFonts.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpFonts.Location = new System.Drawing.Point(488, 3);
             this.grpFonts.Name = "grpFonts";
-            this.grpFonts.Size = new System.Drawing.Size(470, 145);
+            this.grpFonts.Size = new System.Drawing.Size(480, 109);
             this.grpFonts.TabIndex = 2;
             this.grpFonts.TabStop = false;
             this.grpFonts.Text = "Install Fonts";
@@ -270,17 +289,18 @@
             this.listViewFonts.HideSelection = false;
             this.listViewFonts.Location = new System.Drawing.Point(15, 25);
             this.listViewFonts.Name = "listViewFonts";
-            this.listViewFonts.Size = new System.Drawing.Size(260, 105);
+            this.listViewFonts.Size = new System.Drawing.Size(275, 69);
             this.listViewFonts.TabIndex = 0;
             this.listViewFonts.UseCompatibleStateImageBehavior = false;
             this.listViewFonts.View = System.Windows.Forms.View.List;
             // 
             // btnInstallFonts
             // 
-            this.btnInstallFonts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnInstallFonts.Location = new System.Drawing.Point(285, 25);
+            this.btnInstallFonts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnInstallFonts.Location = new System.Drawing.Point(296, 25);
             this.btnInstallFonts.Name = "btnInstallFonts";
-            this.btnInstallFonts.Size = new System.Drawing.Size(175, 30);
+            this.btnInstallFonts.Size = new System.Drawing.Size(175, 69);
             this.btnInstallFonts.TabIndex = 1;
             this.btnInstallFonts.Text = "Install All Fonts";
             this.btnInstallFonts.UseVisualStyleBackColor = true;
@@ -290,9 +310,11 @@
             // 
             this.grpShortcuts.Controls.Add(this.listViewShortcuts);
             this.grpShortcuts.Controls.Add(this.btnCreateAllShortcuts);
-            this.grpShortcuts.Location = new System.Drawing.Point(490, 166);
+            this.grpShortcuts.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpShortcuts.Location = new System.Drawing.Point(488, 118);
             this.grpShortcuts.Name = "grpShortcuts";
-            this.grpShortcuts.Size = new System.Drawing.Size(470, 145);
+            this.mainTableLayoutPanel.SetRowSpan(this.grpShortcuts, 2);
+            this.grpShortcuts.Size = new System.Drawing.Size(480, 219);
             this.grpShortcuts.TabIndex = 3;
             this.grpShortcuts.TabStop = false;
             this.grpShortcuts.Text = "Create Shortcuts (Public Desktop)";
@@ -305,10 +327,11 @@
             this.listViewShortcuts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
+            this.listViewShortcuts.FullRowSelect = true;
             this.listViewShortcuts.HideSelection = false;
             this.listViewShortcuts.Location = new System.Drawing.Point(15, 25);
             this.listViewShortcuts.Name = "listViewShortcuts";
-            this.listViewShortcuts.Size = new System.Drawing.Size(260, 105);
+            this.listViewShortcuts.Size = new System.Drawing.Size(275, 179);
             this.listViewShortcuts.TabIndex = 0;
             this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
             this.listViewShortcuts.View = System.Windows.Forms.View.Details;
@@ -316,7 +339,7 @@
             // columnHeader1
             // 
             this.columnHeader1.Text = "Name";
-            this.columnHeader1.Width = 100;
+            this.columnHeader1.Width = 120;
             // 
             // columnHeader2
             // 
@@ -325,10 +348,11 @@
             // 
             // btnCreateAllShortcuts
             // 
-            this.btnCreateAllShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(285, 25);
+            this.btnCreateAllShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(296, 25);
             this.btnCreateAllShortcuts.Name = "btnCreateAllShortcuts";
-            this.btnCreateAllShortcuts.Size = new System.Drawing.Size(175, 30);
+            this.btnCreateAllShortcuts.Size = new System.Drawing.Size(175, 179);
             this.btnCreateAllShortcuts.TabIndex = 1;
             this.btnCreateAllShortcuts.Text = "Create All Shortcuts";
             this.btnCreateAllShortcuts.UseVisualStyleBackColor = true;
@@ -340,20 +364,21 @@
             | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtStatus.BackColor = System.Drawing.SystemColors.InfoText;
+            this.mainTableLayoutPanel.SetColumnSpan(this.txtStatus, 2);
             this.txtStatus.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtStatus.ForeColor = System.Drawing.Color.LimeGreen;
-            this.txtStatus.Location = new System.Drawing.Point(15, 325);
+            this.txtStatus.Location = new System.Drawing.Point(3, 343);
             this.txtStatus.Multiline = true;
             this.txtStatus.Name = "txtStatus";
             this.txtStatus.ReadOnly = true;
             this.txtStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStatus.Size = new System.Drawing.Size(945, 241);
+            this.txtStatus.Size = new System.Drawing.Size(965, 224);
             this.txtStatus.TabIndex = 4;
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(865, 572);
+            this.btnCancel.Location = new System.Drawing.Point(863, 573);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(95, 30);
             this.btnCancel.TabIndex = 5;
@@ -363,35 +388,55 @@
             this.btnCancel.Visible = false;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // mainTableLayoutPanel
+            // 
+            this.mainTableLayoutPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.mainTableLayoutPanel.ColumnCount = 2;
+            this.mainTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.mainTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.mainTableLayoutPanel.Controls.Add(this.grpOdbc, 0, 0);
+            this.mainTableLayoutPanel.Controls.Add(this.grpFonts, 1, 0);
+            this.mainTableLayoutPanel.Controls.Add(this.grpShortcuts, 1, 1);
+            this.mainTableLayoutPanel.Controls.Add(this.grpLocalization, 0, 2);
+            this.mainTableLayoutPanel.Controls.Add(this.txtStatus, 0, 3);
+            this.mainTableLayoutPanel.Location = new System.Drawing.Point(12, 12);
+            this.mainTableLayoutPanel.Name = "mainTableLayoutPanel";
+            this.mainTableLayoutPanel.RowCount = 4;
+            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 115F));
+            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 115F));
+            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 110F));
+            this.mainTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.mainTableLayoutPanel.Size = new System.Drawing.Size(971, 570);
+            this.mainTableLayoutPanel.TabIndex = 6;
+            // 
             // WindowsSettingsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.mainTableLayoutPanel);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.txtStatus);
-            this.Controls.Add(this.grpShortcuts);
-            this.Controls.Add(this.grpFonts);
-            this.Controls.Add(this.grpLocalization);
-            this.Controls.Add(this.grpOdbc);
             this.Name = "WindowsSettingsControl";
             this.Padding = new System.Windows.Forms.Padding(12);
-            this.Size = new System.Drawing.Size(975, 615);
+            this.Size = new System.Drawing.Size(995, 595);
             this.grpOdbc.ResumeLayout(false);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
+            this.tableLayoutPanelOdbc.ResumeLayout(false);
+            this.tableLayoutPanelOdbc.PerformLayout();
             this.grpLocalization.ResumeLayout(false);
             this.grpLocalization.PerformLayout();
             this.grpFonts.ResumeLayout(false);
             this.grpShortcuts.ResumeLayout(false);
+            this.mainTableLayoutPanel.ResumeLayout(false);
+            this.mainTableLayoutPanel.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.GroupBox grpOdbc;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanelOdbc;
         private System.Windows.Forms.Label lblOdbcDsnName;
         private System.Windows.Forms.TextBox txtOdbcDsnName;
         private System.Windows.Forms.Label lblOdbcServer;
@@ -418,5 +463,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Label lblLocalizationInfo;
+        private System.Windows.Forms.TableLayoutPanel mainTableLayoutPanel;
     }
 }

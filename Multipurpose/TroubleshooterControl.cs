@@ -99,16 +99,20 @@ namespace Multipurpose
         private Button _activeButton = null;
         private ToolParameters _currentParameters;
 
-        private readonly Color _btnDefaultBackColor = Color.FromArgb(240, 242, 245);
+        // --- Modern UI Colors ---
+        private readonly Color _btnDefaultBackColor = Color.White;
         private readonly Color _btnDefaultForeColor = Color.FromArgb(51, 65, 85);
         private readonly Color _btnDefaultBorderColor = Color.FromArgb(203, 213, 225);
 
-        private readonly Color _btnHoverBackColor = Color.FromArgb(226, 232, 240);
+        private readonly Color _btnHoverBackColor = Color.FromArgb(248, 250, 252);
         private readonly Color _btnHoverBorderColor = Color.FromArgb(148, 163, 184);
 
-        private readonly Color _btnActiveBackColor = Color.FromArgb(37, 99, 235);
+        private readonly Color _btnActiveBackColor = Color.FromArgb(79, 70, 229);
         private readonly Color _btnActiveForeColor = Color.White;
-        private readonly Color _btnActiveBorderColor = Color.FromArgb(30, 64, 175);
+        private readonly Color _btnActiveBorderColor = Color.FromArgb(67, 56, 202);
+
+        private bool _isHandlingSelectAll = false;
+
 
         public TroubleshooterControl()
         {
@@ -172,6 +176,7 @@ namespace Multipurpose
                 else
                 {
                     button.Enabled = false;
+                    button.Visible = false; // Hide unused buttons
                 }
             }
         }
@@ -192,6 +197,13 @@ namespace Multipurpose
 
             dgvResults.DataSource = null;
             dgvResults.Columns.Clear();
+
+            // --- Reset Select All Checkbox and hide panel ---
+            pnlGridHeader.Visible = false;
+            _isHandlingSelectAll = true; // Prevent event firing
+            chkSelectAll.CheckState = CheckState.Unchecked;
+            _isHandlingSelectAll = false;
+
 
             panelProcess.Visible = false;
             btnProcess.Enabled = false;
@@ -215,12 +227,12 @@ namespace Multipurpose
             btnCancel.Click += btnCancel_Click;
             dgvResults.CellValueChanged += dgvResults_CellValueChanged;
             dgvResults.CurrentCellDirtyStateChanged += dgvResults_CurrentCellDirtyStateChanged;
-
-            // --- NEW: Assign click event for the new find button ---
             btnFindManifest.Click += btnFindManifest_Click;
+
+            // --- NEW: Assign event for the Select All checkbox ---
+            chkSelectAll.CheckedChanged += chkSelectAll_CheckedChanged;
         }
 
-        // --- NEW: Event handler for the find manifest button ---
         private async void btnFindManifest_Click(object sender, EventArgs e)
         {
             string quotationSource = txtQuotationSource.Text.Trim();
@@ -280,9 +292,6 @@ namespace Multipurpose
             SetActiveButton(clickedButton);
             grpFilters.Enabled = false;
             flpVerticalActions.Enabled = false;
-            panelProcess.Visible = true;
-            btnProcess.Text = _activeTool.ToolName;
-            btnProcess.Enabled = false;
 
             try
             {
@@ -298,8 +307,17 @@ namespace Multipurpose
                     return;
                 }
 
+                panelProcess.Visible = true;
+                btnProcess.Text = _activeTool.ToolName;
+                btnProcess.Enabled = false;
+
                 dgvResults.DataSource = dt;
                 FormatGrid();
+
+                if (dgvResults.Columns.Contains("Select"))
+                {
+                    pnlGridHeader.Visible = true; // Show the select all panel
+                }
 
                 if (_activeTool is DeleteAllBoxesTool || !dgvResults.Columns.Contains("Select"))
                 {
@@ -325,7 +343,8 @@ namespace Multipurpose
             if (dgvResults.Columns.Contains("Select"))
             {
                 dgvResults.Columns["Select"].HeaderText = "เลือก";
-                dgvResults.Columns["Select"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dgvResults.Columns["Select"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                dgvResults.Columns["Select"].Width = 60;
             }
             if (dgvResults.Columns.Contains("JobNo")) dgvResults.Columns["JobNo"].HeaderText = "Job No";
             if (dgvResults.Columns.Contains("DocNo")) dgvResults.Columns["DocNo"].HeaderText = "Manifest No";
@@ -390,6 +409,7 @@ namespace Multipurpose
             if (dgvResults.Columns.Contains("Select") && e.ColumnIndex == dgvResults.Columns["Select"].Index)
             {
                 UpdateProcessButtonState();
+                UpdateSelectAllCheckBoxState(); // NEW: Update header checkbox
             }
         }
 
@@ -404,6 +424,63 @@ namespace Multipurpose
             btnProcess.Enabled = anySelected;
         }
 
+        #region --- NEW: Select All Logic ---
+        private void chkSelectAll_CheckedChanged(object sender, EventArgs e)
+        {
+            // Prevent recursive event firing
+            if (_isHandlingSelectAll) return;
+
+            if (dgvResults.Rows.Count == 0 || !dgvResults.Columns.Contains("Select")) return;
+
+            bool isChecked = chkSelectAll.Checked;
+
+            dgvResults.SuspendLayout();
+            foreach (DataGridViewRow row in dgvResults.Rows)
+            {
+                if (row.Cells["Select"] is DataGridViewCheckBoxCell cell)
+                {
+                    cell.Value = isChecked;
+                }
+            }
+            dgvResults.ResumeLayout();
+
+            // Refresh grid to show changes if needed, though direct cell value change should be enough
+            dgvResults.Refresh();
+            UpdateProcessButtonState();
+        }
+
+        private void UpdateSelectAllCheckBoxState()
+        {
+            if (dgvResults.Rows.Count == 0 || !dgvResults.Columns.Contains("Select")) return;
+
+            int totalRows = dgvResults.Rows.Count;
+            int checkedRows = 0;
+
+            foreach (DataGridViewRow row in dgvResults.Rows)
+            {
+                if (row.Cells["Select"].Value != null && Convert.ToBoolean(row.Cells["Select"].Value))
+                {
+                    checkedRows++;
+                }
+            }
+
+            _isHandlingSelectAll = true; // Prevent chkSelectAll_CheckedChanged from firing
+            if (checkedRows == totalRows)
+            {
+                chkSelectAll.CheckState = CheckState.Checked;
+            }
+            else if (checkedRows == 0)
+            {
+                chkSelectAll.CheckState = CheckState.Unchecked;
+            }
+            else
+            {
+                chkSelectAll.CheckState = CheckState.Indeterminate;
+            }
+            _isHandlingSelectAll = false;
+        }
+        #endregion
+
         #region UI Styling Methods
 
         private void ApplyModernButtonStyle(Button btn)
@@ -414,7 +491,7 @@ namespace Multipurpose
             btn.ForeColor = _btnDefaultForeColor;
             btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             btn.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-            btn.Size = new Size(220, 45);
+            btn.Size = new Size(200, 45); // Adjusted width
             btn.Margin = new Padding(3, 3, 3, 6);
             btn.TextAlign = ContentAlignment.MiddleLeft;
             btn.Padding = new Padding(15, 0, 0, 0);
