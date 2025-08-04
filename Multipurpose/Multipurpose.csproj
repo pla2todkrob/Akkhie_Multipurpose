@@ -152,6 +152,9 @@
     <None Include="Document\คู่มือสำหรับนักพัฒนา.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Document\คู่มือสำหรับผู้ใช้งาน.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Fonts\THSarabunNew Bold.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

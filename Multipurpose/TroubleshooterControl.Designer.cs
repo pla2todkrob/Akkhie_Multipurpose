@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.grpFilters = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblQuotationSource = new System.Windows.Forms.Label();
@@ -103,23 +103,23 @@
             this.tableLayoutPanel1.Controls.Add(this.txtJobNo, 3, 1);
             this.tableLayoutPanel1.Controls.Add(this.panelManifest, 1, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 26);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 30);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.Padding = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(938, 64);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(938, 60);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // lblQuotationSource
             // 
             this.lblQuotationSource.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblQuotationSource.AutoSize = true;
-            this.lblQuotationSource.Location = new System.Drawing.Point(7, 10);
+            this.lblQuotationSource.Location = new System.Drawing.Point(7, 7);
             this.lblQuotationSource.Name = "lblQuotationSource";
-            this.lblQuotationSource.Size = new System.Drawing.Size(106, 15);
+            this.lblQuotationSource.Size = new System.Drawing.Size(133, 20);
             this.lblQuotationSource.TabIndex = 0;
             this.lblQuotationSource.Text = "Quotation (ต้นทาง):";
             // 
@@ -129,19 +129,19 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtQuotationSource.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtQuotationSource.Location = new System.Drawing.Point(119, 6);
+            this.txtQuotationSource.Location = new System.Drawing.Point(146, 6);
             this.txtQuotationSource.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtQuotationSource.Name = "txtQuotationSource";
-            this.txtQuotationSource.Size = new System.Drawing.Size(342, 25);
+            this.txtQuotationSource.Size = new System.Drawing.Size(313, 29);
             this.txtQuotationSource.TabIndex = 1;
             // 
             // lblQuotationDest
             // 
             this.lblQuotationDest.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblQuotationDest.AutoSize = true;
-            this.lblQuotationDest.Location = new System.Drawing.Point(467, 10);
+            this.lblQuotationDest.Location = new System.Drawing.Point(465, 7);
             this.lblQuotationDest.Name = "lblQuotationDest";
-            this.lblQuotationDest.Size = new System.Drawing.Size(116, 15);
+            this.lblQuotationDest.Size = new System.Drawing.Size(147, 20);
             this.lblQuotationDest.TabIndex = 2;
             this.lblQuotationDest.Text = "Quotation (ปลายทาง):";
             // 
@@ -151,19 +151,19 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtQuotationDest.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtQuotationDest.Location = new System.Drawing.Point(589, 6);
+            this.txtQuotationDest.Location = new System.Drawing.Point(618, 6);
             this.txtQuotationDest.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtQuotationDest.Name = "txtQuotationDest";
-            this.txtQuotationDest.Size = new System.Drawing.Size(342, 25);
+            this.txtQuotationDest.Size = new System.Drawing.Size(313, 29);
             this.txtQuotationDest.TabIndex = 3;
             // 
             // lblManifest
             // 
             this.lblManifest.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblManifest.AutoSize = true;
-            this.lblManifest.Location = new System.Drawing.Point(38, 38);
+            this.lblManifest.Location = new System.Drawing.Point(47, 33);
             this.lblManifest.Name = "lblManifest";
-            this.lblManifest.Size = new System.Drawing.Size(75, 15);
+            this.lblManifest.Size = new System.Drawing.Size(93, 20);
             this.lblManifest.TabIndex = 4;
             this.lblManifest.Text = "Manifest No:";
             // 
@@ -171,9 +171,9 @@
             // 
             this.lblJobNo.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblJobNo.AutoSize = true;
-            this.lblJobNo.Location = new System.Drawing.Point(536, 38);
+            this.lblJobNo.Location = new System.Drawing.Point(553, 33);
             this.lblJobNo.Name = "lblJobNo";
-            this.lblJobNo.Size = new System.Drawing.Size(47, 15);
+            this.lblJobNo.Size = new System.Drawing.Size(59, 20);
             this.lblJobNo.TabIndex = 6;
             this.lblJobNo.Text = "Job No:";
             // 
@@ -183,10 +183,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtJobNo.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtJobNo.Location = new System.Drawing.Point(589, 34);
+            this.txtJobNo.Location = new System.Drawing.Point(618, 32);
             this.txtJobNo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtJobNo.Name = "txtJobNo";
-            this.txtJobNo.Size = new System.Drawing.Size(342, 25);
+            this.txtJobNo.Size = new System.Drawing.Size(313, 29);
             this.txtJobNo.TabIndex = 7;
             // 
             // panelManifest
@@ -194,10 +194,10 @@
             this.panelManifest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.panelManifest.Controls.Add(this.txtManifest);
             this.panelManifest.Controls.Add(this.btnFindManifest);
-            this.panelManifest.Location = new System.Drawing.Point(116, 32);
+            this.panelManifest.Location = new System.Drawing.Point(143, 30);
             this.panelManifest.Margin = new System.Windows.Forms.Padding(0);
             this.panelManifest.Name = "panelManifest";
-            this.panelManifest.Size = new System.Drawing.Size(348, 28);
+            this.panelManifest.Size = new System.Drawing.Size(319, 26);
             this.panelManifest.TabIndex = 8;
             // 
             // txtManifest
@@ -207,7 +207,7 @@
             this.txtManifest.Location = new System.Drawing.Point(0, 0);
             this.txtManifest.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtManifest.Name = "txtManifest";
-            this.txtManifest.Size = new System.Drawing.Size(299, 25);
+            this.txtManifest.Size = new System.Drawing.Size(263, 29);
             this.txtManifest.TabIndex = 0;
             // 
             // btnFindManifest
@@ -218,10 +218,10 @@
             this.btnFindManifest.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnFindManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFindManifest.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFindManifest.Location = new System.Drawing.Point(299, 0);
+            this.btnFindManifest.Location = new System.Drawing.Point(263, 0);
             this.btnFindManifest.Margin = new System.Windows.Forms.Padding(0);
             this.btnFindManifest.Name = "btnFindManifest";
-            this.btnFindManifest.Size = new System.Drawing.Size(49, 28);
+            this.btnFindManifest.Size = new System.Drawing.Size(56, 26);
             this.btnFindManifest.TabIndex = 1;
             this.btnFindManifest.Text = "ค้นหา";
             this.btnFindManifest.UseVisualStyleBackColor = true;
@@ -375,31 +375,31 @@
             this.dgvResults.AllowUserToAddRows = false;
             this.dgvResults.AllowUserToDeleteRows = false;
             this.dgvResults.AllowUserToResizeRows = false;
-            dataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(248)))), ((int)(((byte)(249)))));
-            this.dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(248)))), ((int)(((byte)(249)))));
+            this.dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvResults.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvResults.BackgroundColor = System.Drawing.Color.White;
             this.dgvResults.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvResults.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
             this.dgvResults.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle14.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(232)))), ((int)(((byte)(234)))), ((int)(((byte)(237)))));
-            dataGridViewCellStyle14.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle14.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(232)))), ((int)(((byte)(234)))), ((int)(((byte)(237)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvResults.ColumnHeadersHeight = 40;
             this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle15.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle15.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle15.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(206)))), ((int)(((byte)(229)))), ((int)(((byte)(255)))));
-            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvResults.DefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(206)))), ((int)(((byte)(229)))), ((int)(((byte)(255)))));
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvResults.DefaultCellStyle = dataGridViewCellStyle3;
             this.dgvResults.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvResults.EnableHeadersVisualStyles = false;
             this.dgvResults.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
@@ -507,7 +507,7 @@
             this.chkSelectAll.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
             this.chkSelectAll.Location = new System.Drawing.Point(14, 8);
             this.chkSelectAll.Name = "chkSelectAll";
-            this.chkSelectAll.Size = new System.Drawing.Size(88, 19);
+            this.chkSelectAll.Size = new System.Drawing.Size(110, 24);
             this.chkSelectAll.TabIndex = 0;
             this.chkSelectAll.Text = "เลือกทั้งหมด";
             this.chkSelectAll.UseVisualStyleBackColor = true;
