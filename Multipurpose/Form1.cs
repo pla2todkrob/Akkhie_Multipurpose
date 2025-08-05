@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Deployment.Application;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Reflection;
 using System.Security.Principal;
 using System.Windows.Forms;
@@ -21,25 +23,83 @@ namespace Multipurpose
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // --- CHANGE START ---
-            // ปรับขนาดขั้นต่ำของฟอร์มเป็น 1024x768
             this.MinimumSize = new Size(1024, 768);
-            this.Size = new Size(1024, 768);
-            // --- CHANGE END ---
 
-            Version version = Assembly.GetExecutingAssembly().GetName().Version;
-            lblVersion.Text = $"Version: {version.Major}.{version.Minor}.{version.Build}";
-
+            SetVersionNumber(); // Call the method to set version
             CheckAdministratorPrivileges();
-
-            // Set the default view to AKP App Tools
             btnAkpAppTools.PerformClick();
         }
 
         /// <summary>
-        /// Checks if the application is running with administrator privileges
-        /// and adjusts the UI accordingly.
+        /// Sets the version label text based on whether the application is network deployed.
         /// </summary>
+        private void SetVersionNumber()
+        {
+            try
+            {
+                if (ApplicationDeployment.IsNetworkDeployed)
+                {
+                    // If deployed via ClickOnce, use the publish version.
+                    lblVersion.Text = $"Version: {ApplicationDeployment.CurrentDeployment.CurrentVersion}";
+                }
+                else
+                {
+                    // If running from Visual Studio (debug), use the assembly version.
+                    var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                    lblVersion.Text = $"Version: {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} (Dev)";
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback if version info cannot be read.
+                lblVersion.Text = "Version: N/A";
+            }
+        }
+
+        /// <summary>
+        /// Handles the click event for the "User Manual" menu item.
+        /// </summary>
+        private void btnOpenUserManual_Click(object sender, EventArgs e)
+        {
+            OpenFileFromDocumentFolder("คู่มือสำหรับผู้ใช้งาน.pdf");
+        }
+
+        /// <summary>
+        /// Handles the click event for the "Developer Manual" menu item.
+        /// </summary>
+        private void btnOpenDevManual_Click(object sender, EventArgs e)
+        {
+            OpenFileFromDocumentFolder("คู่มือสำหรับนักพัฒนา.pdf");
+        }
+
+        /// <summary>
+        /// A helper method to open a specified file from the "Document" subfolder.
+        /// </summary>
+        /// <param name="fileName">The name of the file to open.</param>
+        private void OpenFileFromDocumentFolder(string fileName)
+        {
+            try
+            {
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string filePath = Path.Combine(baseDirectory, "Document", fileName);
+
+                if (File.Exists(filePath))
+                {
+                    Process.Start(filePath);
+                }
+                else
+                {
+                    MessageBox.Show($"ไม่พบไฟล์คู่มือที่: {filePath}", "ไม่พบไฟล์", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"ไม่สามารถเปิดไฟล์ได้: {ex.Message}", "เกิดข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #region Original Methods (No changes needed below this line)
+
         private void CheckAdministratorPrivileges()
         {
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
@@ -52,9 +112,6 @@ namespace Multipurpose
             }
         }
 
-        /// <summary>
-        /// A generic function to switch the displayed UserControl in the main panel.
-        /// </summary>
         private void ShowUserControl(UserControl controlToShow, object sender)
         {
             if (currentControl != null)
@@ -70,9 +127,6 @@ namespace Multipurpose
             UpdateButtonSelection(sender as Button);
         }
 
-        /// <summary>
-        /// Updates the visual state of the navigation buttons to indicate the active selection.
-        /// </summary>
         private void UpdateButtonSelection(Button selectedButton)
         {
             if (currentButton != null)
@@ -87,15 +141,11 @@ namespace Multipurpose
             }
         }
 
-        #region Navigation Button Click Events
-
-        // Group 1: AKP App Tools
         private void btnAkpAppTools_Click(object sender, EventArgs e)
         {
             ShowUserControl(new AkpAppToolsControl(), sender);
         }
 
-        // Group 2: Admin Tools
         private void btnOfficeTools_Click(object sender, EventArgs e)
         {
             ShowUserControl(new OfficeToolsControl(), sender);
@@ -111,9 +161,6 @@ namespace Multipurpose
             ShowUserControl(new WindowsUpgradeControl(), sender);
         }
 
-        /// <summary>
-        /// Restarts the application with administrator privileges.
-        /// </summary>
         private void btnRestartAsAdmin_Click(object sender, EventArgs e)
         {
             try
@@ -123,14 +170,13 @@ namespace Multipurpose
                     UseShellExecute = true,
                     WorkingDirectory = Environment.CurrentDirectory,
                     FileName = Application.ExecutablePath,
-                    Verb = "runas" // This requests elevation
+                    Verb = "runas"
                 };
                 Process.Start(startInfo);
                 Application.Exit();
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                // User clicked "No" on the UAC prompt.
                 MessageBox.Show("The operation was cancelled by the user.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)

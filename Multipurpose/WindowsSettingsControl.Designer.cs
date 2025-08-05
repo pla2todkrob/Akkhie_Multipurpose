@@ -50,11 +50,6 @@
             this.grpFonts = new System.Windows.Forms.GroupBox();
             this.listViewFonts = new System.Windows.Forms.ListView();
             this.btnInstallFonts = new System.Windows.Forms.Button();
-            this.grpShortcuts = new System.Windows.Forms.GroupBox();
-            this.listViewShortcuts = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.btnCreateAllShortcuts = new System.Windows.Forms.Button();
             this.txtStatus = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
@@ -63,7 +58,6 @@
             this.tableLayoutPanelOdbc.SuspendLayout();
             this.grpLocalization.SuspendLayout();
             this.grpFonts.SuspendLayout();
-            this.grpShortcuts.SuspendLayout();
             this.mainTableLayoutPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -233,8 +227,8 @@
             this.lblLocalizationInfo.Name = "lblLocalizationInfo";
             this.lblLocalizationInfo.Size = new System.Drawing.Size(271, 41);
             this.lblLocalizationInfo.TabIndex = 3;
-            this.lblLocalizationInfo.Text = "ตั้งค่ารูปแบบของระบบ (Region Format) และปุ่มสลับภาษา เพื่อให้การแสดงผลตัวเลข, วันท" +
-    "ี่, และการพิมพ์ถูกต้องสำหรับโปรแกรมต่างๆ";
+            this.lblLocalizationInfo.Text = "ตั้งค่า Region, Time Zone, Keyboard Layouts (EN/TH) และปุ่มสลับภาษาให้เป็นมาตรฐาน" +
+    "ประเทศไทย";
             // 
             // radLangSwitchAltShift
             // 
@@ -276,7 +270,8 @@
             this.grpFonts.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpFonts.Location = new System.Drawing.Point(488, 3);
             this.grpFonts.Name = "grpFonts";
-            this.grpFonts.Size = new System.Drawing.Size(480, 109);
+            this.mainTableLayoutPanel.SetRowSpan(this.grpFonts, 2);
+            this.grpFonts.Size = new System.Drawing.Size(480, 224);
             this.grpFonts.TabIndex = 2;
             this.grpFonts.TabStop = false;
             this.grpFonts.Text = "Install Fonts";
@@ -289,7 +284,7 @@
             this.listViewFonts.HideSelection = false;
             this.listViewFonts.Location = new System.Drawing.Point(15, 25);
             this.listViewFonts.Name = "listViewFonts";
-            this.listViewFonts.Size = new System.Drawing.Size(275, 69);
+            this.listViewFonts.Size = new System.Drawing.Size(275, 184);
             this.listViewFonts.TabIndex = 0;
             this.listViewFonts.UseCompatibleStateImageBehavior = false;
             this.listViewFonts.View = System.Windows.Forms.View.List;
@@ -300,63 +295,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnInstallFonts.Location = new System.Drawing.Point(296, 25);
             this.btnInstallFonts.Name = "btnInstallFonts";
-            this.btnInstallFonts.Size = new System.Drawing.Size(175, 69);
+            this.btnInstallFonts.Size = new System.Drawing.Size(175, 184);
             this.btnInstallFonts.TabIndex = 1;
             this.btnInstallFonts.Text = "Install All Fonts";
             this.btnInstallFonts.UseVisualStyleBackColor = true;
             this.btnInstallFonts.Click += new System.EventHandler(this.btnInstallFonts_Click);
-            // 
-            // grpShortcuts
-            // 
-            this.grpShortcuts.Controls.Add(this.listViewShortcuts);
-            this.grpShortcuts.Controls.Add(this.btnCreateAllShortcuts);
-            this.grpShortcuts.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grpShortcuts.Location = new System.Drawing.Point(488, 118);
-            this.grpShortcuts.Name = "grpShortcuts";
-            this.mainTableLayoutPanel.SetRowSpan(this.grpShortcuts, 2);
-            this.grpShortcuts.Size = new System.Drawing.Size(480, 219);
-            this.grpShortcuts.TabIndex = 3;
-            this.grpShortcuts.TabStop = false;
-            this.grpShortcuts.Text = "Create Shortcuts (Public Desktop)";
-            // 
-            // listViewShortcuts
-            // 
-            this.listViewShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.listViewShortcuts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2});
-            this.listViewShortcuts.FullRowSelect = true;
-            this.listViewShortcuts.HideSelection = false;
-            this.listViewShortcuts.Location = new System.Drawing.Point(15, 25);
-            this.listViewShortcuts.Name = "listViewShortcuts";
-            this.listViewShortcuts.Size = new System.Drawing.Size(275, 179);
-            this.listViewShortcuts.TabIndex = 0;
-            this.listViewShortcuts.UseCompatibleStateImageBehavior = false;
-            this.listViewShortcuts.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "Name";
-            this.columnHeader1.Width = 120;
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Target";
-            this.columnHeader2.Width = 150;
-            // 
-            // btnCreateAllShortcuts
-            // 
-            this.btnCreateAllShortcuts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCreateAllShortcuts.Location = new System.Drawing.Point(296, 25);
-            this.btnCreateAllShortcuts.Name = "btnCreateAllShortcuts";
-            this.btnCreateAllShortcuts.Size = new System.Drawing.Size(175, 179);
-            this.btnCreateAllShortcuts.TabIndex = 1;
-            this.btnCreateAllShortcuts.Text = "Create All Shortcuts";
-            this.btnCreateAllShortcuts.UseVisualStyleBackColor = true;
-            this.btnCreateAllShortcuts.Click += new System.EventHandler(this.btnCreateAllShortcuts_Click);
             // 
             // txtStatus
             // 
@@ -398,7 +341,6 @@
             this.mainTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.mainTableLayoutPanel.Controls.Add(this.grpOdbc, 0, 0);
             this.mainTableLayoutPanel.Controls.Add(this.grpFonts, 1, 0);
-            this.mainTableLayoutPanel.Controls.Add(this.grpShortcuts, 1, 1);
             this.mainTableLayoutPanel.Controls.Add(this.grpLocalization, 0, 2);
             this.mainTableLayoutPanel.Controls.Add(this.txtStatus, 0, 3);
             this.mainTableLayoutPanel.Location = new System.Drawing.Point(12, 12);
@@ -426,7 +368,6 @@
             this.grpLocalization.ResumeLayout(false);
             this.grpLocalization.PerformLayout();
             this.grpFonts.ResumeLayout(false);
-            this.grpShortcuts.ResumeLayout(false);
             this.mainTableLayoutPanel.ResumeLayout(false);
             this.mainTableLayoutPanel.PerformLayout();
             this.ResumeLayout(false);
@@ -455,12 +396,7 @@
         private System.Windows.Forms.GroupBox grpFonts;
         private System.Windows.Forms.ListView listViewFonts;
         private System.Windows.Forms.Button btnInstallFonts;
-        private System.Windows.Forms.GroupBox grpShortcuts;
-        private System.Windows.Forms.ListView listViewShortcuts;
-        private System.Windows.Forms.Button btnCreateAllShortcuts;
         private System.Windows.Forms.TextBox txtStatus;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label lblLocalizationInfo;
