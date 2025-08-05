@@ -43,6 +43,8 @@
             this.panelManifest = new System.Windows.Forms.Panel();
             this.txtManifest = new System.Windows.Forms.TextBox();
             this.btnFindManifest = new System.Windows.Forms.Button();
+            this.lblCreditNote = new System.Windows.Forms.Label();
+            this.txtCreditNote = new System.Windows.Forms.TextBox();
             this.flpVerticalActions = new System.Windows.Forms.FlowLayoutPanel();
             this.btnUnlockQuotation = new System.Windows.Forms.Button();
             this.btnFixShippingCostType = new System.Windows.Forms.Button();
@@ -51,7 +53,7 @@
             this.btnChangeQuotation = new System.Windows.Forms.Button();
             this.btnDeleteAllBoxes = new System.Windows.Forms.Button();
             this.btnFixShippingLocation = new System.Windows.Forms.Button();
-            this.btnFixShippingCost = new System.Windows.Forms.Button();
+            this.btnFixCreditNote = new System.Windows.Forms.Button();
             this.btnUpdateAddress = new System.Windows.Forms.Button();
             this.btnChangeToNewCustomer = new System.Windows.Forms.Button();
             this.dgvResults = new System.Windows.Forms.DataGridView();
@@ -82,7 +84,7 @@
             this.grpFilters.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.grpFilters.Name = "grpFilters";
             this.grpFilters.Padding = new System.Windows.Forms.Padding(11, 10, 11, 10);
-            this.grpFilters.Size = new System.Drawing.Size(960, 100);
+            this.grpFilters.Size = new System.Drawing.Size(960, 130);
             this.grpFilters.TabIndex = 0;
             this.grpFilters.TabStop = false;
             this.grpFilters.Text = "ตัวกรองข้อมูล";
@@ -102,68 +104,64 @@
             this.tableLayoutPanel1.Controls.Add(this.lblJobNo, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.txtJobNo, 3, 1);
             this.tableLayoutPanel1.Controls.Add(this.panelManifest, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.lblCreditNote, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.txtCreditNote, 1, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 30);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 26);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.Padding = new System.Windows.Forms.Padding(4);
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(938, 60);
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(938, 94);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // lblQuotationSource
             // 
             this.lblQuotationSource.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblQuotationSource.AutoSize = true;
-            this.lblQuotationSource.Location = new System.Drawing.Point(7, 7);
+            this.lblQuotationSource.Location = new System.Drawing.Point(3, 8);
             this.lblQuotationSource.Name = "lblQuotationSource";
-            this.lblQuotationSource.Size = new System.Drawing.Size(133, 20);
+            this.lblQuotationSource.Size = new System.Drawing.Size(106, 15);
             this.lblQuotationSource.TabIndex = 0;
             this.lblQuotationSource.Text = "Quotation (ต้นทาง):";
             // 
             // txtQuotationSource
             // 
-            this.txtQuotationSource.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtQuotationSource.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtQuotationSource.Location = new System.Drawing.Point(146, 6);
+            this.txtQuotationSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtQuotationSource.Location = new System.Drawing.Point(115, 4);
             this.txtQuotationSource.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtQuotationSource.Name = "txtQuotationSource";
-            this.txtQuotationSource.Size = new System.Drawing.Size(313, 29);
+            this.txtQuotationSource.Size = new System.Drawing.Size(346, 23);
             this.txtQuotationSource.TabIndex = 1;
             // 
             // lblQuotationDest
             // 
             this.lblQuotationDest.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblQuotationDest.AutoSize = true;
-            this.lblQuotationDest.Location = new System.Drawing.Point(465, 7);
+            this.lblQuotationDest.Location = new System.Drawing.Point(467, 8);
             this.lblQuotationDest.Name = "lblQuotationDest";
-            this.lblQuotationDest.Size = new System.Drawing.Size(147, 20);
+            this.lblQuotationDest.Size = new System.Drawing.Size(116, 15);
             this.lblQuotationDest.TabIndex = 2;
             this.lblQuotationDest.Text = "Quotation (ปลายทาง):";
             // 
             // txtQuotationDest
             // 
-            this.txtQuotationDest.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtQuotationDest.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtQuotationDest.Location = new System.Drawing.Point(618, 6);
+            this.txtQuotationDest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtQuotationDest.Location = new System.Drawing.Point(589, 4);
             this.txtQuotationDest.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtQuotationDest.Name = "txtQuotationDest";
-            this.txtQuotationDest.Size = new System.Drawing.Size(313, 29);
+            this.txtQuotationDest.Size = new System.Drawing.Size(346, 23);
             this.txtQuotationDest.TabIndex = 3;
             // 
             // lblManifest
             // 
             this.lblManifest.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblManifest.AutoSize = true;
-            this.lblManifest.Location = new System.Drawing.Point(47, 33);
+            this.lblManifest.Location = new System.Drawing.Point(34, 39);
             this.lblManifest.Name = "lblManifest";
-            this.lblManifest.Size = new System.Drawing.Size(93, 20);
+            this.lblManifest.Size = new System.Drawing.Size(75, 15);
             this.lblManifest.TabIndex = 4;
             this.lblManifest.Text = "Manifest No:";
             // 
@@ -171,65 +169,85 @@
             // 
             this.lblJobNo.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblJobNo.AutoSize = true;
-            this.lblJobNo.Location = new System.Drawing.Point(553, 33);
+            this.lblJobNo.Location = new System.Drawing.Point(536, 39);
             this.lblJobNo.Name = "lblJobNo";
-            this.lblJobNo.Size = new System.Drawing.Size(59, 20);
+            this.lblJobNo.Size = new System.Drawing.Size(47, 15);
             this.lblJobNo.TabIndex = 6;
             this.lblJobNo.Text = "Job No:";
             // 
             // txtJobNo
             // 
-            this.txtJobNo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtJobNo.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtJobNo.Location = new System.Drawing.Point(618, 32);
+            this.txtJobNo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtJobNo.Location = new System.Drawing.Point(589, 35);
             this.txtJobNo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtJobNo.Name = "txtJobNo";
-            this.txtJobNo.Size = new System.Drawing.Size(313, 29);
+            this.txtJobNo.Size = new System.Drawing.Size(346, 23);
             this.txtJobNo.TabIndex = 7;
             // 
             // panelManifest
             // 
-            this.panelManifest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelManifest.BackColor = System.Drawing.Color.White;
+            this.panelManifest.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelManifest.Controls.Add(this.txtManifest);
             this.panelManifest.Controls.Add(this.btnFindManifest);
-            this.panelManifest.Location = new System.Drawing.Point(143, 30);
-            this.panelManifest.Margin = new System.Windows.Forms.Padding(0);
+            this.panelManifest.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelManifest.Location = new System.Drawing.Point(115, 34);
+            this.panelManifest.Margin = new System.Windows.Forms.Padding(3, 3, 3, 4);
             this.panelManifest.Name = "panelManifest";
-            this.panelManifest.Size = new System.Drawing.Size(319, 26);
-            this.panelManifest.TabIndex = 8;
+            this.panelManifest.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
+            this.panelManifest.Size = new System.Drawing.Size(346, 24);
+            this.panelManifest.TabIndex = 5;
             // 
             // txtManifest
             // 
+            this.txtManifest.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.txtManifest.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtManifest.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtManifest.Location = new System.Drawing.Point(0, 0);
-            this.txtManifest.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.txtManifest.Location = new System.Drawing.Point(5, 0);
+            this.txtManifest.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
+            this.txtManifest.Multiline = true;
             this.txtManifest.Name = "txtManifest";
-            this.txtManifest.Size = new System.Drawing.Size(263, 29);
+            this.txtManifest.Size = new System.Drawing.Size(304, 23);
             this.txtManifest.TabIndex = 0;
             // 
             // btnFindManifest
             // 
-            this.btnFindManifest.AutoSize = true;
+            this.btnFindManifest.BackColor = System.Drawing.Color.White;
             this.btnFindManifest.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnFindManifest.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnFindManifest.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.btnFindManifest.FlatAppearance.BorderSize = 0;
             this.btnFindManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFindManifest.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFindManifest.Location = new System.Drawing.Point(263, 0);
-            this.btnFindManifest.Margin = new System.Windows.Forms.Padding(0);
+            this.btnFindManifest.Font = new System.Drawing.Font("Segoe UI Symbol", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnFindManifest.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(148)))), ((int)(((byte)(163)))), ((int)(((byte)(184)))));
+            this.btnFindManifest.Location = new System.Drawing.Point(309, 0);
             this.btnFindManifest.Name = "btnFindManifest";
-            this.btnFindManifest.Size = new System.Drawing.Size(56, 26);
+            this.btnFindManifest.Size = new System.Drawing.Size(35, 23);
             this.btnFindManifest.TabIndex = 1;
-            this.btnFindManifest.Text = "ค้นหา";
-            this.btnFindManifest.UseVisualStyleBackColor = true;
+            this.btnFindManifest.Text = "🔍";
+            this.btnFindManifest.UseVisualStyleBackColor = false;
+            // 
+            // lblCreditNote
+            // 
+            this.lblCreditNote.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblCreditNote.AutoSize = true;
+            this.lblCreditNote.Location = new System.Drawing.Point(38, 70);
+            this.lblCreditNote.Name = "lblCreditNote";
+            this.lblCreditNote.Size = new System.Drawing.Size(71, 15);
+            this.lblCreditNote.TabIndex = 8;
+            this.lblCreditNote.Text = "ใบลดหนี้ No:";
+            // 
+            // txtCreditNote
+            // 
+            this.txtCreditNote.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel1.SetColumnSpan(this.txtCreditNote, 3);
+            this.txtCreditNote.Location = new System.Drawing.Point(115, 66);
+            this.txtCreditNote.Name = "txtCreditNote";
+            this.txtCreditNote.Size = new System.Drawing.Size(820, 23);
+            this.txtCreditNote.TabIndex = 9;
             // 
             // flpVerticalActions
             // 
             this.flpVerticalActions.AutoScroll = true;
-            this.flpVerticalActions.AutoSize = true;
             this.flpVerticalActions.Controls.Add(this.btnUnlockQuotation);
             this.flpVerticalActions.Controls.Add(this.btnFixShippingCostType);
             this.flpVerticalActions.Controls.Add(this.btnNewWaste);
@@ -237,23 +255,21 @@
             this.flpVerticalActions.Controls.Add(this.btnChangeQuotation);
             this.flpVerticalActions.Controls.Add(this.btnDeleteAllBoxes);
             this.flpVerticalActions.Controls.Add(this.btnFixShippingLocation);
-            this.flpVerticalActions.Controls.Add(this.btnFixShippingCost);
+            this.flpVerticalActions.Controls.Add(this.btnFixCreditNote);
             this.flpVerticalActions.Controls.Add(this.btnUpdateAddress);
             this.flpVerticalActions.Controls.Add(this.btnChangeToNewCustomer);
             this.flpVerticalActions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flpVerticalActions.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flpVerticalActions.Location = new System.Drawing.Point(741, 2);
+            this.flpVerticalActions.Location = new System.Drawing.Point(727, 2);
             this.flpVerticalActions.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.flpVerticalActions.Name = "flpVerticalActions";
             this.flpVerticalActions.Padding = new System.Windows.Forms.Padding(0, 0, 10, 0);
-            this.flpVerticalActions.Size = new System.Drawing.Size(216, 452);
+            this.flpVerticalActions.Size = new System.Drawing.Size(230, 422);
             this.flpVerticalActions.TabIndex = 1;
             this.flpVerticalActions.WrapContents = false;
             // 
             // btnUnlockQuotation
             // 
-            this.btnUnlockQuotation.AutoSize = true;
-            this.btnUnlockQuotation.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnUnlockQuotation.Location = new System.Drawing.Point(3, 2);
             this.btnUnlockQuotation.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnUnlockQuotation.Name = "btnUnlockQuotation";
@@ -264,8 +280,6 @@
             // 
             // btnFixShippingCostType
             // 
-            this.btnFixShippingCostType.AutoSize = true;
-            this.btnFixShippingCostType.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnFixShippingCostType.Location = new System.Drawing.Point(3, 40);
             this.btnFixShippingCostType.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnFixShippingCostType.Name = "btnFixShippingCostType";
@@ -276,8 +290,6 @@
             // 
             // btnNewWaste
             // 
-            this.btnNewWaste.AutoSize = true;
-            this.btnNewWaste.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNewWaste.Location = new System.Drawing.Point(3, 78);
             this.btnNewWaste.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnNewWaste.Name = "btnNewWaste";
@@ -288,8 +300,6 @@
             // 
             // btnNewWasteAdd
             // 
-            this.btnNewWasteAdd.AutoSize = true;
-            this.btnNewWasteAdd.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNewWasteAdd.Location = new System.Drawing.Point(3, 116);
             this.btnNewWasteAdd.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnNewWasteAdd.Name = "btnNewWasteAdd";
@@ -300,8 +310,6 @@
             // 
             // btnChangeQuotation
             // 
-            this.btnChangeQuotation.AutoSize = true;
-            this.btnChangeQuotation.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnChangeQuotation.Location = new System.Drawing.Point(3, 154);
             this.btnChangeQuotation.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnChangeQuotation.Name = "btnChangeQuotation";
@@ -312,8 +320,6 @@
             // 
             // btnDeleteAllBoxes
             // 
-            this.btnDeleteAllBoxes.AutoSize = true;
-            this.btnDeleteAllBoxes.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnDeleteAllBoxes.Location = new System.Drawing.Point(3, 192);
             this.btnDeleteAllBoxes.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnDeleteAllBoxes.Name = "btnDeleteAllBoxes";
@@ -324,8 +330,6 @@
             // 
             // btnFixShippingLocation
             // 
-            this.btnFixShippingLocation.AutoSize = true;
-            this.btnFixShippingLocation.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnFixShippingLocation.Location = new System.Drawing.Point(3, 230);
             this.btnFixShippingLocation.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnFixShippingLocation.Name = "btnFixShippingLocation";
@@ -334,22 +338,18 @@
             this.btnFixShippingLocation.Text = "สถานที่ขนส่งไม่ขึ้น";
             this.btnFixShippingLocation.UseVisualStyleBackColor = true;
             // 
-            // btnFixShippingCost
+            // btnFixCreditNote
             // 
-            this.btnFixShippingCost.AutoSize = true;
-            this.btnFixShippingCost.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnFixShippingCost.Location = new System.Drawing.Point(3, 268);
-            this.btnFixShippingCost.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.btnFixShippingCost.Name = "btnFixShippingCost";
-            this.btnFixShippingCost.Size = new System.Drawing.Size(200, 34);
-            this.btnFixShippingCost.TabIndex = 7;
-            this.btnFixShippingCost.Text = "ค่าขนส่งไม่ขึ้น";
-            this.btnFixShippingCost.UseVisualStyleBackColor = true;
+            this.btnFixCreditNote.Location = new System.Drawing.Point(3, 268);
+            this.btnFixCreditNote.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnFixCreditNote.Name = "btnFixCreditNote";
+            this.btnFixCreditNote.Size = new System.Drawing.Size(200, 34);
+            this.btnFixCreditNote.TabIndex = 7;
+            this.btnFixCreditNote.Text = "แก้ไขใบลดหนี้ไม่แสดง";
+            this.btnFixCreditNote.UseVisualStyleBackColor = true;
             // 
             // btnUpdateAddress
             // 
-            this.btnUpdateAddress.AutoSize = true;
-            this.btnUpdateAddress.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnUpdateAddress.Location = new System.Drawing.Point(3, 306);
             this.btnUpdateAddress.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnUpdateAddress.Name = "btnUpdateAddress";
@@ -360,8 +360,6 @@
             // 
             // btnChangeToNewCustomer
             // 
-            this.btnChangeToNewCustomer.AutoSize = true;
-            this.btnChangeToNewCustomer.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnChangeToNewCustomer.Location = new System.Drawing.Point(3, 344);
             this.btnChangeToNewCustomer.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnChangeToNewCustomer.Name = "btnChangeToNewCustomer";
@@ -410,7 +408,7 @@
             this.dgvResults.RowHeadersWidth = 51;
             this.dgvResults.RowTemplate.Height = 36;
             this.dgvResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvResults.Size = new System.Drawing.Size(732, 364);
+            this.dgvResults.Size = new System.Drawing.Size(718, 334);
             this.dgvResults.TabIndex = 2;
             // 
             // panelProcess
@@ -419,11 +417,11 @@
             this.panelProcess.Controls.Add(this.btnCancel);
             this.panelProcess.Controls.Add(this.btnProcess);
             this.panelProcess.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelProcess.Location = new System.Drawing.Point(0, 399);
+            this.panelProcess.Location = new System.Drawing.Point(0, 369);
             this.panelProcess.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panelProcess.Name = "panelProcess";
             this.panelProcess.Padding = new System.Windows.Forms.Padding(10);
-            this.panelProcess.Size = new System.Drawing.Size(732, 53);
+            this.panelProcess.Size = new System.Drawing.Size(718, 53);
             this.panelProcess.TabIndex = 3;
             // 
             // btnCancel
@@ -435,7 +433,7 @@
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            this.btnCancel.Location = new System.Drawing.Point(508, 9);
+            this.btnCancel.Location = new System.Drawing.Point(494, 9);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(95, 35);
@@ -453,7 +451,7 @@
             this.btnProcess.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProcess.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnProcess.ForeColor = System.Drawing.Color.White;
-            this.btnProcess.Location = new System.Drawing.Point(609, 9);
+            this.btnProcess.Location = new System.Drawing.Point(595, 9);
             this.btnProcess.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnProcess.Name = "btnProcess";
             this.btnProcess.Size = new System.Drawing.Size(110, 35);
@@ -469,12 +467,12 @@
             this.tlpMainLayout.Controls.Add(this.flpVerticalActions, 1, 0);
             this.tlpMainLayout.Controls.Add(this.pnlMainContent, 0, 0);
             this.tlpMainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpMainLayout.Location = new System.Drawing.Point(12, 112);
+            this.tlpMainLayout.Location = new System.Drawing.Point(12, 142);
             this.tlpMainLayout.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tlpMainLayout.Name = "tlpMainLayout";
             this.tlpMainLayout.RowCount = 1;
             this.tlpMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpMainLayout.Size = new System.Drawing.Size(960, 456);
+            this.tlpMainLayout.Size = new System.Drawing.Size(960, 426);
             this.tlpMainLayout.TabIndex = 4;
             // 
             // pnlMainContent
@@ -486,7 +484,7 @@
             this.pnlMainContent.Location = new System.Drawing.Point(3, 2);
             this.pnlMainContent.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlMainContent.Name = "pnlMainContent";
-            this.pnlMainContent.Size = new System.Drawing.Size(732, 452);
+            this.pnlMainContent.Size = new System.Drawing.Size(718, 422);
             this.pnlMainContent.TabIndex = 2;
             // 
             // pnlGridHeader
@@ -496,7 +494,7 @@
             this.pnlGridHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlGridHeader.Location = new System.Drawing.Point(0, 0);
             this.pnlGridHeader.Name = "pnlGridHeader";
-            this.pnlGridHeader.Size = new System.Drawing.Size(732, 35);
+            this.pnlGridHeader.Size = new System.Drawing.Size(718, 35);
             this.pnlGridHeader.TabIndex = 4;
             this.pnlGridHeader.Visible = false;
             // 
@@ -507,7 +505,7 @@
             this.chkSelectAll.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
             this.chkSelectAll.Location = new System.Drawing.Point(14, 8);
             this.chkSelectAll.Name = "chkSelectAll";
-            this.chkSelectAll.Size = new System.Drawing.Size(110, 24);
+            this.chkSelectAll.Size = new System.Drawing.Size(89, 19);
             this.chkSelectAll.TabIndex = 0;
             this.chkSelectAll.Text = "เลือกทั้งหมด";
             this.chkSelectAll.UseVisualStyleBackColor = true;
@@ -529,11 +527,9 @@
             this.panelManifest.ResumeLayout(false);
             this.panelManifest.PerformLayout();
             this.flpVerticalActions.ResumeLayout(false);
-            this.flpVerticalActions.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.panelProcess.ResumeLayout(false);
             this.tlpMainLayout.ResumeLayout(false);
-            this.tlpMainLayout.PerformLayout();
             this.pnlMainContent.ResumeLayout(false);
             this.pnlGridHeader.ResumeLayout(false);
             this.pnlGridHeader.PerformLayout();
@@ -552,7 +548,7 @@
         private System.Windows.Forms.Button btnChangeQuotation;
         private System.Windows.Forms.Button btnDeleteAllBoxes;
         private System.Windows.Forms.Button btnFixShippingLocation;
-        private System.Windows.Forms.Button btnFixShippingCost;
+        private System.Windows.Forms.Button btnFixCreditNote;
         private System.Windows.Forms.Button btnUpdateAddress;
         private System.Windows.Forms.Button btnChangeToNewCustomer;
         private System.Windows.Forms.DataGridView dgvResults;
@@ -574,5 +570,7 @@
         private System.Windows.Forms.Button btnFindManifest;
         private System.Windows.Forms.Panel pnlGridHeader;
         private System.Windows.Forms.CheckBox chkSelectAll;
+        private System.Windows.Forms.Label lblCreditNote;
+        private System.Windows.Forms.TextBox txtCreditNote;
     }
 }

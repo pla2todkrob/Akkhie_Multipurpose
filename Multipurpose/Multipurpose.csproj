@@ -95,7 +95,7 @@
     <Compile Include="Tools\ChangeQuotationTool.cs" />
     <Compile Include="Tools\ChangeToNewCustomerTool.cs" />
     <Compile Include="Tools\DeleteAllBoxesTool.cs" />
-    <Compile Include="Tools\FixShippingCostTool.cs" />
+    <Compile Include="Tools\FixCreditNoteTool.cs" />
     <Compile Include="Tools\FixShippingCostTypeTool.cs" />
     <Compile Include="Tools\FixShippingLocationTool.cs" />
     <Compile Include="Tools\ITroubleshooterTool.cs" />

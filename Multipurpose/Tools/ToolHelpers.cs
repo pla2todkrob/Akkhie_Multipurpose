@@ -9,6 +9,7 @@
         public string QuotationSource { get; set; }
         public string QuotationDestination { get; set; }
         public string JobNo { get; set; }
+        public string CreditNoteNo { get; set; }
     }
 
     /// <summary>

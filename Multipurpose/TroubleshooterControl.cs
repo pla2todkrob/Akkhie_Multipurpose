@@ -99,7 +99,6 @@ namespace Multipurpose
         private Button _activeButton = null;
         private ToolParameters _currentParameters;
 
-        // --- Modern UI Colors ---
         private readonly Color _btnDefaultBackColor = Color.White;
         private readonly Color _btnDefaultForeColor = Color.FromArgb(51, 65, 85);
         private readonly Color _btnDefaultBorderColor = Color.FromArgb(203, 213, 225);
@@ -142,9 +141,15 @@ namespace Multipurpose
             _tools.Clear();
             var orderedToolTypes = new List<Type>
             {
-                typeof(UnlockQuotationTool), typeof(FixShippingCostTypeTool), typeof(NewWasteTool),
-                typeof(NewWasteAddTool), typeof(ChangeQuotationTool), typeof(DeleteAllBoxesTool),
-                typeof(FixShippingLocationTool), typeof(FixShippingCostTool), typeof(UpdateAddressTool),
+                typeof(UnlockQuotationTool),
+                typeof(FixShippingCostTypeTool),
+                typeof(NewWasteTool),
+                typeof(NewWasteAddTool),
+                typeof(ChangeQuotationTool),
+                typeof(DeleteAllBoxesTool),
+                typeof(FixShippingLocationTool),
+                typeof(FixCreditNoteTool),
+                typeof(UpdateAddressTool),
                 typeof(ChangeToNewCustomerTool)
             };
 
@@ -166,17 +171,19 @@ namespace Multipurpose
                     {
                         _tools.Add(button.Name, toolInstance);
                         button.Text = toolInstance.ToolName;
+                        button.Visible = true;
                     }
                     else
                     {
                         button.Enabled = false;
                         button.Text += " (Not Found)";
+                        button.Visible = true;
                     }
                 }
                 else
                 {
                     button.Enabled = false;
-                    button.Visible = false; // Hide unused buttons
+                    button.Visible = false;
                 }
             }
         }
@@ -189,6 +196,7 @@ namespace Multipurpose
                 txtQuotationDest.Clear();
                 txtManifest.Clear();
                 txtJobNo.Clear();
+                txtCreditNote.Clear(); // <-- ADDED: Clear the new textbox
             }
 
             grpFilters.Enabled = true;
@@ -198,12 +206,10 @@ namespace Multipurpose
             dgvResults.DataSource = null;
             dgvResults.Columns.Clear();
 
-            // --- Reset Select All Checkbox and hide panel ---
             pnlGridHeader.Visible = false;
-            _isHandlingSelectAll = true; // Prevent event firing
+            _isHandlingSelectAll = true;
             chkSelectAll.CheckState = CheckState.Unchecked;
             _isHandlingSelectAll = false;
-
 
             panelProcess.Visible = false;
             btnProcess.Enabled = false;
@@ -228,8 +234,6 @@ namespace Multipurpose
             dgvResults.CellValueChanged += dgvResults_CellValueChanged;
             dgvResults.CurrentCellDirtyStateChanged += dgvResults_CurrentCellDirtyStateChanged;
             btnFindManifest.Click += btnFindManifest_Click;
-
-            // --- NEW: Assign event for the Select All checkbox ---
             chkSelectAll.CheckedChanged += chkSelectAll_CheckedChanged;
         }
 
@@ -281,12 +285,14 @@ namespace Multipurpose
                 return;
             }
 
+            // *** UPDATED: Read value from the new textbox ***
             _currentParameters = new ToolParameters
             {
                 ManifestDocNo = txtManifest.Text.Trim(),
                 JobNo = txtJobNo.Text.Trim(),
                 QuotationSource = txtQuotationSource.Text.Trim(),
-                QuotationDestination = txtQuotationDest.Text.Trim()
+                QuotationDestination = txtQuotationDest.Text.Trim(),
+                CreditNoteNo = txtCreditNote.Text.Trim()
             };
 
             SetActiveButton(clickedButton);
@@ -316,7 +322,7 @@ namespace Multipurpose
 
                 if (dgvResults.Columns.Contains("Select"))
                 {
-                    pnlGridHeader.Visible = true; // Show the select all panel
+                    pnlGridHeader.Visible = true;
                 }
 
                 if (_activeTool is DeleteAllBoxesTool || !dgvResults.Columns.Contains("Select"))
@@ -335,24 +341,27 @@ namespace Multipurpose
             }
         }
 
+        // *** UPDATED: FormatGrid method as requested ***
         private void FormatGrid()
         {
             if (dgvResults.DataSource == null) return;
             dgvResults.SuspendLayout();
 
+            // Set all columns to auto-size based on content.
+            foreach (DataGridViewColumn col in dgvResults.Columns)
+            {
+                if (col.Name != "Select")
+                {
+                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                }
+            }
+
+            // Apply specific settings for the 'Select' column.
             if (dgvResults.Columns.Contains("Select"))
             {
                 dgvResults.Columns["Select"].HeaderText = "เลือก";
                 dgvResults.Columns["Select"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                 dgvResults.Columns["Select"].Width = 60;
-            }
-            if (dgvResults.Columns.Contains("JobNo")) dgvResults.Columns["JobNo"].HeaderText = "Job No";
-            if (dgvResults.Columns.Contains("DocNo")) dgvResults.Columns["DocNo"].HeaderText = "Manifest No";
-            if (dgvResults.Columns.Contains("CustomerCode")) dgvResults.Columns["CustomerCode"].HeaderText = "รหัสลูกค้า";
-            if (dgvResults.Columns.Contains("CompanyName"))
-            {
-                dgvResults.Columns["CompanyName"].HeaderText = "ชื่อลูกค้า";
-                dgvResults.Columns["CompanyName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
 
             dgvResults.ResumeLayout();
@@ -409,7 +418,7 @@ namespace Multipurpose
             if (dgvResults.Columns.Contains("Select") && e.ColumnIndex == dgvResults.Columns["Select"].Index)
             {
                 UpdateProcessButtonState();
-                UpdateSelectAllCheckBoxState(); // NEW: Update header checkbox
+                UpdateSelectAllCheckBoxState();
             }
         }
 
@@ -424,10 +433,9 @@ namespace Multipurpose
             btnProcess.Enabled = anySelected;
         }
 
-        #region --- NEW: Select All Logic ---
+        #region Select All Logic
         private void chkSelectAll_CheckedChanged(object sender, EventArgs e)
         {
-            // Prevent recursive event firing
             if (_isHandlingSelectAll) return;
 
             if (dgvResults.Rows.Count == 0 || !dgvResults.Columns.Contains("Select")) return;
@@ -444,7 +452,6 @@ namespace Multipurpose
             }
             dgvResults.ResumeLayout();
 
-            // Refresh grid to show changes if needed, though direct cell value change should be enough
             dgvResults.Refresh();
             UpdateProcessButtonState();
         }
@@ -464,7 +471,7 @@ namespace Multipurpose
                 }
             }
 
-            _isHandlingSelectAll = true; // Prevent chkSelectAll_CheckedChanged from firing
+            _isHandlingSelectAll = true;
             if (checkedRows == totalRows)
             {
                 chkSelectAll.CheckState = CheckState.Checked;
@@ -491,7 +498,7 @@ namespace Multipurpose
             btn.ForeColor = _btnDefaultForeColor;
             btn.FlatAppearance.BorderColor = _btnDefaultBorderColor;
             btn.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-            btn.Size = new Size(200, 45); // Adjusted width
+            btn.Size = new Size(200, 45);
             btn.Margin = new Padding(3, 3, 3, 6);
             btn.TextAlign = ContentAlignment.MiddleLeft;
             btn.Padding = new Padding(15, 0, 0, 0);
