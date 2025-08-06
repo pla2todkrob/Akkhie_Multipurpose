@@ -9,50 +9,67 @@ using System.Windows.Forms;
 
 namespace Multipurpose
 {
-    public partial class Form1 : Form
+    public partial class Main : Form
     {
         private UserControl currentControl = null;
         private Button currentButton = null;
-        private readonly Color activeColor = Color.FromArgb(224, 231, 255);
-        private readonly Color inactiveColor = Color.FromArgb(240, 242, 245);
 
-        public Form1()
+        // --- UI Improvement: Define modern colors ---
+        private readonly Color activeColor = Color.FromArgb(224, 231, 255); // A modern blue for selection
+        private readonly Color inactiveColor = Color.FromArgb(248, 250, 252); // A very light gray for the nav background
+
+        public Main()
         {
             InitializeComponent();
+            // --- UI Improvement: Set modern font for the entire form ---
+            this.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.MinimumSize = new Size(1024, 768);
+            this.MinimumSize = new System.Drawing.Size(1024, 768);
+            navPanel.BackColor = inactiveColor; // Apply the new nav panel color
 
-            SetVersionNumber(); // Call the method to set version
-            CheckAdministratorPrivileges();
+            // --- Logic Fix & UI Improvement: Consolidated version and admin check ---
+            SetVersionAndAdminStatus();
+
+            // Set initial view
             btnAkpAppTools.PerformClick();
         }
 
         /// <summary>
-        /// Sets the version label text based on whether the application is network deployed.
+        /// --- REVISED METHOD ---
+        /// Sets the version label text consistently from the Assembly.
+        /// Also checks for Administrator privileges and updates the UI accordingly.
         /// </summary>
-        private void SetVersionNumber()
+        private void SetVersionAndAdminStatus()
         {
-            try
+            // 1. Get version from Assembly - this is now the single source of truth.
+            var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            string versionText = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+
+            // 2. Check for Administrator privileges.
+            bool isAdmin;
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
-                if (ApplicationDeployment.IsNetworkDeployed)
-                {
-                    // If deployed via ClickOnce, use the publish version.
-                    lblVersion.Text = $"Version: {ApplicationDeployment.CurrentDeployment.CurrentVersion}";
-                }
-                else
-                {
-                    // If running from Visual Studio (debug), use the assembly version.
-                    var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
-                    lblVersion.Text = $"Version: {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} (Dev)";
-                }
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
-            catch (Exception)
+
+            // 3. Update UI based on admin status.
+            panelAdminTools.Enabled = isAdmin;
+            panelAdminStatus.Visible = !isAdmin;
+
+            if (isAdmin)
             {
-                // Fallback if version info cannot be read.
-                lblVersion.Text = "Version: N/A";
+                lblVersion.Text = $"Version: {versionText} (Administrator)";
+                // --- UI Improvement: Visual cue for admin mode on status bar ---
+                statusStrip1.BackColor = Color.FromArgb(217, 249, 217); // A light green color
+            }
+            else
+            {
+                // If not admin, show the base version text.
+                lblVersion.Text = $"Version: {versionText}";
             }
         }
 
@@ -98,19 +115,7 @@ namespace Multipurpose
             }
         }
 
-        #region Original Methods (No changes needed below this line)
-
-        private void CheckAdministratorPrivileges()
-        {
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-            {
-                WindowsPrincipal principal = new WindowsPrincipal(identity);
-                bool isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
-
-                panelAdminTools.Enabled = isAdmin;
-                panelAdminStatus.Visible = !isAdmin;
-            }
-        }
+        #region UI Control Methods
 
         private void ShowUserControl(UserControl controlToShow, object sender)
         {
@@ -131,12 +136,12 @@ namespace Multipurpose
         {
             if (currentButton != null)
             {
-                currentButton.BackColor = inactiveColor;
+                currentButton.BackColor = inactiveColor; // Revert to inactive color
             }
 
             if (selectedButton != null)
             {
-                selectedButton.BackColor = activeColor;
+                selectedButton.BackColor = activeColor; // Set active color
                 currentButton = selectedButton;
             }
         }
@@ -177,7 +182,7 @@ namespace Multipurpose
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                MessageBox.Show("The operation was cancelled by the user.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // The user cancelled the UAC prompt. No action needed.
             }
             catch (Exception ex)
             {

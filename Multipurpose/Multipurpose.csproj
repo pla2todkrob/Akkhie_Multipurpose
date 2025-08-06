@@ -100,11 +100,11 @@
     <Compile Include="AkpAppToolsControl.Designer.cs">
       <DependentUpon>AkpAppToolsControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Main.Designer.cs">
+      <DependentUpon>Main.cs</DependentUpon>
     </Compile>
     <Compile Include="ManifestSelectionForm.cs">
       <SubType>Form</SubType>
@@ -144,12 +144,6 @@
     <Compile Include="TroubleshooterControl.Designer.cs">
       <DependentUpon>TroubleshooterControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="UpdateSetApp.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="UpdateSetApp.Designer.cs">
-      <DependentUpon>UpdateSetApp.cs</DependentUpon>
-    </Compile>
     <Compile Include="WindowsSettingsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -162,8 +156,11 @@
     <Compile Include="WindowsUpgradeControl.Designer.cs">
       <DependentUpon>WindowsUpgradeControl.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="AkpAppToolsControl.resx">
+      <DependentUpon>AkpAppToolsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main.resx">
+      <DependentUpon>Main.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OfficeToolsControl.resx">
       <DependentUpon>OfficeToolsControl.cs</DependentUpon>
@@ -177,6 +174,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ShippingCostControl.resx">
+      <DependentUpon>ShippingCostControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TroubleshooterControl.resx">
       <DependentUpon>TroubleshooterControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -207,6 +207,9 @@
     <Content Include="Licenses\LicenseWindows.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="WindowsUpgradeControl.resx">
+      <DependentUpon>WindowsUpgradeControl.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Multipurpose_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -218,9 +221,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="shortcuts.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

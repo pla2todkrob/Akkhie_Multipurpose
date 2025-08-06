@@ -93,7 +93,7 @@
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.lblTitle.Location = new System.Drawing.Point(3, 7);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(288, 30);
+            this.lblTitle.Size = new System.Drawing.Size(326, 30);
             this.lblTitle.TabIndex = 1;
             this.lblTitle.Text = "Windows Upgrade && Activation";
             // 
@@ -134,9 +134,9 @@
             this.lblCurrentEdition.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCurrentEdition.AutoSize = true;
             this.lblCurrentEdition.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentEdition.Location = new System.Drawing.Point(125, 6);
+            this.lblCurrentEdition.Location = new System.Drawing.Point(126, 6);
             this.lblCurrentEdition.Name = "lblCurrentEdition";
-            this.lblCurrentEdition.Size = new System.Drawing.Size(63, 17);
+            this.lblCurrentEdition.Size = new System.Drawing.Size(61, 17);
             this.lblCurrentEdition.TabIndex = 1;
             this.lblCurrentEdition.Text = "Unknown";
             // 
@@ -147,7 +147,7 @@
             this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(3, 6);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(116, 17);
+            this.label1.Size = new System.Drawing.Size(117, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "Windows Edition:";
             // 
@@ -158,7 +158,7 @@
             this.label3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.Location = new System.Drawing.Point(3, 37);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(100, 17);
+            this.label3.Size = new System.Drawing.Size(103, 17);
             this.label3.TabIndex = 2;
             this.label3.Text = "สถานะ Activate:";
             // 
@@ -167,9 +167,9 @@
             this.lblCurrentStatus.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblCurrentStatus.AutoSize = true;
             this.lblCurrentStatus.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentStatus.Location = new System.Drawing.Point(125, 37);
+            this.lblCurrentStatus.Location = new System.Drawing.Point(126, 37);
             this.lblCurrentStatus.Name = "lblCurrentStatus";
-            this.lblCurrentStatus.Size = new System.Drawing.Size(63, 17);
+            this.lblCurrentStatus.Size = new System.Drawing.Size(61, 17);
             this.lblCurrentStatus.TabIndex = 3;
             this.lblCurrentStatus.Text = "Unknown";
             // 
@@ -200,7 +200,7 @@
             // 
             // cboProducts
             // 
-            this.cboProducts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.cboProducts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cboProducts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboProducts.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -226,8 +226,8 @@
             // 
             // lblProcessDescription
             // 
-            this.lblProcessDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.lblProcessDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblProcessDescription.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblProcessDescription.Location = new System.Drawing.Point(6, 21);
@@ -282,7 +282,7 @@
             this.label6.Location = new System.Drawing.Point(0, 0);
             this.label6.Name = "label6";
             this.label6.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
-            this.label6.Size = new System.Drawing.Size(89, 20);
+            this.label6.Size = new System.Drawing.Size(87, 20);
             this.label6.TabIndex = 2;
             this.label6.Text = "Status / Log:";
             // 

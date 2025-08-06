@@ -184,80 +184,115 @@ namespace Multipurpose
                 Log(result);
             }
             catch (OperationCanceledException) { Log("ODBC creation cancelled."); }
-            finally { ToggleAllButtons(true); _cancellationTokenSource.Dispose(); }
+            finally { ToggleAllButtons(true); if (_cancellationTokenSource != null) _cancellationTokenSource.Dispose(); }
         }
 
         private async void btnSetLocalization_Click(object sender, EventArgs e)
         {
             txtStatus.Clear();
-            Log("--- Applying All Localization Settings ---");
+            Log("--- Applying System-Wide Localization Settings ---");
             ToggleAllButtons(false);
             _cancellationTokenSource = new CancellationTokenSource();
+
+            string tempPath = Path.GetTempPath();
+            string xmlPath = Path.Combine(tempPath, "multipurpose_intl.xml");
+            string scriptPath = Path.Combine(tempPath, "multipurpose_localize.ps1");
+
             try
             {
-                await Task.Run(() =>
+                // --- 1. Create the XML file to copy settings ---
+                Log("1. Preparing configuration file...");
+                string xmlContent = @"
+<gs:GlobalizationServices xmlns:gs=""urn:longhornGlobalizationUnattended"">
+    <gs:UserList>
+        <gs:User UserID=""Current"" CopySettingsToDefaultUserAcct=""true"" CopySettingsToSystemAcct=""true"" />
+    </gs:UserList>
+</gs:GlobalizationServices>
+".Trim();
+                File.WriteAllText(xmlPath, xmlContent);
+                Log($"   -> Configuration file created at: {xmlPath}");
+
+                // --- 2. Create the PowerShell script ---
+                Log("2. Preparing PowerShell script...");
+                string hotkey = radLangSwitchGrave.Checked ? "3" : "1"; // 3 for Grave, 1 for Alt+Shift
+                var scriptBuilder = new StringBuilder();
+                scriptBuilder.AppendLine("$ErrorActionPreference = 'Stop'");
+                scriptBuilder.AppendLine("try {");
+                scriptBuilder.AppendLine("    Write-Output '--- Step A: Setting registry for current administrator session (as template) ---'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'sCountry' -Value 'Thailand'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'sShortDate' -Value 'd/M/yyyy'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'sLongDate' -Value 'd MMMM yyyy'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'iCountry' -Value '66'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'sCurrency' -Value '฿'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'sDecimal' -Value '.'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'sThousand' -Value ','");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Control Panel\\International' -Name 'Locale' -Value '0000041e'");
+                scriptBuilder.AppendLine("    Write-Output '  - Region and formats set.'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Keyboard Layout\\Preload' -Name '1' -Value '00000409'");
+                scriptBuilder.AppendLine("    Set-ItemProperty -Path 'HKCU:\\Keyboard Layout\\Preload' -Name '2' -Value '0000041e'");
+                scriptBuilder.AppendLine("    Write-Output '  - Keyboard layouts (EN/TH) set.'");
+                scriptBuilder.AppendLine("    if (-not (Test-Path 'HKCU:\\Keyboard Layout\\Toggle')) { New-Item -Path 'HKCU:\\Keyboard Layout\\Toggle' | Out-Null }");
+                scriptBuilder.AppendLine($"   Set-ItemProperty -Path 'HKCU:\\Keyboard Layout\\Toggle' -Name 'Language Hotkey' -Value '{hotkey}'");
+                scriptBuilder.AppendLine("    Write-Output '  - Language hotkey set.'");
+                scriptBuilder.AppendLine("    Write-Output '--- Step B: Setting system-wide time zone ---'");
+                scriptBuilder.AppendLine("    Set-TimeZone -Id 'SE Asia Standard Time'");
+                scriptBuilder.AppendLine("    Write-Output '  - Time zone set to SE Asia Standard Time.'");
+                scriptBuilder.AppendLine("    Write-Output '--- Step C: Applying settings to Default User and Welcome Screen ---'");
+                // --- FIX: Use Start-Process for robust execution of control.exe ---
+                scriptBuilder.AppendLine($"   Start-Process -FilePath 'control.exe' -ArgumentList 'intl.cpl,, /f:\"{xmlPath}\"' -Wait");
+                scriptBuilder.AppendLine("    Write-Output '--- PowerShell script completed successfully! ---'");
+                scriptBuilder.AppendLine("} catch {");
+                scriptBuilder.AppendLine("    Write-Error -Message \"PowerShell Error: $($_.Exception.Message)\"");
+                scriptBuilder.AppendLine("    exit 1");
+                scriptBuilder.AppendLine("}");
+
+                File.WriteAllText(scriptPath, scriptBuilder.ToString(), Encoding.UTF8);
+                Log($"   -> PowerShell script created at: {scriptPath}");
+
+                // --- 3. Execute the script ---
+                Log("3. Executing script with administrator privileges...");
+                string powerShellExePath = "powershell.exe";
+                string arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"";
+                string result = await RunProcessAsync(powerShellExePath, arguments, _cancellationTokenSource.Token);
+                Log(result);
+
+                if (!_cancellationTokenSource.IsCancellationRequested && !result.Contains("PowerShell Error"))
                 {
-                    // 1. Set Region to Thailand
-                    Log("1. Setting Region and Formats to Thailand...");
-                    try
-                    {
-                        RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Control Panel\International", true);
-                        key.SetValue("sCountry", "Thailand");
-                        key.SetValue("sShortDate", "d/M/yyyy");
-                        key.SetValue("sLongDate", "d MMMM yyyy");
-                        key.SetValue("iCountry", "66");
-                        key.SetValue("sCurrency", "฿");
-                        key.SetValue("sDecimal", ".");
-                        key.SetValue("sThousand", ",");
-                        key.SetValue("Locale", "0000041e"); // Thai Locale ID
-                        key.Close();
-                        Log("   -> Region settings applied.");
-                    }
-                    catch (Exception ex) { Log($"   -> [ERROR] Failed to set region: {ex.Message}"); }
-
-                    // 2. Set Keyboard Layouts (EN/TH)
-                    Log("2. Setting Keyboard Layouts to EN-US and TH-Kedmanee...");
-                    try
-                    {
-                        RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Keyboard Layout\Preload", true);
-                        key.SetValue("1", "00000409"); // English - United States
-                        key.SetValue("2", "0000041e"); // Thai - Kedmanee
-                        key.Close();
-                        Log("   -> Keyboard layouts applied.");
-                    }
-                    catch (Exception ex) { Log($"   -> [ERROR] Failed to set keyboard layouts: {ex.Message}"); }
-
-                    // 3. Set Language Hotkey
-                    Log("3. Setting language switch hotkey...");
-                    try
-                    {
-                        string hotkey = radLangSwitchGrave.Checked ? "3" : "1"; // 3 for Grave, 1 for Alt+Shift
-                        RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Keyboard Layout\Toggle", true);
-                        key.SetValue("Language Hotkey", hotkey, RegistryValueKind.String);
-                        key.Close();
-                        Log(radLangSwitchGrave.Checked ? "   -> Hotkey set to Grave Accent (~)." : "   -> Hotkey set to Left Alt + Shift.");
-                    }
-                    catch (Exception ex) { Log($"   -> [ERROR] Failed to set language hotkey: {ex.Message}"); }
-                }, _cancellationTokenSource.Token);
-
-                // 4. Set Time Zone
-                Log("4. Setting Time Zone to SE Asia Standard Time...");
-                string tzResult = await RunProcessAsync("tzutil.exe", "/s \"SE Asia Standard Time\"", _cancellationTokenSource.Token);
-                Log(tzResult);
-
-                if (!_cancellationTokenSource.IsCancellationRequested)
+                    Log("\n--- All System-Wide Localization Steps Completed ---");
+                    MessageBox.Show("System-wide localization settings have been applied.\nThese settings will take effect for any NEW user logging into this machine.\nA restart may be required for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else if (result.Contains("PowerShell Error"))
                 {
-                    Log("\n--- All Localization Steps Completed ---");
-                    MessageBox.Show("Localization settings have been applied. A restart may be required for all changes to take full effect.", "Process Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("The script encountered an error. Please check the log for details.", "Script Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            catch (OperationCanceledException) { Log("Localization cancelled."); }
+            catch (OperationCanceledException) { Log("Localization cancelled by user."); }
             catch (Exception ex)
             {
                 Log($"[FATAL ERROR] An unexpected error occurred: {ex.GetBaseException().Message}");
                 MessageBox.Show($"An unexpected error occurred: \n{ex.GetBaseException().Message}", "Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            finally { ToggleAllButtons(true); _cancellationTokenSource.Dispose(); }
+            finally
+            {
+                // --- 4. Clean up temporary files ---
+                try
+                {
+                    if (File.Exists(xmlPath)) File.Delete(xmlPath);
+                    if (File.Exists(scriptPath)) File.Delete(scriptPath);
+                    Log("Temporary files cleaned up.");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Warning: Could not clean up temporary files. {ex.Message}");
+                }
+
+                ToggleAllButtons(true);
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource = null;
+                }
+            }
         }
 
         private void btnInstallFonts_Click(object sender, EventArgs e)
